@@ -70,7 +70,8 @@ class AttendanceCalendarScreenViewModel(
                 periodWithAttendance.attendanceRecord?.copy(status = status) ?: AttendanceRecord(
                     periodId = periodWithAttendance.period.id,
                     date = _state.value.selectedDate!!,
-                    status = status
+                    status = status,
+                    courseId = periodWithAttendance.period.courseId
                 )
             viewModelScope.launch {
                 attendanceRepository.upsertAttendance(record)
