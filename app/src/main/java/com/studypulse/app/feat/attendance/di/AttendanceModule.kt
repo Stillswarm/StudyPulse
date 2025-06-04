@@ -14,7 +14,7 @@ import com.studypulse.app.feat.attendance.courses.presentation.course.CoursesScr
 import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.course_details.CourseDetailsScreenViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPeriodScreenViewModel
-import com.studypulse.app.feat.attendance.attendance.ui.AttendanceScreenViewModel
+import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceScreenViewModel
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreenViewModel
 import com.studypulse.app.feat.attendance.schedule.presentation.ScheduleScreenViewModel
 import org.koin.core.module.dsl.viewModelOf

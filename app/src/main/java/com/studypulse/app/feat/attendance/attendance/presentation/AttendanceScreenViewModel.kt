@@ -1,4 +1,4 @@
-package com.studypulse.app.feat.attendance.attendance.ui
+package com.studypulse.app.feat.attendance.attendance.presentation
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

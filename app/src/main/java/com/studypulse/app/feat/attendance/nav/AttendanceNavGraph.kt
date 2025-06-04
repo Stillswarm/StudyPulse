@@ -3,7 +3,7 @@ package com.studypulse.app.feat.attendance.nav
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.studypulse.app.feat.attendance.attendance.ui.AttendanceScreen
+import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceScreen
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreen
 import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseScreen
 import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPeriodScreen

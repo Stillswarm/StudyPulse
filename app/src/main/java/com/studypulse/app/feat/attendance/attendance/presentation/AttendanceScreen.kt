@@ -1,4 +1,4 @@
-package com.studypulse.app.feat.attendance.attendance.ui
+package com.studypulse.app.feat.attendance.attendance.presentation
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
