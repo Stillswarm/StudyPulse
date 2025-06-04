@@ -14,6 +14,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceCalendar
 import com.studypulse.app.feat.attendance.calender.ui.components.DayCoursesBottomSheetContent
 import kotlinx.coroutines.launch
@@ -54,6 +56,14 @@ fun AttendanceCalendarScreen(
 
         val dayCoursesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
         val scope = rememberCoroutineScope()
+        val hideSheetAndClearDate = remember {
+            {
+                scope.launch {
+                    viewModel.clearSelectedDate()
+                    dayCoursesBottomSheetState.hide()
+                }
+            }
+        }
 
         DisposableEffect(Unit) {
             onDispose {
@@ -66,12 +76,7 @@ fun AttendanceCalendarScreen(
         state.selectedDate?.let {
             if (dayCoursesBottomSheetState.isVisible) {
                 ModalBottomSheet(
-                    onDismissRequest = {
-                        scope.launch {
-                            viewModel.clearSelectedDate()
-                            dayCoursesBottomSheetState.hide()
-                        }
-                    },
+                    onDismissRequest = { hideSheetAndClearDate() },
                     sheetState = dayCoursesBottomSheetState,
                     shape = RectangleShape,
                     dragHandle = {}
@@ -80,10 +85,16 @@ fun AttendanceCalendarScreen(
                         periodList = state.periodsList,
                         localDate = state.selectedDate!!,
                         onClose = {
-                            scope.launch {
-                                viewModel.clearSelectedDate()
-                                dayCoursesBottomSheetState.hide()
-                            }
+                            hideSheetAndClearDate()
+                        },
+                        onPresent = {
+                            viewModel.markAttendance(it, AttendanceStatus.PRESENT)
+                        },
+                        onAbsent = {
+                            viewModel.markAttendance(it, AttendanceStatus.ABSENT)
+                        },
+                        onCancelled = {
+                            viewModel.markAttendance(it, AttendanceStatus.CANCELLED)
                         }
                     )
                 }

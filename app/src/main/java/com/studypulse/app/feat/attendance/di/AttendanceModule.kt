@@ -1,6 +1,9 @@
 package com.studypulse.app.feat.attendance.di
 
 import com.studypulse.app.StudyPulseDatabase
+import com.studypulse.app.feat.attendance.attendance.data.RoomAttendanceRepositoryImpl
+import com.studypulse.app.feat.attendance.attendance.domain.AttendanceDao
+import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.courses.data.RoomCourseRepositoryImpl
 import com.studypulse.app.feat.attendance.courses.data.RoomPeriodRepositoryImpl
 import com.studypulse.app.feat.attendance.courses.domain.CourseDao
@@ -21,10 +24,12 @@ val attendanceModule = module {
     // DAO
     single<CourseDao> { get<StudyPulseDatabase>().courseDao() }
     single<PeriodDao> { get<StudyPulseDatabase>().periodDao() }
+    single<AttendanceDao> { get<StudyPulseDatabase>().attendanceDao() }
 
     // repository
     single<CourseRepository> { RoomCourseRepositoryImpl(get()) }
     single<PeriodRepository> { RoomPeriodRepositoryImpl(get()) }
+    single<AttendanceRepository> { RoomAttendanceRepositoryImpl(get()) }
 
     // VM
     viewModelOf(::CoursesScreenViewModel)

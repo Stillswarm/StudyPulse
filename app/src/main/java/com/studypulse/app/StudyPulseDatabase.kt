@@ -6,10 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.studypulse.app.feat.attendance.attendance.domain.AttendanceDao
+import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
 import com.studypulse.app.feat.attendance.courses.data.Course
 import com.studypulse.app.feat.attendance.courses.domain.CourseDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.schedule.data.Period
+import java.time.LocalDate
 import java.time.LocalTime
 
 class Converters {
@@ -22,16 +25,27 @@ class Converters {
     fun toLocalTime(timeString: String?): LocalTime? {
         return timeString?.let { LocalTime.parse(it) }
     }
+
+    @TypeConverter
+    fun fromLocalDate(date: LocalDate?): String? {
+        return date?.toString()
+    }
+
+    @TypeConverter
+    fun toLocalDate(dateString: String?): LocalDate? {
+        return dateString?.let { LocalDate.parse(it) }
+    }
 }
 
 /**
  * Initialize database, provide entities, and declare DAOs
  */
-@Database(entities = [Course::class, Period::class], version = 3, exportSchema = false)
+@Database(entities = [Course::class, Period::class, AttendanceRecord::class], version = 5, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class StudyPulseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao
     abstract fun periodDao(): PeriodDao
+    abstract fun attendanceDao(): AttendanceDao
 
     companion object {
         // for efficiency, database is created only once
