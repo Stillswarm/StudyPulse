@@ -1,9 +1,20 @@
 package com.studypulse.app.feat.attendance.nav
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceScreen
+import androidx.navigation.compose.navigation
+import androidx.navigation.toRoute
+import com.studypulse.app.SnackbarController
+import com.studypulse.app.SnackbarEvent
+import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
+import com.studypulse.app.feat.attendance.attendance.presentation.details.AttendanceDetailsScreen
+import com.studypulse.app.feat.attendance.attendance.presentation.home.AttendanceScreen
+import com.studypulse.app.feat.attendance.attendance.presentation.overview.AttendanceOverviewScreen
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreen
 import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseScreen
 import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPeriodScreen
@@ -11,6 +22,8 @@ import com.studypulse.app.feat.attendance.courses.presentation.course.CoursesScr
 import com.studypulse.app.feat.attendance.courses.presentation.course_details.CourseDetailsScreen
 import com.studypulse.app.feat.attendance.schedule.presentation.ScheduleScreen
 import com.studypulse.app.nav.Route
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     composable<Route.CourseRoute> {
@@ -62,7 +75,57 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
         AttendanceScreen(
             onNavigateBack = { navController.navigateUp() },
             onNavigateToCourseList = { navController.navigate(Route.CourseRoute) },
-            onNavigateToAttendanceCalendar = { navController.navigate(Route.AttendanceCalendarRoute) }
+            onNavigateToAttendanceCalendar = { navController.navigate(Route.AttendanceCalendarRoute) },
+            onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceStatsSharedRoute) }
         )
+    }
+
+    navigation<Route.AttendanceStatsSharedRoute>(
+        startDestination = Route.AttendanceOverviewRoute
+    ) {
+        composable<Route.AttendanceOverviewRoute> { backStackEntry ->
+
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<Route.AttendanceStatsSharedRoute>()
+            }
+            val sharedViewModel: AttendanceStatsSharedViewModel =
+                koinViewModel(viewModelStoreOwner = parentEntry)
+            val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
+            AttendanceOverviewScreen(
+                attendanceByCourse = attendanceByCourse,
+                onDetails = { navController.navigate(Route.AttendanceDetailsRoute(it)) },
+                viewModel = sharedViewModel
+            )
+        }
+
+        composable<Route.AttendanceDetailsRoute> { backStackEntry ->
+
+            val scope = rememberCoroutineScope()
+            val route = backStackEntry.toRoute<Route.AttendanceDetailsRoute>()
+            val courseId = route.courseId
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<Route.AttendanceStatsSharedRoute>()
+            }
+            val sharedViewModel: AttendanceStatsSharedViewModel =
+                koinViewModel(viewModelStoreOwner = parentEntry)
+            val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
+            val allCoursesMap by sharedViewModel.allCoursesMap.collectAsStateWithLifecycle()
+
+            if (allCoursesMap[courseId] == null) {
+                scope.launch {
+                    SnackbarController.sendEvent(
+                        SnackbarEvent(message = "cannot fetch details")
+                    )
+                    navController.navigateUp()
+                }
+            } else {
+                AttendanceDetailsScreen(
+                    course = allCoursesMap[courseId]!!,
+                    attendanceRecords = attendanceByCourse[courseId] ?: emptyList(),
+                    onBack = { navController.navigateUp() },
+                    viewModel = sharedViewModel
+                )
+            }
+        }
     }
 }

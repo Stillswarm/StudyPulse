@@ -26,4 +26,15 @@ object Route {
 
     @Serializable
     data object AttendanceRoute
+
+    @Serializable
+    data object AttendanceOverviewRoute
+
+    @Serializable
+    data class AttendanceDetailsRoute(val courseId: Long)
+
+    @Serializable
+    data object AttendanceStatsSharedRoute
+
+
 }

@@ -16,4 +16,7 @@ interface AttendanceDao {
 
     @Query("SELECT * FROM AttendanceRecord WHERE periodId = :periodId AND date = :date")
     suspend fun getAttendanceForPeriod(periodId: Long, date: LocalDate) : AttendanceRecord?
+
+    @Query("SELECT * FROM AttendanceRecord")
+    fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>>
 }

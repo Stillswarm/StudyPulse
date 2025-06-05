@@ -4,6 +4,7 @@ import com.studypulse.app.feat.attendance.attendance.domain.AttendanceDao
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 class RoomAttendanceRepositoryImpl(
@@ -17,7 +18,18 @@ class RoomAttendanceRepositoryImpl(
         return attendanceDao.getAttendanceByDate(date)
     }
 
-    override suspend fun getAttendanceForPeriodAndDate(periodId: Long, date: LocalDate): AttendanceRecord? {
+    override suspend fun getAttendanceForPeriodAndDate(
+        periodId: Long,
+        date: LocalDate
+    ): AttendanceRecord? {
         return attendanceDao.getAttendanceForPeriod(periodId, date)
+    }
+
+    override fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>> {
+        return attendanceDao.getAllAttendanceRecords()
+    }
+
+    override fun getAttendanceGroupedByCourse(): Flow<Map<Long, List<AttendanceRecord>>> {
+        return attendanceDao.getAllAttendanceRecords().map { list -> list.groupBy { it.courseId } }
     }
 }

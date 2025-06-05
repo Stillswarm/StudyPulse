@@ -1,4 +1,4 @@
-package com.studypulse.app.feat.attendance.attendance.presentation
+package com.studypulse.app.feat.attendance.attendance.presentation.home
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +33,7 @@ fun AttendanceScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCourseList: () -> Unit,
     onNavigateToAttendanceCalendar: () -> Unit,
+    onNavigateToAttendanceOverview: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AttendanceScreenViewModel = koinViewModel()
 ) {
@@ -91,6 +92,33 @@ fun AttendanceScreen(
             ) {
                 Text(
                     text = "Attendance Calendar",
+                    fontSize = 24.sp,
+                )
+
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = "Go to next section",
+                    modifier = Modifier.size(64.dp),
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
+                .noRippleClickable { onNavigateToAttendanceOverview() },
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Attendance Overview",
                     fontSize = 24.sp,
                 )
 
