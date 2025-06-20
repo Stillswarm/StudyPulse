@@ -58,7 +58,7 @@ private fun DrawScope.drawPieChart(
 private val defaultPieColors = listOf(
     Color(0xFF10B981), // Emerald
     Color(0xFFEF4444), // Red
-    Color(0xFFF59E0B), // Amber
+    Color.Gray, // DarkGray
     Color(0xFF6366F1), // Indigo
     Color(0xFF8B5CF6), // Violet
     Color(0xFFEC4899), // Pink

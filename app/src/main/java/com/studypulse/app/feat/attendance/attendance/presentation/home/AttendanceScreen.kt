@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.common.ui.components.DefaultHeader
 import com.studypulse.app.common.ui.components.noRippleClickable
 import org.koin.androidx.compose.koinViewModel
 
@@ -45,10 +44,10 @@ fun AttendanceScreen(
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        DefaultHeader(
-            title = "Attendance Section",
-            navigateBack = { onNavigateBack() },
-        )
+//        DefaultHeader(
+//            title = "Attendance Section",
+//            navigateBack = { onNavigateBack() },
+//        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
