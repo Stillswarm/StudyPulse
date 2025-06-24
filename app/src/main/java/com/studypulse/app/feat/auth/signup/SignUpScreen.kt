@@ -37,7 +37,6 @@ import org.koin.androidx.compose.koinViewModel
 fun SignupScreen(
     modifier: Modifier = Modifier,
     navigateToSignIn: () -> Unit,
-    navigateToHome: () -> Unit,
     vm: SignUpScreenViewModel = koinViewModel()
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -78,13 +77,13 @@ fun SignupScreen(
                 focusedIndicatorColor = Color.Transparent
             ),
             onValueChange = { vm.updateEmail(it) },
-            label = { Text("Email") }
+            label = { Text("Enter your email address") }
         )
 
         TextField(
             value = state.password,
             onValueChange = { vm.updatePassword(it) },
-            label = { Text("Password") },
+            label = { Text("Create your password") },
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp)),
@@ -109,7 +108,7 @@ fun SignupScreen(
 
         Button(
             onClick = {
-                vm.signUp(navigateToHome)
+                vm.signUp()
             },
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()

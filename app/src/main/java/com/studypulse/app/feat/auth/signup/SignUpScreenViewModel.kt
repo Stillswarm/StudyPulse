@@ -27,14 +27,13 @@ class SignUpScreenViewModel : ViewModel() {
         }
     }
 
-    fun signUp(navigateToHome: () -> Unit) {
+    fun signUp() {
         if (credentialsOk()) {
             auth.createUserWithEmailAndPassword(_state.value.email, _state.value.password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        val user = auth.currentUser
                         // Sign in success, navigate user to home screen
-                        navigateToHome()
+                        // navigation happens automatically (see: AppNavGraph, AppViewModel)
                     } else {
                         _state.update {
                             it.copy(error = task.exception?.message)
