@@ -37,4 +37,13 @@ object Route {
     data object AttendanceStatsSharedRoute
 
 
+    // AUTH ROUTES START
+
+    @Serializable
+    data object SignUpRoute
+
+    @Serializable
+    data object SignInRoute
+
+    // AUTH ROUTES END
 }

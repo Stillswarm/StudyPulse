@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398752624684",
+    "project_id": "studypulse-fca6c",
+    "storage_bucket": "studypulse-fca6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398752624684:android:e2e44559001556a81b2189",
+        "android_client_info": {
+          "package_name": "com.studypulse.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcRUvij1Z0C54fXFLvOUf07WJHOyKdlAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
