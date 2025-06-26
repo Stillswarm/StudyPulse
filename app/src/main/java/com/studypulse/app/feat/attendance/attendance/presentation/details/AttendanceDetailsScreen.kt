@@ -33,7 +33,7 @@ import com.studypulse.app.common.ui.components.LinearProgressBar
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 
 @Composable
 fun AttendanceDetailsScreen(

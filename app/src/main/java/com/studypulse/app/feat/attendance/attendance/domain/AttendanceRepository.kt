@@ -8,5 +8,5 @@ interface AttendanceRepository {
     fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>>
     suspend fun getAttendanceForPeriodAndDate(periodId: Long, date: LocalDate) : AttendanceRecord?
     fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>>
-    fun getAttendanceGroupedByCourse(): Flow<Map<Long, List<AttendanceRecord>>>
+    fun getAttendanceGroupedByCourse(): Flow<Map<String, List<AttendanceRecord>>>
 }

@@ -27,7 +27,7 @@ class AddPeriodScreenViewModel(
     )
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
-    private val courseId: Long = checkNotNull(savedStateHandle["courseId"])
+    private val courseId: String = checkNotNull(savedStateHandle["courseId"])
 
     fun onDayChange(newVal: Day) {
         _state.update { it.copy(selectedDay = newVal) }

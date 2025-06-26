@@ -13,13 +13,13 @@ object Route {
     data object AddCourseRoute
 
     @Serializable
-    data class CourseDetailRoute(val courseId: Long)
+    data class CourseDetailRoute(val courseId: String)
 
     @Serializable
-    data class AddPeriodRoute(val courseId: Long)
+    data class AddPeriodRoute(val courseId: String)
 
     @Serializable
-    data class ScheduleRoute(val courseId: Long?)
+    data class ScheduleRoute(val courseId: String?)
 
     @Serializable
     data object AttendanceCalendarRoute
@@ -31,7 +31,7 @@ object Route {
     data object AttendanceOverviewRoute
 
     @Serializable
-    data class AttendanceDetailsRoute(val courseId: Long)
+    data class AttendanceDetailsRoute(val courseId: String)
 
     @Serializable
     data object AttendanceStatsSharedRoute

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
-import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.schedule.data.Day
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,14 +24,14 @@ class ScheduleScreenViewModel(
     )
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
-    private val courseId: Long? = savedStateHandle["courseId"]
+    private val courseId: String? = savedStateHandle["courseId"]
 
     init {
         updateCourseId(courseId)
         loadSchedule()
     }
 
-    private fun updateCourseId(courseId: Long?) {
+    private fun updateCourseId(courseId: String?) {
         _state.update {
             it.copy(courseId = courseId)
         }

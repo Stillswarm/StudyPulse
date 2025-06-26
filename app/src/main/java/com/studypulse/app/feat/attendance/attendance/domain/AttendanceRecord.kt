@@ -9,7 +9,7 @@ import java.time.LocalDate
 data class AttendanceRecord(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val periodId: Long,
-    val courseId: Long,
+    val courseId: String,
     val date: LocalDate,
     val status: AttendanceStatus,
 )

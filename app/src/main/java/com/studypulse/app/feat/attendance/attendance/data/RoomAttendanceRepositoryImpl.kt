@@ -29,7 +29,7 @@ class RoomAttendanceRepositoryImpl(
         return attendanceDao.getAllAttendanceRecords()
     }
 
-    override fun getAttendanceGroupedByCourse(): Flow<Map<Long, List<AttendanceRecord>>> {
+    override fun getAttendanceGroupedByCourse(): Flow<Map<String, List<AttendanceRecord>>> {
         return attendanceDao.getAllAttendanceRecords().map { list -> list.groupBy { it.courseId } }
     }
 }

@@ -17,8 +17,8 @@ class RoomPeriodRepositoryImpl(
         periodDao.addNewPeriod(period)
     }
 
-    override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: Long, day: Day): Result<Flow<List<Period>>> {
-        return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId, day))
+    override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: String, day: Day): Result<Flow<List<Period>>> {
+        return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId.toLong(), day))
     }
 
     override suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>> {

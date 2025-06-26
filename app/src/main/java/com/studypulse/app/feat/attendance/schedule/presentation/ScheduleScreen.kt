@@ -48,7 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ScheduleScreen(
     onNavigateToFullSchedule: () -> Unit,
-    navigateToAddPeriod: (Long) -> Unit,
+    navigateToAddPeriod: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ScheduleScreenViewModel = koinViewModel()
 ) {

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,7 +47,7 @@ class AddCourseViewModel(
                     Course(
                         courseName = _state.value.courseName,
                         courseCode = _state.value.courseCode,
-                        instructor = _state.value.instructor
+                        instructor = _state.value.instructor,
                     )
                 )
                 onNavigateBack()

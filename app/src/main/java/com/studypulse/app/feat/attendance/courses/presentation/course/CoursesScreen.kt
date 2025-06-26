@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.presentation.course
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,14 +31,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.noRippleClickable
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoursesScreen(
     onAddNewCourse: () -> Unit,
-    onCourseDetails: (Long) -> Unit,
+    onCourseDetails: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CoursesScreenViewModel = koinViewModel()
 ) {
@@ -102,6 +103,7 @@ fun CoursesScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     state.value.courses.forEach { course ->
                         CourseItem(onCourseDetails, course)
+                        Log.d("CourseItem", "Course: ${course.id}")
                     }
                 }
             }
@@ -111,7 +113,7 @@ fun CoursesScreen(
 
 @Composable
 fun CourseItem(
-    onCourseDetails: (Long) -> Unit,
+    onCourseDetails: (String) -> Unit,
     course: Course,
     modifier: Modifier = Modifier
 ) {

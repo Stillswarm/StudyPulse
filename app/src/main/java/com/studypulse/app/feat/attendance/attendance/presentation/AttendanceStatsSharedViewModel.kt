@@ -3,7 +3,7 @@ package com.studypulse.app.feat.attendance.attendance.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,7 @@ class AttendanceStatsSharedViewModel(
             initialValue = emptyMap()
         )
 
-    val allCoursesMap: StateFlow<Map<Long, Course>> = flow {
+    val allCoursesMap: StateFlow<Map<String, Course>> = flow {
         val result = courseRepository.getAllCourses()
         if (result.isSuccess) {
             emitAll(

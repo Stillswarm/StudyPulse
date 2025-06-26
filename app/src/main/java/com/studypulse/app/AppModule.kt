@@ -1,6 +1,8 @@
 package com.studypulse.app
 
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.studypulse.app.feat.attendance.di.attendanceModule
@@ -16,7 +18,8 @@ val appModule = module {
         userModule,
     )
 
-    // Firestore
+    // Firebase
+    single<FirebaseAuth> { Firebase.auth }
     single<FirebaseFirestore> { Firebase.firestore }
 
     // DB

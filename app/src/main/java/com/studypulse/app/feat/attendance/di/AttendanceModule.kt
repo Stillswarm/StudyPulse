@@ -17,6 +17,7 @@ import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPer
 import com.studypulse.app.feat.attendance.attendance.presentation.home.AttendanceScreenViewModel
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreenViewModel
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
+import com.studypulse.app.feat.attendance.courses.data.FirebaseCourseRepositoryImpl
 import com.studypulse.app.feat.attendance.schedule.presentation.ScheduleScreenViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -27,10 +28,13 @@ val attendanceModule = module {
     single<PeriodDao> { get<StudyPulseDatabase>().periodDao() }
     single<AttendanceDao> { get<StudyPulseDatabase>().attendanceDao() }
 
-    // repository
+    // room repository
     single<CourseRepository> { RoomCourseRepositoryImpl(get()) }
     single<PeriodRepository> { RoomPeriodRepositoryImpl(get()) }
     single<AttendanceRepository> { RoomAttendanceRepositoryImpl(get()) }
+
+    // firebase repository
+    single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get()) }
 
     // VM
     viewModelOf(::CoursesScreenViewModel)
