@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceCalendar
 import com.studypulse.app.feat.attendance.calender.ui.components.DayCoursesBottomSheetContent
 import kotlinx.coroutines.launch

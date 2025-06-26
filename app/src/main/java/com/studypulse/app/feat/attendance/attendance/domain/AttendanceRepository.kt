@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.attendance.domain
 
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 

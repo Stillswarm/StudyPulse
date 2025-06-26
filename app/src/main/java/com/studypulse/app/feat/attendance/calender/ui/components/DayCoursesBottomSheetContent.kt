@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studypulse.app.common.ui.components.noRippleClickable
 import com.studypulse.app.common.util.toFullString
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.PeriodWithAttendance
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import java.time.LocalDate
