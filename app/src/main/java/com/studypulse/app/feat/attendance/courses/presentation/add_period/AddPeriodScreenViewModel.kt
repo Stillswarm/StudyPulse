@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.schedule.data.Day
-import com.studypulse.app.feat.attendance.schedule.data.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -27,7 +27,7 @@ class AddPeriodScreenViewModel(
     )
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
-    private val courseId: Long = checkNotNull(savedStateHandle["courseId"])
+    private val courseId: String = checkNotNull(savedStateHandle["courseId"])
 
     fun onDayChange(newVal: Day) {
         _state.update { it.copy(selectedDay = newVal) }

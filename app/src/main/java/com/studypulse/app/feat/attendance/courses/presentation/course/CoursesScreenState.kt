@@ -1,6 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.presentation.course
 
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 
 data class CoursesScreenState(
     val isLoading: Boolean,

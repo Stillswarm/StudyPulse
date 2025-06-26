@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.common.ui.components.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
-import com.studypulse.app.feat.attendance.schedule.data.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

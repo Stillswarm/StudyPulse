@@ -17,7 +17,7 @@ class CourseDetailsScreenViewModel(
     private val initialData = CourseDetailsState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
-    val courseId = savedStateHandle.get<Long>("courseId") ?: 0L
+    val courseId = savedStateHandle.get<String>("courseId") ?: ""
 
     init {
         viewModelScope.launch {

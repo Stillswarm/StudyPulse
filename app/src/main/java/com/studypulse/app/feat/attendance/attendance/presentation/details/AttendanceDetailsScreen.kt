@@ -30,10 +30,10 @@ import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.BrandPieChart
 import com.studypulse.app.common.ui.components.DefaultHeader
 import com.studypulse.app.common.ui.components.LinearProgressBar
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 
 @Composable
 fun AttendanceDetailsScreen(

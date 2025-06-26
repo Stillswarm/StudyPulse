@@ -1,17 +1,15 @@
-package com.studypulse.app.feat.attendance.schedule.data
+package com.studypulse.app.feat.attendance.courses.domain.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import java.time.LocalTime
 
-@Entity
 data class Period(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val courseId: Long,
+    val id: String = "",
+    val courseId: String,
     val courseName: String,
     val day: Day,
     val startTime: LocalTime,
     val endTime: LocalTime,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 enum class Day {

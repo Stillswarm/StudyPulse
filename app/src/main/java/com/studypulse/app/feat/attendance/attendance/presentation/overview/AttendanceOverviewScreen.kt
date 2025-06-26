@@ -29,16 +29,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.common.ui.components.noRippleClickable
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
-import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
-import com.studypulse.app.feat.attendance.courses.data.Course
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceOverviewScreen(
-    attendanceByCourse: Map<Long, List<AttendanceRecord>>,
-    onDetails: (Long) -> Unit,
+    attendanceByCourse: Map<String, List<AttendanceRecord>>,
+    onDetails: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AttendanceStatsSharedViewModel
 ) {
@@ -78,7 +78,7 @@ fun AttendanceOverviewScreen(
 fun AttendanceOverviewItem(
     attendanceRecords: List<AttendanceRecord>,
     course: Course,
-    onDetails: (Long) -> Unit,
+    onDetails: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val cancelled = remember(attendanceRecords) {
