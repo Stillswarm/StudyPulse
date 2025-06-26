@@ -32,7 +32,7 @@ import com.studypulse.app.common.util.toFullString
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.PeriodWithAttendance
-import com.studypulse.app.feat.attendance.schedule.data.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import java.time.LocalDate
 
 @Composable

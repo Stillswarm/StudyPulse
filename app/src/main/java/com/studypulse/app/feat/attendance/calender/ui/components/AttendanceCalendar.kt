@@ -34,7 +34,7 @@ import com.studypulse.app.common.util.CalendarUtils.buildMonthGrid
 import com.studypulse.app.common.util.DayCellInfo
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.getAbbreviatedName
-import com.studypulse.app.feat.attendance.schedule.data.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import java.time.LocalDate
 import java.time.YearMonth
 

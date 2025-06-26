@@ -1,12 +1,13 @@
 package com.studypulse.app.feat.attendance.schedule.presentation
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.schedule.data.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -55,6 +56,7 @@ class ScheduleScreenViewModel(
                     .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "Failed to load schedule")) }
                     .onSuccess { periodsFlow ->
                         periodsFlow.collect { periods ->
+                            Log.d("fcuk", "Received $periods")
                             _state.update {
                                 it.copy(schedule = periods)
                             }

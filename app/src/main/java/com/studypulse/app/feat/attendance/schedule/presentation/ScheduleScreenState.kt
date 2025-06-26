@@ -1,7 +1,7 @@
 package com.studypulse.app.feat.attendance.schedule.presentation
 
-import com.studypulse.app.feat.attendance.schedule.data.Day
-import com.studypulse.app.feat.attendance.schedule.data.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Period
 
 data class ScheduleScreenState(
     val currentDay: Day,

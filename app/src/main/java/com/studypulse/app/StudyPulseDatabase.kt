@@ -11,7 +11,7 @@ import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRecord
 import com.studypulse.app.feat.attendance.courses.domain.CourseDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseEntity
-import com.studypulse.app.feat.attendance.schedule.data.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.PeriodEntity
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -40,7 +40,7 @@ class Converters {
 /**
  * Initialize database, provide entities, and declare DAOs
  */
-@Database(entities = [CourseEntity::class, Period::class, AttendanceRecord::class], version = 7, exportSchema = false)
+@Database(entities = [CourseEntity::class, PeriodEntity::class, AttendanceRecord::class], version = 7, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class StudyPulseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao

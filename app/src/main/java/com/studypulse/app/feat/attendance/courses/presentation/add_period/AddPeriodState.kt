@@ -1,6 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.presentation.add_period
 
-import com.studypulse.app.feat.attendance.schedule.data.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 
 data class AddPeriodState(
     val selectedDay: Day,

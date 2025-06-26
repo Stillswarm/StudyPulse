@@ -8,7 +8,7 @@ import java.time.LocalDate
 @Entity
 data class AttendanceRecord(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val periodId: Long,
+    val periodId: String,
     val courseId: String,
     val date: LocalDate,
     val status: AttendanceStatus,

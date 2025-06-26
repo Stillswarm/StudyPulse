@@ -40,8 +40,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.getAbbreviatedName
 import com.studypulse.app.common.util.to12HourString
-import com.studypulse.app.feat.attendance.schedule.data.Day
-import com.studypulse.app.feat.attendance.schedule.data.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

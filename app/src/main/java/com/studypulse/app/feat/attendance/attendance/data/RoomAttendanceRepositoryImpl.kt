@@ -19,10 +19,10 @@ class RoomAttendanceRepositoryImpl(
     }
 
     override suspend fun getAttendanceForPeriodAndDate(
-        periodId: Long,
+        periodId: String,
         date: LocalDate
     ): AttendanceRecord? {
-        return attendanceDao.getAttendanceForPeriod(periodId, date)
+        return attendanceDao.getAttendanceForPeriod(periodId.toLong(), date)
     }
 
     override fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>> {
