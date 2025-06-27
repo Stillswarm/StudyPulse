@@ -142,11 +142,13 @@ fun AttendanceStatusButtonsRow(
     onPresent: () -> Unit,
     onAbsent: () -> Unit,
     onCancelled: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var presentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.PRESENT) Color.Gray else Color.Green) }
     var absentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.ABSENT) Color.Gray else Color.Red) }
     var cancelledColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.CANCELLED) Color.Gray else Color.DarkGray) }
     Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {

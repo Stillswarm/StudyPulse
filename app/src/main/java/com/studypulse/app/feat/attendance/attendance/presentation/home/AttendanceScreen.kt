@@ -1,30 +1,45 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.studypulse.app.NavigationDrawerController
+import com.studypulse.app.R
+import com.studypulse.app.common.ui.components.AppTopBar
+import com.studypulse.app.common.ui.components.gradientFill
 import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
+import com.studypulse.app.ui.theme.Gold
+import com.studypulse.app.ui.theme.Purple
+import com.studypulse.app.ui.theme.WarmWhite
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -36,97 +51,281 @@ fun AttendanceScreen(
     modifier: Modifier = Modifier,
     viewModel: AttendanceScreenViewModel = koinViewModel()
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    val scope = rememberCoroutineScope()
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
-//        DefaultHeader(
-//            title = "Attendance Section",
-//            navigateBack = { onNavigateBack() },
-//        )
-        Box(
+        Column {
+            AppTopBar(
+                backgroundColor = Gold,
+                title = "Track Attendance",
+                navigationIcon = R.drawable.logo_pulse,
+                onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
+                actionIcon = R.drawable.ic_profile,
+                onActionClick = { },
+                foregroundGradient = Brush.linearGradient(
+                    colorStops = arrayOf(
+                        Pair(0f, Purple),
+                        Pair(59f, Color.Black)
+                    )
+                ),
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Quick Stats",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.01).sp,
+                        )
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                StatBox(
+                                    title = "Classes Unmarked",
+                                    value = 21,
+                                    onClick = onNavigateToAttendanceCalendar,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatBox(
+                                    title = "100% Attendance",
+                                    value = 1,
+                                    onClick = onNavigateToAttendanceOverview,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                StatBox(
+                                    title = "Low Attendance",
+                                    value = 2,
+                                    onClick = onNavigateToAttendanceOverview,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatBox(
+                                    title = "Minimum Required",
+                                    value = 75,
+                                    onClick = onNavigateToCourseList,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Text(
+                            text = "Quick Attendance",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.01).sp,
+                        )
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(5, key = { it }) {
+                                QuickAttendanceBox(courseCode = "Course $it")
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Text(
+                            text = "Report",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.01).sp,
+                        )
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(
+                                12.dp,
+                                alignment = Alignment.CenterHorizontally
+                            )
+                        ) {
+                            items(5) {
+                                VerticalGraphBar(height = Math.random().toFloat())
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun StatBox(
+    title: String,
+    value: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth(0.5f)
+            .fillMaxWidth(0.95f)
+            .height(120.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(WarmWhite)
+            .border(2.dp, Gold, RoundedCornerShape(8.dp))
+            .noRippleClickable { onClick() }
+    ) {
+        Text(
+            text = value.toString(),
+            fontSize = 112.sp,
+            fontStyle = FontStyle.Italic,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .offset((-16).dp, (20).dp)
+                .gradientFill(
+                    Brush.linearGradient(
+                        colorStops = arrayOf(
+                            Pair(0f, Purple),
+                            Pair(0.99f, Gold.copy(alpha = 0.75f))
+                        )
+                    )
+                )
+        )
+
+        Text(
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.05).sp,
+            modifier = Modifier
+                .fillMaxWidth(0.75f)
+                .align(Alignment.TopEnd),
+            minLines = 2,
+            maxLines = 2,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun QuickAttendanceBox(
+    courseCode: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .width(160.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(WarmWhite)
+            .border(1.dp, Gold, RoundedCornerShape(8.dp))
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-                .noRippleClickable { onNavigateToCourseList() },
-            contentAlignment = Alignment.Center
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Text(
+                text = "MA-2001",
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = "Thu, June 26",
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = "9:00 - 12:30",
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            AttendanceStatusButtonsRow(
+                attendanceRecord = null,
+                onPresent = { },
+                onAbsent = { },
+                onCancelled = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+        }
+    }
+}
+
+@Composable
+fun VerticalGraphBar(
+    height: Float,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
+                .height(150.dp)
+                .width(48.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .fillMaxWidth()
+                    .fillMaxHeight(height)
+                    .background(Gold)
+                    .align(Alignment.BottomCenter)
             ) {
                 Text(
-                    text = "My Courses",
-                    fontSize = 24.sp,
-                )
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                    contentDescription = "Go to next section",
-                    modifier = Modifier.size(64.dp),
+                    text = "${(height * 100).toInt()}",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 4.dp)
                 )
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-                .noRippleClickable { onNavigateToAttendanceCalendar() },
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Attendance Calendar",
-                    fontSize = 24.sp,
-                )
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                    contentDescription = "Go to next section",
-                    modifier = Modifier.size(64.dp),
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-                .noRippleClickable { onNavigateToAttendanceOverview() },
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Attendance Overview",
-                    fontSize = 24.sp,
-                )
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                    contentDescription = "Go to next section",
-                    modifier = Modifier.size(64.dp),
-                )
-            }
-        }
+        Text(
+            text = "MA-2001",
+        )
     }
 }
