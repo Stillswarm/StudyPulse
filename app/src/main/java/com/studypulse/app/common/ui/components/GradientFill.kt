@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 
 fun Modifier.gradientFill(
-    gradient: Brush,
+    gradient: Brush?,
 ) =
     this.then(
         Modifier
@@ -18,11 +18,13 @@ fun Modifier.gradientFill(
             .drawWithCache {
                 onDrawWithContent {
                     drawContent()
-                    drawRect(
-                        brush = gradient,
-                        size = size,
-                        blendMode = BlendMode.SrcIn
-                    )
+                    if (gradient != null) {
+                        drawRect(
+                            brush = gradient,
+                            size = size,
+                            blendMode = BlendMode.SrcIn
+                        )
+                    }
                 }
             }
     )

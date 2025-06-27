@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.studypulse.app.feat.user.domain.User
+import com.studypulse.app.feat.user.domain.model.User
 import com.studypulse.app.feat.user.domain.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +43,6 @@ class SignUpScreenViewModel(
                             userRepository.addUser(
                                 User(
                                     email = _state.value.email,
-                                    password = _state.value.password,
                                     id = Firebase.auth.currentUser!!.uid
                                 )
                             )

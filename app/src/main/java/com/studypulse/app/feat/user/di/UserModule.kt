@@ -2,8 +2,12 @@ package com.studypulse.app.feat.user.di
 
 import com.studypulse.app.feat.user.data.FirebaseUserRepositoryImpl
 import com.studypulse.app.feat.user.domain.UserRepository
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import com.studypulse.app.feat.user.presentation.ProfileScreenViewModel
 
 val userModule = module {
-    single<UserRepository> { FirebaseUserRepositoryImpl(get()) }
+    single<UserRepository> { FirebaseUserRepositoryImpl(get(), get()) }
+
+    viewModelOf(::ProfileScreenViewModel)
 }

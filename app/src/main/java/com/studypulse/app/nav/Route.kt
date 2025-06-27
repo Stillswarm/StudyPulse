@@ -45,5 +45,8 @@ object Route {
     @Serializable
     data object SignInRoute
 
+    @Serializable
+    data object ProfileRoute
+
     // AUTH ROUTES END
 }
