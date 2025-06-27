@@ -8,6 +8,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.androidx.compose.koinViewModel
 
 val LocalCurrentUser = compositionLocalOf<String?> { null }
@@ -27,5 +28,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        FirebaseFirestore.setLoggingEnabled(true)
     }
 }

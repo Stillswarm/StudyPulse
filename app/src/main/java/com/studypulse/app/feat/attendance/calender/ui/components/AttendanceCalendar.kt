@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.CalendarUtils.buildMonthGrid
 import com.studypulse.app.common.util.DayCellInfo
 import com.studypulse.app.common.util.convertToSentenceCase

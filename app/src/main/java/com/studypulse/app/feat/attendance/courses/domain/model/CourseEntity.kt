@@ -11,6 +11,7 @@ data class CourseEntity(
     val courseName: String,
     val courseCode: String,
     val instructor: String,
+    val semesterId: String,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -19,6 +20,7 @@ fun CourseEntity.toDomain() = Course(
     courseName = courseName,
     courseCode = courseCode,
     instructor = instructor,
+    semesterId = semesterId,
     createdAt = createdAt
 )
 
@@ -28,5 +30,6 @@ fun Course.toEntity() = CourseEntity(
     courseCode = courseCode,
     instructor = instructor,
     createdAt = createdAt,
-    remoteId = id
+    remoteId = id,
+    semesterId = semesterId
 )

@@ -5,5 +5,6 @@ data class Course(
     val courseName: String,
     val courseCode: String,
     val instructor: String,
+    val semesterId: String,
     val createdAt: Long = System.currentTimeMillis(),
 )

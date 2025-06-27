@@ -16,11 +16,27 @@ class FirebaseSemesterRepositoryImpl(
     private fun getUserId() =
         auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
-    override suspend fun addSemester(semester: Semester) =
+    override suspend fun addActiveSemester(semester: Semester) =
         runCatching {
             val userId = getUserId()
-            db.collection("users").document(userId).collection("semesters").add(semester.toDto())
+            val s = semester.copy(createdAt = System.currentTimeMillis())
+            // First, set isCurrent = false for all existing semesters
+            db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .whereEqualTo("isCurrent", true)
+                .get()
                 .await()
+                .documents
+                .forEach { document ->
+                    document.reference.update("isCurrent", false).await()
+                }
+            // Then, add the new semester with isCurrent = true
+            val docRef =
+                db.collection("users").document(userId).collection("semesters").add(s.toDto())
+                .await()
+            // Update the document with its own ID
+            docRef.update("id", docRef.id).await()
             Unit
         }
 

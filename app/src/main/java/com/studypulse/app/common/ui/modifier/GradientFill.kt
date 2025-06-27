@@ -1,4 +1,4 @@
-package com.studypulse.app.common.ui.components
+package com.studypulse.app.common.ui.modifier
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache

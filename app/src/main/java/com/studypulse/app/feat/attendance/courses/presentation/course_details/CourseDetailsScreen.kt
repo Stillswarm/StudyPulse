@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

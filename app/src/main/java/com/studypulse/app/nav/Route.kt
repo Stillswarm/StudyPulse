@@ -49,4 +49,8 @@ object Route {
     data object ProfileRoute
 
     // AUTH ROUTES END
+
+    @Serializable
+    data object AddSemesterRoute
+
 }

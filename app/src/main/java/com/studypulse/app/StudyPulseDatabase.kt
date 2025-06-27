@@ -40,7 +40,7 @@ class Converters {
 /**
  * Initialize database, provide entities, and declare DAOs
  */
-@Database(entities = [CourseEntity::class, PeriodEntity::class, AttendanceRecordEntity::class], version = 7, exportSchema = false)
+@Database(entities = [CourseEntity::class, PeriodEntity::class, AttendanceRecordEntity::class], version = 8, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class StudyPulseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao

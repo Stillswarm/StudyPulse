@@ -48,6 +48,7 @@ class AddCourseViewModel(
                         courseName = _state.value.courseName,
                         courseCode = _state.value.courseCode,
                         instructor = _state.value.instructor,
+                        semesterId = ""
                     )
                 )
                 onNavigateBack()

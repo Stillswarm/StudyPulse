@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import org.koin.androidx.compose.koinViewModel

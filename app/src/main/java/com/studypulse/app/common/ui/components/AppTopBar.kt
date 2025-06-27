@@ -19,10 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.studypulse.app.common.ui.modifier.gradientFill
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 
 @Composable
 fun AppTopBar(
@@ -36,6 +39,7 @@ fun AppTopBar(
     modifier: Modifier = Modifier,
     titleColor: Color = Color.Unspecified,
 ) {
+    SetStatusBarColor(backgroundColor.luminance() > 0.5)
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -57,10 +61,10 @@ fun AppTopBar(
                 painter = painterResource(id = navigationIcon),
                 contentDescription = "nav icon",
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(36.dp)
                     .noRippleClickable { onNavigationClick() }
                     .gradientFill(foregroundGradient),
-                tint = Color.Unspecified
+                tint = titleColor
             )
 
             Text(
@@ -76,13 +80,13 @@ fun AppTopBar(
                     painter = painterResource(id = actionIcon),
                     contentDescription = "nav icon",
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(36.dp)
                         .noRippleClickable { onActionClick() }
                         .gradientFill(foregroundGradient),
                     tint = Color.Unspecified
                 )
             } else {
-                Box(modifier = Modifier.size(48.dp))
+                Box(modifier = Modifier.size(36.dp))
             }
         }
     }

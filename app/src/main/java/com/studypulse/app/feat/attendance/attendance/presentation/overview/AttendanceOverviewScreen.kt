@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel

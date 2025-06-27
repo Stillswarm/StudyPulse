@@ -40,8 +40,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.ui.components.gradientFill
-import com.studypulse.app.common.ui.components.noRippleClickable
+import com.studypulse.app.common.ui.modifier.gradientFill
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.WarmWhite
