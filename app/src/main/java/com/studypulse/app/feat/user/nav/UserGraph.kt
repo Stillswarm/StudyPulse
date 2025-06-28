@@ -8,6 +8,8 @@ import com.studypulse.app.nav.Route
 
 fun NavGraphBuilder.userNavGraph(navController: NavController) {
     composable<Route.ProfileRoute> {
-        ProfileScreen()
+        ProfileScreen(
+            onAddNewSemester = { navController.navigate(Route.AddSemesterRoute) }
+        )
     }
 }

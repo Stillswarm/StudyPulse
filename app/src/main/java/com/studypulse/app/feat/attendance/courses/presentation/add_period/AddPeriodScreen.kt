@@ -3,42 +3,43 @@ package com.studypulse.app.feat.attendance.courses.presentation.add_period
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.common.ui.modifier.noRippleClickable
+import com.studypulse.app.R
+import com.studypulse.app.common.ui.components.AppTopBar
+import com.studypulse.app.common.ui.components.TimeInputDialog
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.LightGray
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,29 +50,21 @@ fun AddPeriodScreen(
     viewModel: AddPeriodScreenViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Add Course") },
-                navigationIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .noRippleClickable { onNavigateBack() }
-                    )
-                }
+    Box(
+        modifier = modifier.fillMaxSize()) {
+        Column {
+            AppTopBar(
+                backgroundColor = GreenDark,
+                foregroundGradient = null,
+                title = "Add Period",
+                titleColor = Color.White,
+                navigationIcon = R.drawable.ic_arrow_left,
+                onNavigationClick = onNavigateBack,
+                actionIcon = null,
+                onActionClick = null
             )
-        }
-    ) { innerPadding ->
 
-        Box(
-            modifier = modifier
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Day",
@@ -85,8 +78,9 @@ fun AddPeriodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp),
-                        shape = RectangleShape,
-                        onClick = { expanded = !expanded }
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        onClick = { expanded = !expanded },
+                        contentPadding = PaddingValues(16.dp)
                     ) {
                         Column {
                             Row(
@@ -95,6 +89,8 @@ fun AddPeriodScreen(
                             ) {
                                 Text(
                                     text = state.selectedDay.name.convertToSentenceCase(),
+                                    fontSize = 16.sp,
+                                    color = Color.Black
                                 )
 
                                 Icon(
@@ -110,15 +106,18 @@ fun AddPeriodScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 12.dp)
                             ) {
-                                Day.entries.forEach { day ->
+                                Day.entries.forEachIndexed { index, day ->
                                     DropdownMenuItem(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = { Text(day.name.convertToSentenceCase()) },
+                                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                        text = { Text(day.name.convertToSentenceCase(), fontSize = 16.sp) },
                                         onClick = {
                                             viewModel.onDayChange(day)
                                             expanded = false
                                         }
                                     )
+                                    if (index < Day.entries.size - 1) {
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
                         }
@@ -132,19 +131,19 @@ fun AddPeriodScreen(
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    
-                    val timePickerState = rememberTimePickerState(
+
+                    val startTimePickerState = rememberTimePickerState(
                         initialHour = state.startTimeHour,
-                        initialMinute = state.startTimeHour,
-                        is24Hour = true,
+                        initialMinute = state.startTimeMinute,
+                        is24Hour = true
                     )
-                    TimeInput(
-                        state = timePickerState,
-                        modifier = Modifier.fillMaxWidth()
+                    TimeInputDialog(
+                        timePickerState = startTimePickerState,
+                        onTimeChange = { h, m ->
+                            viewModel.onStartTimeChange(h, m)
+                        },
+                        containerColor = LightGray
                     )
-                    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
-                        viewModel.onStartTimeChange(timePickerState.hour, timePickerState.minute)
-                    }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -155,18 +154,18 @@ fun AddPeriodScreen(
                         fontWeight = FontWeight.SemiBold,
                     )
 
-                    val timePickerState = rememberTimePickerState(
+                    val endTimePickerState = rememberTimePickerState(
                         initialHour = state.endTimeHour,
                         initialMinute = state.endTimeMinute,
                         is24Hour = true
                     )
-                    TimeInput(
-                        state = timePickerState,
-                        modifier = Modifier.fillMaxWidth()
+                    TimeInputDialog(
+                        timePickerState = endTimePickerState,
+                        onTimeChange = { h, m ->
+                            viewModel.onEndTimeChange(h, m)
+                        },
+                        containerColor = LightGray
                     )
-                    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
-                        viewModel.onEndTimeChange(timePickerState.hour, timePickerState.minute)
-                    }
                 }
 
                 Button(
@@ -176,14 +175,15 @@ fun AddPeriodScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenDark)
                 ) {
                     Text(
                         text = "Add Period",
                         fontSize = 16.sp,
+                        color = Color.White,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(vertical = 12.dp)
+                        modifier = Modifier.padding(8.dp)
                     )
                 }
             }

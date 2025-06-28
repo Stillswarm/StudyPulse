@@ -13,7 +13,7 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseDao
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseViewModel
+import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseScreenViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPeriodScreenViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.course.CoursesScreenViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.course_details.CourseDetailsScreenViewModel
@@ -40,7 +40,7 @@ val attendanceModule = module {
     // VM
     viewModelOf(::CoursesScreenViewModel)
     viewModelOf(::ScheduleScreenViewModel)
-    viewModelOf(::AddCourseViewModel)
+    viewModelOf(::AddCourseScreenViewModel)
     viewModelOf(::CourseDetailsScreenViewModel)
     viewModelOf(::AddPeriodScreenViewModel)
     viewModelOf(::AttendanceScreenViewModel)

@@ -7,6 +7,7 @@ data class AddCourseScreenState(
     val courseCode: String = "",
     val instructor: String = "",
     val activeSemester: Semester? = null,
+    val allSemesters: List<Semester> = emptyList(),
     val isLoading: Boolean = false,
     val errorMsg: String? = null,
 )

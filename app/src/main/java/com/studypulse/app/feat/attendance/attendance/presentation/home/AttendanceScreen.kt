@@ -44,7 +44,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AttendanceScreen(
-    onNavigateBack: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToCourseList: () -> Unit,
     onNavigateToAttendanceCalendar: () -> Unit,
     onNavigateToAttendanceOverview: () -> Unit,
@@ -62,7 +62,7 @@ fun AttendanceScreen(
                 navigationIcon = R.drawable.logo_pulse,
                 onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
                 actionIcon = R.drawable.ic_profile,
-                onActionClick = { },
+                onActionClick = onNavigateToProfile,
                 foregroundGradient = Brush.linearGradient(
                     colorStops = arrayOf(
                         Pair(0f, Purple),

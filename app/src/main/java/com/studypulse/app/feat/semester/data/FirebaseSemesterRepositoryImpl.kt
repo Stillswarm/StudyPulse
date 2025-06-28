@@ -34,7 +34,7 @@ class FirebaseSemesterRepositoryImpl(
             // Then, add the new semester with current = true
             val docRef =
                 db.collection("users").document(userId).collection("semesters").add(s.toDto())
-                .await()
+                    .await()
             // Update the document with its own ID
             docRef.update("id", docRef.id).await()
             Unit
@@ -43,6 +43,17 @@ class FirebaseSemesterRepositoryImpl(
     override suspend fun markCurrent(semesterId: String) =
         kotlin.runCatching {
             val userId = getUserId()
+            db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .whereEqualTo("current", true)
+                .get()
+                .await()
+                .documents
+                .forEach { document ->
+                    document.reference.update("current", false).await()
+                }
+
             db.collection("users")
                 .document(userId)
                 .collection("semesters")

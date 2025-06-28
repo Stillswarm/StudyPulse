@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.user.presentation
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -39,17 +42,25 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
+import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.app.common.ui.components.AppTopBar
+import com.studypulse.app.common.ui.components.SemesterBottomSheetItem
 import com.studypulse.app.common.ui.modifier.gradientFill
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
+import com.studypulse.app.ui.theme.LightGray
 import com.studypulse.app.ui.theme.WarmWhite
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, vm: ProfileScreenViewModel = koinViewModel()) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    onAddNewSemester: () -> Unit,
+    vm: ProfileScreenViewModel = koinViewModel()
+) {
     val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -57,7 +68,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, vm: ProfileScreenViewModel = ko
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                vm.fetchUser()
+                vm.fetchInitialData()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -71,7 +82,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, vm: ProfileScreenViewModel = ko
             .fillMaxSize()
             .background(WarmWhite)
     ) {
-        if (state.user == null) {
+        if (!state.isLoading && state.user == null) {
             Text(
                 text = "Unable to fetch profile data. Please try again later.",
                 fontSize = 24.sp,
@@ -189,8 +200,9 @@ fun ProfileScreen(modifier: Modifier = Modifier, vm: ProfileScreenViewModel = ko
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = Color.White,
-                                focusedContainerColor = Color.White
+                                unfocusedContainerColor = LightGray,
+                                focusedContainerColor = Color.White,
+                                disabledContainerColor = LightGray
                             )
                         )
 
@@ -226,10 +238,52 @@ fun ProfileScreen(modifier: Modifier = Modifier, vm: ProfileScreenViewModel = ko
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = Color.White,
+                                unfocusedContainerColor = LightGray,
+                                disabledContainerColor = LightGray,
                                 focusedContainerColor = Color.White
                             )
                         )
+
+                        state.currentSemester?.let { sem ->
+                            Text(
+                                text = "Current Semester",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            val semSheetState = rememberModalBottomSheetState()
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(LightGray)
+                            ) {
+                                SemesterBottomSheetItem(
+                                    selectedSemester = sem.id,
+                                    semester = sem,
+                                    onSemesterClick = {
+                                        Log.d("fcuk", "here 2")
+                                        scope.launch { semSheetState.show() }
+                                    },
+                                    buttonColor = DarkGray,
+                                )
+                            }
+
+                            AllSemestersBottomSheet(
+                                sheetState = semSheetState,
+                                semesterList = state.semesterList,
+                                onSemesterClick = {
+                                    scope.launch { semSheetState.hide() }
+                                    vm.updateCurrentSemester(it)
+                                },
+                                buttonColor = DarkGray,
+                                onDismiss = { scope.launch { semSheetState.hide() } },
+                                selectedSemesterId = sem.id,
+                                onAddSemester = onAddNewSemester
+                            )
+                        }
                     }
                 }
 

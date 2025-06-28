@@ -4,15 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
-import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.semester.domain.SemesterRepository
+import com.studypulse.app.feat.semester.domain.model.Semester
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
-class AddCourseViewModel(
+class AddCourseScreenViewModel(
     private val courseRepository: CourseRepository,
     private val semesterRepository: SemesterRepository
 ) : ViewModel() {
@@ -21,7 +23,7 @@ class AddCourseViewModel(
     val state = _state.asStateFlow()
 
     init {
-        loadCurrentSemester()
+        loadAllSemesters()
     }
 
     fun onCourseNameChange(newVal: String) {
@@ -72,6 +74,31 @@ class AddCourseViewModel(
                 .onSuccess { a ->
                     if (a == null) _state.update { it.copy(errorMsg = "No active semester.") }
                     _state.update { it.copy(activeSemester = a) }
+                }
+            _state.update { it.copy(isLoading = false) }
+        }
+    }
+
+    fun updateCurrentSemester(new: Semester) {
+        if (new == _state.value.activeSemester) return
+        viewModelScope.launch {
+            if (new.endDate > LocalDate.now()) {
+                SnackbarController.sendEvent(SnackbarEvent("Active semester cannot be in the past"))
+            } else {
+                semesterRepository.markCurrent(new.id).onSuccess { _state.update { it.copy(activeSemester = new) } }
+            }
+        }
+    }
+    
+    fun loadAllSemesters() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            semesterRepository.getAllSemesters()
+                .onFailure { e ->
+                    _state.update { it.copy(errorMsg = e.message) }
+                }
+                .onSuccess { a ->
+                    _state.update { it.copy(allSemesters = a, activeSemester = a.first { it.isCurrent }) }
                 }
             _state.update { it.copy(isLoading = false) }
         }

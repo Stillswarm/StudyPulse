@@ -39,7 +39,8 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
 
     composable<Route.AddCourseRoute> {
         AddCourseScreen(
-            onNavigateBack = { navController.navigateUp() }
+            onNavigateBack = { navController.navigateUp() },
+            onNavigateToAddSemester = { navController.navigate(Route.AddSemesterRoute) }
         )
     }
 
@@ -73,7 +74,7 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
 
     composable<Route.AttendanceRoute> {
         AttendanceScreen(
-            onNavigateBack = { navController.navigateUp() },
+            onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
             onNavigateToCourseList = { navController.navigate(Route.CourseRoute) },
             onNavigateToAttendanceCalendar = { navController.navigate(Route.AttendanceCalendarRoute) },
             onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceStatsSharedRoute) }

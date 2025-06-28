@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +40,7 @@ import com.studypulse.app.common.util.toFullString
 import com.studypulse.app.common.util.toLocalDate
 import com.studypulse.app.feat.semester.domain.model.SemesterName
 import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenLight
 import com.studypulse.app.ui.theme.LightGray
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -239,6 +241,21 @@ fun AddSemesterScreen(
                     }
                 }
 
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(GreenLight)
+                ) {
+                    Text(
+                        text = "This semester will become your CURRENT semester, after adding.",
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
                 // errors, if any
                 state.errorMsg?.let {
                     Text(
@@ -248,6 +265,7 @@ fun AddSemesterScreen(
                     )
                 }
 
+                // submit button
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -260,7 +278,10 @@ fun AddSemesterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .noRippleClickable { vm.submit() },
+                            .noRippleClickable {
+                                vm.submit()
+                                onNavigateBack()
+                            },
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
