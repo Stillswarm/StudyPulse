@@ -8,6 +8,7 @@ data class AddSemesterScreenState(
     val year: Int? = null,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
+    val minAttendance: Int? = null,
     val isLoading: Boolean = false,
     val errorMsg: String? = null
 )

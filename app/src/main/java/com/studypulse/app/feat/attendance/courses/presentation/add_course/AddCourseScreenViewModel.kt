@@ -56,12 +56,17 @@ class AddCourseScreenViewModel(
                         courseName = _state.value.courseName,
                         courseCode = _state.value.courseCode,
                         instructor = _state.value.instructor,
-                        semesterId = _state.value.activeSemester?.id ?: ""
+                        semesterId = _state.value.activeSemester?.id ?: "",
+                        minAttendance = _state.value.minAttendance ?: 0
                     )
                 )
                 onNavigateBack()
             }
         }
+    }
+
+    fun updateMinAttendance(new: Int) {
+        _state.update { it.copy(minAttendance = new, errorMsg = null) }
     }
 
     private fun loadCurrentSemester() {

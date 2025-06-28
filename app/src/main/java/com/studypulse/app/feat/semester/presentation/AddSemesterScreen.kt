@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -210,6 +214,22 @@ fun AddSemesterScreen(
                     }
                 }
 
+                // min required attendance
+                TextField(
+                    value = state.minAttendance?.toString() ?: "",
+                    onValueChange = { vm.updateMinAttendance(it.toInt()) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                    colors = TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
+                        focusedContainerColor = LightGray
+                    )
+                )
+
                 // select semester start - end range
                 Box(
                     modifier = Modifier
@@ -241,6 +261,7 @@ fun AddSemesterScreen(
                     }
                 }
 
+                // info box
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

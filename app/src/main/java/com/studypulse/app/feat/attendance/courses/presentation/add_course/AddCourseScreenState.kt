@@ -6,6 +6,7 @@ data class AddCourseScreenState(
     val courseName: String = "",
     val courseCode: String = "",
     val instructor: String = "",
+    val minAttendance: Int? = null,
     val activeSemester: Semester? = null,
     val allSemesters: List<Semester> = emptyList(),
     val isLoading: Boolean = false,

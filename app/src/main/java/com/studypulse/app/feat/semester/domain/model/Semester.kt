@@ -8,6 +8,7 @@ data class Semester(
     val year: Int,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    val minAttendance: Int,
     val isCurrent: Boolean,
     val createdAt: Long = System.currentTimeMillis()
 )

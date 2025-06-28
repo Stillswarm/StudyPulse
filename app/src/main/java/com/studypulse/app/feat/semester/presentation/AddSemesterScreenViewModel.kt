@@ -45,17 +45,26 @@ class AddSemesterScreenViewModel(
                         year = s.year!!,
                         startDate = s.startDate!!,
                         endDate = s.endDate!!,
-                        isCurrent = true
+                        isCurrent = true,
+                        minAttendance = s.minAttendance!!
                     )
                 )
             }
         }
     }
 
+    fun updateMinAttendance(new: Int) {
+        _state.update { it.copy(minAttendance = new, errorMsg = null) }
+    }
+
     private fun validateData(): Boolean {
         val s = _state.value
-        if (s.name == null || s.startDate == null || s.endDate == null || s.year == null) {
+        if (s.name == null || s.startDate == null || s.endDate == null || s.year == null || s.minAttendance == null) {
             _state.update { it.copy(errorMsg = "All fields are required") }
+            return false
+        }
+        if (s.minAttendance < 0 || s.minAttendance > 100) {
+            _state.update { it.copy(errorMsg = "Min attendance must be between 0 and 100") }
             return false
         }
         if (s.endDate.isBefore(LocalDate.now())) {

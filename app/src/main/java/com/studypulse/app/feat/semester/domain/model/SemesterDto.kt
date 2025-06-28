@@ -8,6 +8,7 @@ data class SemesterDto(
     val year: Int? = null,
     val startDate: String? = null,
     val endDate: String? = null,
+    val minAttendance: Int = 0,
     val current: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
@@ -20,7 +21,8 @@ fun Semester.toDto() =
         startDate = startDate.toString(),
         endDate = endDate.toString(),
         current = isCurrent,
-        createdAt = createdAt
+        createdAt = createdAt,
+        minAttendance = minAttendance
     )
 
 fun SemesterDto.toDomain() =
@@ -31,5 +33,6 @@ fun SemesterDto.toDomain() =
         startDate = LocalDate.parse(startDate),
         endDate = LocalDate.parse(endDate),
         isCurrent = current,
-        createdAt = createdAt
+        createdAt = createdAt,
+        minAttendance = minAttendance
     )
