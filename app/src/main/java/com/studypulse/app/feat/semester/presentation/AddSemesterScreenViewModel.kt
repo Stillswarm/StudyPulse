@@ -65,18 +65,4 @@ class AddSemesterScreenViewModel(
 
         return true
     }
-
-//    private fun loadSemesters() {
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true) }
-//            semesterRepository.getAllSemesters()
-//                .onFailure { e ->
-//                    _state.update { it.copy(errorMsg = e.message) }
-//                }
-//                .onSuccess { sl ->
-//                    _state.update { it.copy(semesterList = sl) }
-//                }
-//            _state.update { it.copy(isLoading = false) }
-//        }
-//    }
 }

@@ -6,17 +6,23 @@ import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddCourseViewModel(
-    private val courseRepository: CourseRepository
+    private val courseRepository: CourseRepository,
+    private val semesterRepository: SemesterRepository
 ) : ViewModel() {
     private val initialData = AddCourseScreenState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
+
+    init {
+        loadCurrentSemester()
+    }
 
     fun onCourseNameChange(newVal: String) {
         _state.update {
@@ -48,11 +54,26 @@ class AddCourseViewModel(
                         courseName = _state.value.courseName,
                         courseCode = _state.value.courseCode,
                         instructor = _state.value.instructor,
-                        semesterId = ""
+                        semesterId = _state.value.activeSemester?.id ?: ""
                     )
                 )
                 onNavigateBack()
             }
+        }
+    }
+
+    private fun loadCurrentSemester() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            semesterRepository.getActiveSemester()
+                .onFailure { e ->
+                    _state.update { it.copy(errorMsg = e.message) }
+                }
+                .onSuccess { a ->
+                    if (a == null) _state.update { it.copy(errorMsg = "No active semester.") }
+                    _state.update { it.copy(activeSemester = a) }
+                }
+            _state.update { it.copy(isLoading = false) }
         }
     }
 }

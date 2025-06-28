@@ -20,7 +20,7 @@ fun AppNavGraph(
         modifier = modifier,
         navController = navController,
 //        startDestination = if (LocalCurrentUser.current != null) Route.ProfileRoute else Route.SignUpRoute,
-        startDestination = Route.AddSemesterRoute
+        startDestination = Route.AddCourseRoute
     ) {
         attendanceGraph(navController)
         homeGraph(navController)

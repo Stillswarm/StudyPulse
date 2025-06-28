@@ -20,18 +20,18 @@ class FirebaseSemesterRepositoryImpl(
         runCatching {
             val userId = getUserId()
             val s = semester.copy(createdAt = System.currentTimeMillis())
-            // First, set isCurrent = false for all existing semesters
+            // First, set current = false for all existing semesters
             db.collection("users")
                 .document(userId)
                 .collection("semesters")
-                .whereEqualTo("isCurrent", true)
+                .whereEqualTo("current", true)
                 .get()
                 .await()
                 .documents
                 .forEach { document ->
-                    document.reference.update("isCurrent", false).await()
+                    document.reference.update("current", false).await()
                 }
-            // Then, add the new semester with isCurrent = true
+            // Then, add the new semester with current = true
             val docRef =
                 db.collection("users").document(userId).collection("semesters").add(s.toDto())
                 .await()
@@ -47,7 +47,7 @@ class FirebaseSemesterRepositoryImpl(
                 .document(userId)
                 .collection("semesters")
                 .document(semesterId)
-                .update("isCurrent", true)
+                .update("current", true)
             Unit
         }
 
@@ -68,7 +68,7 @@ class FirebaseSemesterRepositoryImpl(
             db.collection("users")
                 .document(userId)
                 .collection("semesters")
-                .whereEqualTo("isCurrent", true)
+                .whereEqualTo("current", true)
                 .get()
                 .await()
                 .toObjects(SemesterDto::class.java)
