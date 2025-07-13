@@ -6,6 +6,7 @@ data class PeriodDto(
     val id: String? = null,
     val courseId: String? = null,
     val courseName: String? = null,
+    val semesterId: String? = null,
     val day: String = Day.MONDAY.name,
     val startTime: String = LocalTime.now().toString(),
     val endTime: String = LocalTime.now().toString(),
@@ -20,6 +21,7 @@ fun PeriodDto.toDomain(): Period {
         day = Day.valueOf(this.day),
         startTime = LocalTime.parse(this.startTime),
         endTime = LocalTime.parse(this.endTime),
+        semesterId = this.semesterId ?: "",
         createdAt = this.createdAt
     )
 }
@@ -32,6 +34,7 @@ fun Period.toDto(): PeriodDto {
         day = this.day.name,
         startTime = this.startTime.toString(),
         endTime = this.endTime.toString(),
+        semesterId = semesterId,
         createdAt = this.createdAt
     )
 }

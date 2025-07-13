@@ -77,7 +77,8 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
             onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
             onNavigateToCourseList = { navController.navigate(Route.CourseRoute) },
             onNavigateToAttendanceCalendar = { navController.navigate(Route.AttendanceCalendarRoute) },
-            onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceStatsSharedRoute) }
+            onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceStatsSharedRoute) },
+            onNavigateToAddSemester = { navController.navigate(Route.AddSemesterRoute) }
         )
     }
 

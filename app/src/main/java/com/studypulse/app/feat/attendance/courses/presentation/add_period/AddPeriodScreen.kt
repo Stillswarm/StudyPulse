@@ -170,8 +170,7 @@ fun AddPeriodScreen(
 
                 Button(
                     onClick = {
-                        viewModel.onSubmit()
-                        onNavigateBack()
+                        viewModel.onSubmit(onNavigateBack)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),

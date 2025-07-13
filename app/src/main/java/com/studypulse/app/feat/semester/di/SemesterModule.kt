@@ -8,7 +8,7 @@ import org.koin.dsl.module
 
 val semesterModule = module {
     // repository
-    single<SemesterRepository> { FirebaseSemesterRepositoryImpl(get(), get()) }
+    single<SemesterRepository> { FirebaseSemesterRepositoryImpl(get(), get(), get()) }
 
     // VM
     viewModelOf(::AddSemesterScreenViewModel)

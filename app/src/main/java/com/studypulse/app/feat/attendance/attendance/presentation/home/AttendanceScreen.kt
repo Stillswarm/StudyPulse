@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,20 +17,27 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
@@ -37,6 +45,7 @@ import com.studypulse.app.common.ui.modifier.gradientFill
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
 import com.studypulse.app.ui.theme.Gold
+import com.studypulse.app.ui.theme.GreenDark
 import com.studypulse.app.ui.theme.Purple
 import com.studypulse.app.ui.theme.WarmWhite
 import kotlinx.coroutines.launch
@@ -44,6 +53,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AttendanceScreen(
+    onNavigateToAddSemester: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToCourseList: () -> Unit,
     onNavigateToAttendanceCalendar: () -> Unit,
@@ -51,6 +61,7 @@ fun AttendanceScreen(
     modifier: Modifier = Modifier,
     viewModel: AttendanceScreenViewModel = koinViewModel()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     Box(
         modifier = modifier.fillMaxSize()
@@ -70,120 +81,147 @@ fun AttendanceScreen(
                     )
                 ),
             )
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = "Quick Stats",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = (-0.01).sp,
-                        )
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                StatBox(
-                                    title = "Classes Unmarked",
-                                    value = 21,
-                                    onClick = onNavigateToAttendanceCalendar,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                StatBox(
-                                    title = "100% Attendance",
-                                    value = 1,
-                                    onClick = onNavigateToAttendanceOverview,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                StatBox(
-                                    title = "Low Attendance",
-                                    value = 2,
-                                    onClick = onNavigateToAttendanceOverview,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                StatBox(
-                                    title = "Minimum Required",
-                                    value = 75,
-                                    onClick = onNavigateToCourseList,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = GreenDark)
                 }
+            } else if (state.semId == "") {
+                Text(
+                    text = buildAnnotatedString {
+                        append("No active semester found. You can add a new semester by clicking")
 
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        Text(
-                            text = "Quick Attendance",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = (-0.01).sp,
-                        )
-
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(5, key = { it }) {
-                                QuickAttendanceBox(courseCode = "Course $it")
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        Text(
-                            text = "Report",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = (-0.01).sp,
-                        )
-
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp),
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.spacedBy(
-                                12.dp,
-                                alignment = Alignment.CenterHorizontally
+                        withStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.Bold,
+                                color = GreenDark,
+                                textDecoration = TextDecoration.Underline
                             )
                         ) {
-                            items(5) {
-                                VerticalGraphBar(height = Math.random().toFloat())
+                            append(" here")
+                        }
+                    },
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).noRippleClickable { onNavigateToAddSemester() },
+                )
+            } else {
+                Log.d("fcuk", state.semId.toString())
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = "Quick Stats",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = (-0.01).sp,
+                            )
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    StatBox(
+                                        title = "Classes Unmarked",
+                                        value = 21,
+                                        onClick = onNavigateToAttendanceCalendar,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    StatBox(
+                                        title = "100% Attendance",
+                                        value = 1,
+                                        onClick = onNavigateToAttendanceOverview,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    StatBox(
+                                        title = "Low Attendance",
+                                        value = 2,
+                                        onClick = onNavigateToAttendanceOverview,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    StatBox(
+                                        title = "Minimum Required",
+                                        value = 75,
+                                        onClick = onNavigateToCourseList,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Text(
+                                text = "Quick Attendance",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = (-0.01).sp,
+                            )
+
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(5, key = { it }) {
+                                    QuickAttendanceBox(courseCode = "Course $it")
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Text(
+                                text = "Report",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = (-0.01).sp,
+                            )
+
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.Bottom,
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    12.dp,
+                                    alignment = Alignment.CenterHorizontally
+                                )
+                            ) {
+                                items(5) {
+                                    VerticalGraphBar(height = Math.random().toFloat())
+                                }
                             }
                         }
                     }
                 }
             }
-
-
         }
     }
 }

@@ -5,10 +5,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.di.attendanceModule
 import com.studypulse.app.feat.auth.di.authModule
 import com.studypulse.app.feat.semester.di.semesterModule
 import com.studypulse.app.feat.user.di.userModule
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -19,6 +21,12 @@ val appModule = module {
         userModule,
         semesterModule,
     )
+
+
+    // DataStore
+    single<AppDatastore> {
+        AppDatastore(androidContext())
+    }
 
     // Firebase
     single<FirebaseAuth> { Firebase.auth }

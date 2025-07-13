@@ -4,6 +4,7 @@ import java.time.LocalTime
 
 data class Period(
     val id: String = "",
+    val semesterId: String,
     val courseId: String,
     val courseName: String,
     val day: Day,

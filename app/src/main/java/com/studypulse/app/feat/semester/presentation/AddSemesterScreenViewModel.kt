@@ -34,7 +34,7 @@ class AddSemesterScreenViewModel(
         _state.update { it.copy(endDate = new, errorMsg = null) }
     }
 
-    fun submit() {
+    fun submit(navigateUp: () -> Unit) {
         if (validateData()) {
             val s = _state.value
             viewModelScope.launch {
@@ -49,6 +49,8 @@ class AddSemesterScreenViewModel(
                         minAttendance = s.minAttendance!!
                     )
                 )
+
+                navigateUp()
             }
         }
     }

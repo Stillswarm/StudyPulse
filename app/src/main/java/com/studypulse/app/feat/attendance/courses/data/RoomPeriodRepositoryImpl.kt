@@ -4,8 +4,10 @@ import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.toPeriod
 import com.studypulse.app.feat.attendance.courses.domain.model.toPeriodEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class RoomPeriodRepositoryImpl(
     private val periodDao: PeriodDao
@@ -19,7 +21,7 @@ class RoomPeriodRepositoryImpl(
     }
 
     override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: String, day: Day): Result<Flow<List<Period>>> {
-        return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId.toLong(), day))
+        return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId.toLong(), day).map { it.map { it.toPeriod() } })
     }
 
     override suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>> {

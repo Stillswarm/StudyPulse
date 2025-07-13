@@ -17,4 +17,5 @@ enum class AttendanceStatus {
     PRESENT,
     ABSENT,
     CANCELLED,
+    UNMARKED,
 }

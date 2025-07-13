@@ -9,6 +9,7 @@ data class PeriodEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val courseId: String,
     val courseName: String,
+    val semesterId: String,
     val day: Day,
     val startTime: LocalTime,
     val endTime: LocalTime,
@@ -23,6 +24,7 @@ fun PeriodEntity.toPeriod() =
         day = day,
         startTime = startTime,
         endTime = endTime,
+        semesterId = semesterId,
         createdAt = createdAt
     )
 
@@ -31,6 +33,7 @@ fun Period.toPeriodEntity() =
         id = id.toLongOrNull() ?: 0,
         courseId = courseId,
         courseName = courseName,
+        semesterId = semesterId,
         day = day,
         startTime = startTime,
         endTime = endTime,

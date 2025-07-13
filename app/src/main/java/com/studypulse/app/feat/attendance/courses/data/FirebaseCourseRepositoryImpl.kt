@@ -2,6 +2,7 @@ package com.studypulse.app.feat.attendance.courses.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseDto
@@ -10,12 +11,15 @@ import com.studypulse.app.feat.attendance.courses.domain.model.toDto
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
 class FirebaseCourseRepositoryImpl(
     private val db: FirebaseFirestore,
+    private val ds: AppDatastore,
     private val auth: FirebaseAuth
 ) : CourseRepository {
+    suspend fun getSemesterId(): String = ds.semesterIdFlow.first()
     override fun getAllCourses(): Result<Flow<List<Course>>> =
         runCatching {
             val userId =
@@ -23,6 +27,8 @@ class FirebaseCourseRepositoryImpl(
             callbackFlow {
                 val listener = db.collection("users")
                     .document(userId)
+                    .collection("semesters")
+                    .document(getSemesterId())
                     .collection("courses")
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
@@ -51,6 +57,8 @@ class FirebaseCourseRepositoryImpl(
             callbackFlow {
                 val listener = db.collection("users")
                     .document(userId)
+                    .collection("semesters")
+                    .document(getSemesterId())
                     .collection("courses")
                     .orderBy("courseName")
                     .addSnapshotListener { snapshot, error ->
@@ -76,6 +84,8 @@ class FirebaseCourseRepositoryImpl(
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val doc = db.collection("users")
                 .document(userId)
+                .collection("semesters")
+                .document(getSemesterId())
                 .collection("courses")
                 .document(id)
                 .get()
@@ -91,11 +101,22 @@ class FirebaseCourseRepositoryImpl(
             val courseData = course.copy(
                 createdAt = System.currentTimeMillis()
             )
+            val semesterId = ds.semesterIdFlow.first()
 
             val docRef = if (course.id.isBlank()) {
-                db.collection("users").document(userId).collection("courses").document()            // generates new random ID
+                db.collection("users")
+                    .document(userId)
+                    .collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document()            // generates new random ID
             } else {
-                db.collection("users").document(userId).collection("courses").document(course.id)
+                db.collection("users")
+                    .document(userId)
+                    .collection("semesters")
+                    .document(semesterId)
+                    .collection("courses")
+                    .document(course.id)
             }
 
             docRef.set(courseData.toDto().copy(id = docRef.id))
@@ -107,9 +128,12 @@ class FirebaseCourseRepositoryImpl(
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val courseId = course.id
+            val semesterId = ds.semesterIdFlow.first()
 
             db.collection("users")
                 .document(userId)
+                .collection("semesters")
+                .document(semesterId)
                 .collection("courses")
                 .document(courseId)
                 .set(course.toDto())
@@ -120,9 +144,12 @@ class FirebaseCourseRepositoryImpl(
         runCatching {
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+            val semesterId = ds.semesterIdFlow.first()
 
             db.collection("users")
                 .document(userId)
+                .collection("semesters")
+                .document(semesterId)
                 .collection("courses")
                 .document(id)
                 .delete()

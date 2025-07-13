@@ -7,6 +7,7 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,6 +17,7 @@ import java.time.LocalTime
 class AddPeriodScreenViewModel(
     private val courseRepository: CourseRepository,
     private val periodRepository: PeriodRepository,
+    private val semesterRepository: SemesterRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val initialData = AddPeriodState(
@@ -41,7 +43,7 @@ class AddPeriodScreenViewModel(
         _state.update { it.copy(endTimeHour = newHour, endTimeMinute = newMinute) }
     }
 
-    fun onSubmit() {
+    fun onSubmit(navigateBack: () -> Unit) {
         viewModelScope.launch {
             periodRepository.addNewPeriod(
                 Period(
@@ -50,8 +52,12 @@ class AddPeriodScreenViewModel(
                     day = _state.value.selectedDay,
                     startTime = LocalTime.of(_state.value.startTimeHour, _state.value.startTimeMinute),
                     endTime = LocalTime.of(_state.value.endTimeHour, _state.value.endTimeMinute),
+                    semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
+
                 )
             )
+
+            navigateBack()
         }
     }
 }

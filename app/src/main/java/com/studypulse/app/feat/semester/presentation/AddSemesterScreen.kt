@@ -300,8 +300,7 @@ fun AddSemesterScreen(
                             .fillMaxWidth()
                             .padding(16.dp)
                             .noRippleClickable {
-                                vm.submit()
-                                onNavigateBack()
+                                vm.submit(onNavigateBack)
                             },
                         color = Color.White,
                         textAlign = TextAlign.Center

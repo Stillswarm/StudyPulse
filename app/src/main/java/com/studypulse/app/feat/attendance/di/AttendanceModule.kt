@@ -33,8 +33,8 @@ val attendanceModule = module {
 //    single<AttendanceRepository> { RoomAttendanceRepositoryImpl(get()) }
 
     // firebase repository
-    single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get()) }
-    single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get()) }
+    single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get(),get()) }
+    single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get(), get(),get()) }
     single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get()) }
 
     // VM

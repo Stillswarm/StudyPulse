@@ -14,7 +14,7 @@ interface PeriodDao {
     suspend fun addNewPeriod(period: PeriodEntity)
 
     @Query("SELECT * FROM periodentity WHERE courseId = :courseId AND day = :day")
-    fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: Long, day: Day) : Flow<List<Period>>
+    fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: Long, day: Day) : Flow<List<PeriodEntity>>
 
     @Query("SELECT * FROM periodentity WHERE day = :day")
     fun getAllPeriodsFilteredByDayOfWeek(day: Day): Flow<List<Period>>
