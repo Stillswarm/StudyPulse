@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -63,6 +65,11 @@ fun AttendanceScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val semId by vm.semesterIdFlow.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(semId) {
+        if (semId.isNotBlank()) vm.fetchStatBoxData()
+    }
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -135,13 +142,13 @@ fun AttendanceScreen(
                                 ) {
                                     StatBox(
                                         title = "Classes Unmarked",
-                                        value = 21,
+                                        value = state.unmarkedCount,
                                         onClick = onNavigateToAttendanceCalendar,
 //                                        modifier = Modifier.weight(1f)
                                     )
                                     StatBox(
                                         title = "100% Attendance",
-                                        value = 1,
+                                        value = state.fullAttendanceCount,
                                         onClick = onNavigateToAttendanceOverview,
 //                                        modifier = Modifier.weight(1f)
                                     )
@@ -152,12 +159,12 @@ fun AttendanceScreen(
                                 ) {
                                     StatBox(
                                         title = "Low Attendance",
-                                        value = 2,
+                                        value = state.lowAttendanceCount,
                                         onClick = onNavigateToAttendanceOverview,
                                     )
                                     StatBox(
                                         title = "Overall Percentage",
-                                        value = 75,
+                                        value = state.attendancePercentage,
                                         onClick = onNavigateToCourseList,
                                     )
                                 }
@@ -211,8 +218,8 @@ fun AttendanceScreen(
                                     alignment = Alignment.CenterHorizontally
                                 )
                             ) {
-                                items(5) {
-                                    VerticalGraphBar(height = Math.random().toFloat())
+                                items(state.courseWiseSummaries) {
+                                    VerticalGraphBar(height = vm.getPercent(it) / 100f)
                                 }
                             }
                         }

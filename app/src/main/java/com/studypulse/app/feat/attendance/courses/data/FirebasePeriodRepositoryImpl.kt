@@ -25,7 +25,7 @@ class FirebasePeriodRepositoryImpl(
     private val auth: FirebaseAuth,
     private val semesterRepository: SemesterRepository,
     private val db: FirebaseFirestore,
-    private val ds: AppDatastore
+    private val ds: AppDatastore,
 ) : PeriodRepository {
     private suspend fun getActiveSemId() = ds.semesterIdFlow.first()
     override suspend fun getPeriodsByCourseIdSortedByDayOfWeek(courseId: String) {

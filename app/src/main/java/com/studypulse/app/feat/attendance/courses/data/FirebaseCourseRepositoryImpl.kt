@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
@@ -17,7 +18,8 @@ import kotlinx.coroutines.tasks.await
 class FirebaseCourseRepositoryImpl(
     private val db: FirebaseFirestore,
     private val ds: AppDatastore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val courseSummaryRepository: CourseSummaryRepository,
 ) : CourseRepository {
     suspend fun getSemesterId(): String = ds.semesterIdFlow.first()
     override fun getAllCourses(): Result<Flow<List<Course>>> =
@@ -121,6 +123,7 @@ class FirebaseCourseRepositoryImpl(
 
             docRef.set(courseData.toDto().copy(id = docRef.id))
                 .await()
+            courseSummaryRepository.put(docRef.id, course.minAttendance, course.courseName)
         }
 
     override suspend fun updateCourse(course: Course): Result<Unit> =

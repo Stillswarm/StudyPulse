@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.semester.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,19 +23,34 @@ class FirebaseSemesterSummaryRepositoryImpl(
         auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
     private suspend fun summaryDocument() = db
-        .collection("users/${getUserId()}/semesters/summaries")
-        .document("summary" + getSemesterId())
+        .collection("users/${getUserId()}/semesters/${getSemesterId()}/sem_summaries")
+        .document("sem_summary")
 
-    override suspend fun put(): Result<Unit> =
+    override suspend fun put(minAttendance: Int): Result<Unit> =
         runCatching {
-            summaryDocument().set(SemesterSummaryDto(semesterId = getSemesterId()))
+            Log.d("tag", "putting")
+            val doc = summaryDocument()
+            doc.set(SemesterSummaryDto(semesterId = getSemesterId(), id = doc.id, minAttendance = minAttendance)).await()
+            Log.d("tag", "put summary semester")
         }
 
     override suspend fun get(): Result<SemesterSummary> =
         runCatching {
-            summaryDocument().get()
-                .await()
-                .toObject(SemesterSummaryDto::class.java)!!.toDomain()
+            Log.d("tag", "getting semester summary ${getSemesterId()}")
+
+            val document = summaryDocument().get().await()
+
+            if (!document.exists()) {
+                throw Exception("Semester summary document not found")
+            }
+
+            val dto = document.toObject(SemesterSummaryDto::class.java)
+                ?: throw Exception("Failed to parse semester summary data")
+
+            val domainObject = dto.toDomain()
+            Log.d("tag", "Successfully parsed: $domainObject")
+
+            domainObject
         }
 
     override suspend fun incPresent(by: Int): Result<Unit> =
@@ -79,6 +95,7 @@ class FirebaseSemesterSummaryRepositoryImpl(
                     "unmarkedRecords",
                     FieldValue.increment(by.toLong())
                 ).await()
+            Log.d("tag", "incremented unmarked")
         }
 
     override suspend fun decUnmarked(by: Int): Result<Unit> =

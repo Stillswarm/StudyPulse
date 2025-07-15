@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,12 +23,25 @@ class FirebaseCourseSummaryRepositoryImpl(
         auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
     private suspend fun summaryDocument(courseId: String) = db
-        .collection("users/${getUserId()}/semesters/${getSemesterId()}/courses/summaries")
-        .document("summary$courseId")
+        .collection("users/${getUserId()}/semesters/${getSemesterId()}/courses/$courseId/course_summaries")
+        .document("course_summary")
 
-    override suspend fun put(courseId: String): Result<Unit> =
+    override suspend fun put(
+        courseId: String,
+        minAttendance: Int,
+        courseName: String,
+    ): Result<Unit> =
         runCatching {
-            summaryDocument(courseId).set(CourseSummaryDto(courseId = courseId))
+            val doc = summaryDocument(courseId)
+            doc.set(
+                CourseSummaryDto(
+                    id = doc.id,
+                    courseId = courseId,
+                    minAttendance = minAttendance,
+                    courseName = courseName
+                )
+            ).await()
+            Log.d("fcuk", "put summary course $courseId")
         }
 
     override suspend fun get(courseId: String): Result<CourseSummary> =
@@ -105,5 +119,30 @@ class FirebaseCourseSummaryRepositoryImpl(
                     "cancelledRecords",
                     FieldValue.increment(by.toLong().inv())
                 ).await()
+        }
+
+    override suspend fun getSummaryForAllCourses(): Result<List<CourseSummary>> =
+        runCatching {
+            val userId = getUserId()
+            val semesterId = getSemesterId()
+            val snapshot = db
+                .collectionGroup("course_summaries")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("semesterId", semesterId)
+                .get()
+                .await()
+
+            snapshot.documents
+                .mapNotNull { doc ->
+                    val dto = doc.toObject(CourseSummaryDto::class.java)
+                    dto?.toDomain()
+                }
+        }
+
+    override suspend fun getPercentageForAllCourses(): Result<Map<String, Double>> =
+        runCatching {
+            emptyMap()
+
+            // todo: implement
         }
 }

@@ -3,7 +3,7 @@ package com.studypulse.app.feat.semester.domain
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
 
 interface SemesterSummaryRepository {
-    suspend fun put(): Result<Unit>
+    suspend fun put(minAttendance: Int): Result<Unit>
     suspend fun get(): Result<SemesterSummary>
     suspend fun incPresent(by: Int): Result<Unit>
     suspend fun decPresent(by: Int): Result<Unit>

@@ -119,7 +119,7 @@ class ProfileScreenViewModel(
     fun updateCurrentSemester(new: Semester) {
         if (new == _state.value.currentSemester) return
         viewModelScope.launch {
-            if (new.endDate > LocalDate.now()) {
+            if (new.endDate < LocalDate.now()) {
                 SnackbarController.sendEvent(SnackbarEvent("Active semester cannot be in the past"))
             } else {
                 semesterRepository.markCurrent(new.id).onSuccess { _state.update { it.copy(currentSemester = new) } }

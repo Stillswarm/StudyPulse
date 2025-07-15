@@ -35,9 +35,6 @@ class FirebaseSemesterRepositoryImpl(
             .get()
             .await()
 
-        // add a sem summary doc
-        semesterSummaryRepository.put()
-
         // 2) build an atomic batch
         val batch = db.batch()
         snapshot.documents.forEach { doc ->
@@ -50,6 +47,10 @@ class FirebaseSemesterRepositoryImpl(
 
         // 4) only *then* persist locally
         ds.saveSemesterId(newDoc.id)
+
+        // add a sem summary doc
+        semesterSummaryRepository.put(minAttendance = semester.minAttendance)
+        Unit
     }
 
 
