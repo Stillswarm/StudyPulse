@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.home
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -59,9 +58,10 @@ fun AttendanceScreen(
     onNavigateToAttendanceCalendar: () -> Unit,
     onNavigateToAttendanceOverview: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AttendanceScreenViewModel = koinViewModel()
+    vm: AttendanceScreenViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
+    val semId by vm.semesterIdFlow.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     Box(
         modifier = modifier.fillMaxSize()
@@ -89,7 +89,7 @@ fun AttendanceScreen(
                 ) {
                     CircularProgressIndicator(color = GreenDark)
                 }
-            } else if (state.semId == "") {
+            } else if (semId == "") {
                 Text(
                     text = buildAnnotatedString {
                         append("No active semester found. You can add a new semester by clicking")
@@ -108,7 +108,6 @@ fun AttendanceScreen(
                     modifier = Modifier.fillMaxWidth().padding(16.dp).noRippleClickable { onNavigateToAddSemester() },
                 )
             } else {
-                Log.d("fcuk", state.semId.toString())
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -122,7 +121,7 @@ fun AttendanceScreen(
                         ) {
                             Text(
                                 text = "Quick Stats",
-                                fontSize = 24.sp,
+                                fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 letterSpacing = (-0.01).sp,
                             )
@@ -132,36 +131,34 @@ fun AttendanceScreen(
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     StatBox(
                                         title = "Classes Unmarked",
                                         value = 21,
                                         onClick = onNavigateToAttendanceCalendar,
-                                        modifier = Modifier.weight(1f)
+//                                        modifier = Modifier.weight(1f)
                                     )
                                     StatBox(
                                         title = "100% Attendance",
                                         value = 1,
                                         onClick = onNavigateToAttendanceOverview,
-                                        modifier = Modifier.weight(1f)
+//                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     StatBox(
                                         title = "Low Attendance",
                                         value = 2,
                                         onClick = onNavigateToAttendanceOverview,
-                                        modifier = Modifier.weight(1f)
                                     )
                                     StatBox(
-                                        title = "Minimum Required",
+                                        title = "Overall Percentage",
                                         value = 75,
                                         onClick = onNavigateToCourseList,
-                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                             }
@@ -235,9 +232,8 @@ fun StatBox(
 ) {
     Box(
         modifier = modifier
-            .fillMaxWidth(0.5f)
-            .fillMaxWidth(0.95f)
-            .height(120.dp)
+            .width(150.dp)
+            .height(80.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(WarmWhite)
             .border(2.dp, Gold, RoundedCornerShape(8.dp))
@@ -245,12 +241,12 @@ fun StatBox(
     ) {
         Text(
             text = value.toString(),
-            fontSize = 112.sp,
+            fontSize = 64.sp,
             fontStyle = FontStyle.Italic,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .offset((-16).dp, (20).dp)
+                .offset((-8).dp, (16).dp)
                 .gradientFill(
                     Brush.linearGradient(
                         colorStops = arrayOf(
@@ -263,11 +259,12 @@ fun StatBox(
 
         Text(
             text = title,
-            fontSize = 24.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = (-0.05).sp,
             modifier = Modifier
                 .fillMaxWidth(0.75f)
+                .padding(4.dp)
                 .align(Alignment.TopEnd),
             minLines = 2,
             maxLines = 2,
@@ -296,21 +293,21 @@ fun QuickAttendanceBox(
         ) {
             Text(
                 text = "MA-2001",
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             Text(
                 text = "Thu, June 26",
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             Text(
                 text = "9:00 - 12:30",
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -350,16 +347,16 @@ fun VerticalGraphBar(
                     .fillMaxWidth()
                     .fillMaxHeight(height)
                     .background(Gold)
-                    .align(Alignment.BottomCenter)
-            ) {
-                Text(
-                    text = "${(height * 100).toInt()}",
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 4.dp)
-                )
-            }
+                    .align(Alignment.BottomCenter))
+//            ) {
+//                Text(
+//                    text = "${(height * 100).toInt()}",
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier
+//                        .align(Alignment.TopCenter)
+//                        .padding(top = 4.dp)
+//                )
+//            }
         }
 
         Text(
