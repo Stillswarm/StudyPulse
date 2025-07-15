@@ -1,10 +1,10 @@
 package com.studypulse.app.feat.semester.data
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.semester.domain.SemesterRepository
+import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import com.studypulse.app.feat.semester.domain.model.Semester
 import com.studypulse.app.feat.semester.domain.model.SemesterDto
 import com.studypulse.app.feat.semester.domain.model.toDomain
@@ -14,13 +14,13 @@ import kotlinx.coroutines.tasks.await
 class FirebaseSemesterRepositoryImpl(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,
-    private val ds: AppDatastore
+    private val ds: AppDatastore,
+    private val semesterSummaryRepository: SemesterSummaryRepository
 ) : SemesterRepository {
     private fun getUserId() =
         auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
     override suspend fun addActiveSemester(semester: Semester) = runCatching {
-        Log.d("fcuk", "eree")
         val userId   = getUserId()
         val now      = System.currentTimeMillis()
         val s        = semester.copy(createdAt = now)
@@ -35,6 +35,9 @@ class FirebaseSemesterRepositoryImpl(
             .get()
             .await()
 
+        // add a sem summary doc
+        semesterSummaryRepository.put()
+
         // 2) build an atomic batch
         val batch = db.batch()
         snapshot.documents.forEach { doc ->
@@ -47,8 +50,6 @@ class FirebaseSemesterRepositoryImpl(
 
         // 4) only *then* persist locally
         ds.saveSemesterId(newDoc.id)
-    }.onFailure {
-        Log.d("fcuk", "$it")
     }
 
 

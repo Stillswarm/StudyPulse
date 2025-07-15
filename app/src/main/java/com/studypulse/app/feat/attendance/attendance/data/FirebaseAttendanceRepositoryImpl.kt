@@ -6,8 +6,10 @@ import com.google.firebase.firestore.Query
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecordDto
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDomain
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDto
+import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,7 +18,8 @@ import java.time.LocalDate
 
 class FirebaseAttendanceRepositoryImpl(
     private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore
+    private val db: FirebaseFirestore,
+    private val semesterSummaryRepository: SemesterSummaryRepository,
 ) : AttendanceRepository {
 
     private fun getUserId(): String =
@@ -29,10 +32,24 @@ class FirebaseAttendanceRepositoryImpl(
     override suspend fun upsertAttendance(attendanceRecord: AttendanceRecord) {
         val collection = getAttendanceCollection()
         val docId = attendanceRecord.id.ifBlank {
-            collection.document().id
+            collection.document().id        // should never happen as all records are added when period is created
+        }
+
+        val doc = collection.document(docId).get().await()
+        when (doc.get("status")) {
+            "PRESENT" -> semesterSummaryRepository.decPresent(1)
+            "ABSENT" ->semesterSummaryRepository.decAbsent(1)
+            "UNMARKED" -> semesterSummaryRepository.decUnmarked(1)
+            "CANCELLED" -> semesterSummaryRepository.decCancelled(1)
         }
 
         val updatedRecord = attendanceRecord.copy(id = docId)
+        when (updatedRecord.status) {
+            AttendanceStatus.PRESENT -> semesterSummaryRepository.incPresent(1)
+            AttendanceStatus.ABSENT -> semesterSummaryRepository.decAbsent(1)
+            AttendanceStatus.CANCELLED -> semesterSummaryRepository.decCancelled(1)
+            AttendanceStatus.UNMARKED -> semesterSummaryRepository.decUnmarked(1)
+        }
         collection.document(docId).set(updatedRecord.toDto()).await()
     }
 
