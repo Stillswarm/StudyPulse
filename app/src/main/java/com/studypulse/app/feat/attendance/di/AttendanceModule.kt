@@ -8,9 +8,11 @@ import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStat
 import com.studypulse.app.feat.attendance.attendance.presentation.home.AttendanceScreenViewModel
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreenViewModel
 import com.studypulse.app.feat.attendance.courses.data.FirebaseCourseRepositoryImpl
+import com.studypulse.app.feat.attendance.courses.data.FirebaseCourseSummaryRepositoryImpl
 import com.studypulse.app.feat.attendance.courses.data.FirebasePeriodRepositoryImpl
 import com.studypulse.app.feat.attendance.courses.domain.CourseDao
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.presentation.add_course.AddCourseScreenViewModel
@@ -34,8 +36,9 @@ val attendanceModule = module {
 
     // firebase repository
     single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get(),get()) }
+    single<CourseSummaryRepository> { FirebaseCourseSummaryRepositoryImpl(get(), get(), get()) }
     single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get(), get(),get()) }
-    single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get()) }
+    single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get(), get()) }
 
     // VM
     viewModelOf(::CoursesScreenViewModel)
