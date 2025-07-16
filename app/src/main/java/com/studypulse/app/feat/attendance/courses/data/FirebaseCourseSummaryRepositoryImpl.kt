@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.attendance.courses.data
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,7 +40,6 @@ class FirebaseCourseSummaryRepositoryImpl(
                     courseName = courseName
                 )
             ).await()
-            Log.d("fcuk", "put summary course $courseId")
         }
 
     override suspend fun get(courseId: String): Result<CourseSummary> =

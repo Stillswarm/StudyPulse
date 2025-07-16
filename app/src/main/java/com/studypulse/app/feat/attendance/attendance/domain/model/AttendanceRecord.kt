@@ -4,12 +4,15 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
 data class AttendanceRecord(
-   val id: String = "",
+    val id: String = "",
+    val userId: String = "",
+    val semesterId: String = "",
     val periodId: String,
     val courseId: String,
     val date: LocalDate,
     val status: AttendanceStatus,
-    val createdAt: Long = System.currentTimeMillis()
+    val processed: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis(),
 )
 
 @Serializable
