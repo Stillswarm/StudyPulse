@@ -46,6 +46,7 @@ class AttendanceScreenViewModel(
             delay(1_000)
             if (semesterIdFlow.value != "") {
                 supervisorScope {
+                    Log.d("tag", "fetching stat box data")
                     val semDataDef = async { semesterSummaryRepository.get() }
                     val courseDataDef = async { courseSummaryRepository.getSummaryForAllCourses() }
 
@@ -65,29 +66,31 @@ class AttendanceScreenViewModel(
                         _state.update { it.copy(isLoading = false) }
                         return@supervisorScope
                     }
+                    Log.d("tag", "course data: $courseData")
                     _state.update {
                         it.copy(
                             unmarkedCount = semData.unmarkedRecords,
                             courseWiseSummaries = courseData,
                             fullAttendanceCount = courseData.filter { entry -> getPercent(entry) == 100 }.size,
                             lowAttendanceCount = courseData.filter { entry -> getPercent(entry) < entry.minAttendance }.size,
-//                            attendancePercentage = getPercentForSem(semData),
+                            attendancePercentage = getPercentForSem(semData),
                             isLoading = false
                         )
                     }
-                    Log.d("fcuk", "have now: " + state.value.courseWiseSummaries.toString())
+                    Log.d("tag", "have now: " + state.value.courseWiseSummaries.toString())
                 }
             } else _state.update { it.copy(isLoading = false) }
         }
     }
 
     fun getPercent(courseSummary: CourseSummary): Int {
-        val total = courseSummary.presentRecords + courseSummary.absentRecords
+        val total = courseSummary.presentRecords + courseSummary.absentRecords + courseSummary.unmarkedRecords
+        Log.d("tag", "total: $total, present: ${courseSummary.presentRecords}")
         return if (total == 0) 0 else (courseSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
     }
 
     fun getPercentForSem(semesterSummary: SemesterSummary): Int {
-        val total = semesterSummary.presentRecords + semesterSummary.absentRecords
+        val total = semesterSummary.presentRecords + semesterSummary.absentRecords + semesterSummary.unmarkedRecords
         return if (total == 0) 0 else (semesterSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
     }
 }

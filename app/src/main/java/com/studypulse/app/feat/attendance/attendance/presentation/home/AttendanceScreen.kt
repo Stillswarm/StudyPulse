@@ -219,7 +219,7 @@ fun AttendanceScreen(
                                 )
                             ) {
                                 items(state.courseWiseSummaries) {
-                                    VerticalGraphBar(height = vm.getPercent(it) / 100f)
+                                    VerticalGraphBar(courseName = it.courseName, height = vm.getPercent(it) / 100f)
                                 }
                             }
                         }
@@ -335,6 +335,7 @@ fun QuickAttendanceBox(
 
 @Composable
 fun VerticalGraphBar(
+    courseName: String,
     height: Float,
     modifier: Modifier = Modifier
 ) {
@@ -354,20 +355,20 @@ fun VerticalGraphBar(
                     .fillMaxWidth()
                     .fillMaxHeight(height)
                     .background(Gold)
-                    .align(Alignment.BottomCenter))
-//            ) {
-//                Text(
-//                    text = "${(height * 100).toInt()}",
-//                    fontWeight = FontWeight.Bold,
-//                    modifier = Modifier
-//                        .align(Alignment.TopCenter)
-//                        .padding(top = 4.dp)
-//                )
-//            }
+                    .align(Alignment.BottomCenter)
+            ) {
+                Text(
+                    text = "${(height * 100).toInt()}",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 4.dp)
+                )
+            }
         }
 
         Text(
-            text = "MA-2001",
+            courseName
         )
     }
 }

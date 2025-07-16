@@ -36,7 +36,6 @@ class FirebaseSemesterSummaryRepositoryImpl(
 
     override suspend fun get(): Result<SemesterSummary> =
         runCatching {
-            Log.d("tag", "getting semester summary ${getSemesterId()}")
 
             val document = summaryDocument().get().await()
 
@@ -48,7 +47,6 @@ class FirebaseSemesterSummaryRepositoryImpl(
                 ?: throw Exception("Failed to parse semester summary data")
 
             val domainObject = dto.toDomain()
-            Log.d("tag", "Successfully parsed: $domainObject")
 
             domainObject
         }
@@ -67,7 +65,7 @@ class FirebaseSemesterSummaryRepositoryImpl(
             summaryDocument()
                 .update(
                     "presentRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -84,7 +82,7 @@ class FirebaseSemesterSummaryRepositoryImpl(
             summaryDocument()
                 .update(
                     "absentRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -103,7 +101,7 @@ class FirebaseSemesterSummaryRepositoryImpl(
             summaryDocument()
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -121,7 +119,7 @@ class FirebaseSemesterSummaryRepositoryImpl(
             summaryDocument()
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 }

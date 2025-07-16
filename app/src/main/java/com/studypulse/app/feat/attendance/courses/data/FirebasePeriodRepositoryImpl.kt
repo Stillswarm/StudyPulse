@@ -7,6 +7,7 @@ import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDto
+import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
@@ -14,16 +15,20 @@ import com.studypulse.app.feat.attendance.courses.domain.model.PeriodDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
 import com.studypulse.app.feat.attendance.courses.domain.model.toDto
 import com.studypulse.app.feat.semester.domain.SemesterRepository
+import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 
 class FirebasePeriodRepositoryImpl(
     private val auth: FirebaseAuth,
     private val semesterRepository: SemesterRepository,
+    private val semesterSummaryRepository: SemesterSummaryRepository,
+    private val courseSummaryRepository: CourseSummaryRepository,
     private val db: FirebaseFirestore,
     private val ds: AppDatastore,
 ) : PeriodRepository {
@@ -49,15 +54,13 @@ class FirebasePeriodRepositoryImpl(
                 .document()
             ref.set(periodData.toDto().copy(id = ref.id)).await()
 
+            var countPast = 0
+            val today = LocalDate.now()
             var current = semester.startDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(period.day.name)))
             val batch: WriteBatch = db.batch()
             while (!current.isAfter(semester.endDate)) {
                 val attendanceRef = db.collection("users")
                     .document(userId)
-                    .collection("semesters")
-                    .document(semester.id)
-                    .collection("periods")
-                    .document(ref.id)
                     .collection("attendance")
                     .document()
 
@@ -65,16 +68,23 @@ class FirebasePeriodRepositoryImpl(
                     periodId = ref.id,
                     date = current,
                     id = attendanceRef.id,
+                    userId = userId,
+                    semesterId = getActiveSemId(),
                     courseId = period.courseId,
                     status = AttendanceStatus.UNMARKED,
                     createdAt = System.currentTimeMillis(),
+                    processed = current <= today
                 ).toDto()
+
+                if (current <= today) ++countPast
 
                 batch.set(attendanceRef, attendanceDto)
                 current = current.plusWeeks(1)
             }
 
             batch.commit().await()
+            semesterSummaryRepository.incUnmarked(countPast)
+            courseSummaryRepository.incUnmarked(period.courseId, countPast)
         }
     }
 

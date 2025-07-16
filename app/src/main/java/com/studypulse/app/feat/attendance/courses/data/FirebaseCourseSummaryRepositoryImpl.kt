@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -37,7 +38,9 @@ class FirebaseCourseSummaryRepositoryImpl(
                     id = doc.id,
                     courseId = courseId,
                     minAttendance = minAttendance,
-                    courseName = courseName
+                    courseName = courseName,
+                    userId = getUserId(),
+                    semesterId = getSemesterId(),
                 )
             ).await()
         }
@@ -62,7 +65,7 @@ class FirebaseCourseSummaryRepositoryImpl(
             summaryDocument(courseId)
                 .update(
                     "presentRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -79,7 +82,7 @@ class FirebaseCourseSummaryRepositoryImpl(
             summaryDocument(courseId)
                 .update(
                     "absentRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -97,7 +100,7 @@ class FirebaseCourseSummaryRepositoryImpl(
             summaryDocument(courseId)
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -115,7 +118,7 @@ class FirebaseCourseSummaryRepositoryImpl(
             summaryDocument(courseId)
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(by.toLong().inv())
+                    FieldValue.increment(-by.toLong())
                 ).await()
         }
 
@@ -129,6 +132,8 @@ class FirebaseCourseSummaryRepositoryImpl(
                 .whereEqualTo("semesterId", semesterId)
                 .get()
                 .await()
+
+            Log.d("tag", "sz: ${snapshot.documents.size}")
 
             snapshot.documents
                 .mapNotNull { doc ->

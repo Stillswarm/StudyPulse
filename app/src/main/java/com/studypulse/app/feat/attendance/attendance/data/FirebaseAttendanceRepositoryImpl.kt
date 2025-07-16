@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.studypulse.app.common.util.toTimestamp
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecordDto
@@ -28,15 +29,16 @@ class FirebaseAttendanceRepositoryImpl(
     private fun getUserId(): String =
         auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
 
-    private fun getAttendanceCollection() = db.collection("users")
-        .document(getUserId())
-        .collection("attendance")
+    private fun getAttendanceCollection() =
+        db.collection("users/${getUserId()}/attendance")
 
     override suspend fun upsertAttendance(attendanceRecord: AttendanceRecord) {
+        Log.d("tag", "inside upsert")
         val collection = getAttendanceCollection()
         val docId = attendanceRecord.id.ifBlank {
             collection.document().id
         }
+        Log.d("tag", docId)
 
         val courseId = attendanceRecord.courseId
         val doc = collection.document(docId).get().await()
@@ -46,15 +48,18 @@ class FirebaseAttendanceRepositoryImpl(
                 semesterSummaryRepository.decPresent(1)
                 courseSummaryRepository.decPresent(courseId, 1)
             }
+
             "ABSENT" -> {
                 semesterSummaryRepository.decAbsent(1)
                 courseSummaryRepository.decAbsent(courseId, 1)
             }
+
             "UNMARKED" -> {
                 Log.d("tag", "inside when unmarked")
                 semesterSummaryRepository.decUnmarked(1)
                 courseSummaryRepository.decUnmarked(courseId, 1)
             }
+
             "CANCELLED" -> {
                 semesterSummaryRepository.decCancelled(1)
                 courseSummaryRepository.decCancelled(courseId, 1)
@@ -65,19 +70,25 @@ class FirebaseAttendanceRepositoryImpl(
         Log.d("tag", updatedRecord.toString())
         when (updatedRecord.status) {
             AttendanceStatus.PRESENT -> {
+                Log.d("tag", "p")
                 semesterSummaryRepository.incPresent(1)
                 courseSummaryRepository.incPresent(courseId, 1)
             }
+
             AttendanceStatus.ABSENT -> {
+                Log.d("tag", "a")
                 semesterSummaryRepository.incAbsent(1)
                 courseSummaryRepository.incAbsent(courseId, 1)
             }
+
             AttendanceStatus.CANCELLED -> {
+                Log.d("tag", "c")
                 semesterSummaryRepository.incCancelled(1)
                 courseSummaryRepository.incCancelled(courseId, 1)
             }
+
             AttendanceStatus.UNMARKED -> {
-                Log.d("tag", "inside when unmarked")
+                Log.d("tag", "u")
                 semesterSummaryRepository.incUnmarked(1)
                 courseSummaryRepository.incUnmarked(courseId, 1)
             }
@@ -111,16 +122,19 @@ class FirebaseAttendanceRepositoryImpl(
 
     override suspend fun getAttendanceForPeriodAndDate(
         periodId: String,
-        date: LocalDate
+        date: LocalDate,
     ): AttendanceRecord? {
-        val dateString = date.toString()
-        val snapshot = getAttendanceCollection()
+        Log.d("tag", "inside getAttendanceForPeriodAndDate")
+        val dateTimestamp = date.toTimestamp()
+        Log.d("tag", "dateTimestamp: $dateTimestamp")
+        val snapshot = db.collectionGroup("attendance")
             .whereEqualTo("periodId", periodId)
-            .whereEqualTo("date", dateString)
+            .whereEqualTo("date", dateTimestamp)
             .limit(1)
             .get()
             .await()
 
+        Log.d("tag", "size: ${snapshot.documents.size}")
         return snapshot.documents.firstOrNull()?.let { doc ->
             try {
                 doc.toObject(AttendanceRecordDto::class.java)?.toDomain()
@@ -177,7 +191,7 @@ class FirebaseAttendanceRepositoryImpl(
                 }
 
             awaitClose { listener.remove() }
-    }
+        }
 
 
 }
