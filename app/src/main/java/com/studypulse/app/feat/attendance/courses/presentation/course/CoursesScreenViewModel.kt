@@ -27,7 +27,7 @@ class CoursesScreenViewModel(
     fun loadCoursesData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            courseRepository.getAllCoursesSortedByName()
+            courseRepository.getAllCoursesSortedByNameFlow()
                 .onFailure {
                     SnackbarController.sendEvent(SnackbarEvent("Error occurred"))
                     _state.update { it.copy(isLoading = false) }

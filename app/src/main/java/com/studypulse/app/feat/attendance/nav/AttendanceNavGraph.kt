@@ -94,10 +94,9 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
                 koinViewModel(viewModelStoreOwner = parentEntry)
             val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
             AttendanceOverviewScreen(
-                attendanceByCourse = attendanceByCourse,
+                onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
                 onDetails = { navController.navigate(Route.AttendanceDetailsRoute(it)) },
-                viewModel = sharedViewModel
-            )
+                )
         }
 
         composable<Route.AttendanceDetailsRoute> { backStackEntry ->

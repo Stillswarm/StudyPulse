@@ -69,9 +69,9 @@ fun AppTopBar(
 
             Text(
                 text = title,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
-                letterSpacing = (-0.01).sp,
+                fontWeight = FontWeight.Medium,
+                fontSize = 18.sp,
+                lineHeight = 28.sp,
                 color = titleColor,
             )
 

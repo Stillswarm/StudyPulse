@@ -8,4 +8,7 @@ data class SemesterSummary(
     val absentRecords: Int,
     val unmarkedRecords: Int,
     val minAttendance: Int,
-)
+) {
+    val totalClasses: Int
+        get() = + presentRecords + absentRecords + unmarkedRecords
+}

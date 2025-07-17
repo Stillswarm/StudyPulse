@@ -156,7 +156,8 @@ fun AttendanceScreen(
                             ) {
                                 Text(
                                     text = "Quick Stats",
-                                    fontSize = 22.sp,
+                                    fontSize = 18.sp,
+                                    lineHeight = 28.sp,
                                     fontWeight = FontWeight.SemiBold,
                                 )
 
@@ -252,6 +253,7 @@ fun StatBox(
         Text(
             text = value.toString(),
             fontSize = 64.sp,
+            lineHeight = 24.sp,
             fontStyle = FontStyle.Italic,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -269,15 +271,16 @@ fun StatBox(
 
         Text(
             text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = (-0.05).sp,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            fontWeight = FontWeight.Medium,
             modifier = Modifier
                 .fillMaxWidth(0.75f)
                 .padding(4.dp)
                 .align(Alignment.TopEnd),
             minLines = 2,
             maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
     }

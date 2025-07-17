@@ -22,37 +22,35 @@ class FirebaseCourseRepositoryImpl(
     private val courseSummaryRepository: CourseSummaryRepository,
 ) : CourseRepository {
     suspend fun getSemesterId(): String = ds.semesterIdFlow.first()
-    override fun getAllCourses(): Result<Flow<List<Course>>> =
-        runCatching {
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
-            callbackFlow {
-                val listener = db.collection("users")
-                    .document(userId)
-                    .collection("semesters")
-                    .document(getSemesterId())
-                    .collection("courses")
-                    .addSnapshotListener { snapshot, error ->
-                        if (error != null) {
-                            close(error)
-                            return@addSnapshotListener
-                        }
-
-                        val courses = snapshot?.documents
-                            ?.mapNotNull { doc ->
-                                doc.toObject(CourseDto::class.java)?.copy(id = doc.id)
-                            }?.map {
-                                it.toDomain()
-                            } ?: emptyList()
-
-                        trySend(courses)
+    override fun getAllCoursesFlow(): Flow<List<Course>> {
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+        return callbackFlow {
+            val listener = db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .document(getSemesterId())
+                .collection("courses")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        close(error)
+                        return@addSnapshotListener
                     }
 
-                awaitClose { listener.remove() }
-            }
-        }
+                    val courses = snapshot?.documents
+                        ?.mapNotNull { doc ->
+                            doc.toObject(CourseDto::class.java)?.copy(id = doc.id)
+                        }?.map {
+                            it.toDomain()
+                        } ?: emptyList()
 
-    override fun getAllCoursesSortedByName(): Result<Flow<List<Course>>> =
+                    trySend(courses)
+                }
+
+            awaitClose { listener.remove() }
+        }
+    }
+
+    override fun getAllCoursesSortedByNameFlow(): Result<Flow<List<Course>>> =
         runCatching {
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
@@ -79,6 +77,21 @@ class FirebaseCourseRepositoryImpl(
                 awaitClose { listener.remove() }
             }
         }
+
+    override suspend fun getAllCourses() = runCatching {
+        val userId =
+            auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+        val snapshot = db.collection("users")
+            .document(userId)
+            .collection("semesters")
+            .document(getSemesterId())
+            .collection("courses")
+            .get()
+            .await()
+
+        snapshot.documents.mapNotNull { it.toObject(CourseDto::class.java)?.toDomain() }
+
+    }
 
     override suspend fun getCourseById(id: String): Result<Course?> =
         runCatching {

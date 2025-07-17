@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.map
 class RoomCourseRepositoryImpl(
     private val courseDao: CourseDao
 ) : CourseRepository {
-    override fun getAllCourses(): Result<Flow<List<Course>>> {
-        return Result.success(courseDao.getAllCourses().map { it.map { course -> course.toDomain() } })
+    override fun getAllCoursesFlow(): Flow<List<Course>> {
+        return courseDao.getAllCourses().map { it.map { course -> course.toDomain() } }
     }
 
-    override fun getAllCoursesSortedByName(): Result<Flow<List<Course>>> {
+    override fun getAllCoursesSortedByNameFlow(): Result<Flow<List<Course>>> {
         return Result.success(courseDao.getAllCoursesSortedByName().map { it.map { c -> c.toDomain() } })
     }
 
@@ -32,6 +32,10 @@ class RoomCourseRepositoryImpl(
     }
 
     override suspend fun deleteCourse(id: String): Result<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllCourses(): Result<List<Course>> {
         TODO("Not yet implemented")
     }
 }

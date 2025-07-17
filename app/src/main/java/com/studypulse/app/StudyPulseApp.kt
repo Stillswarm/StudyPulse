@@ -10,6 +10,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.studypulse.app.nav.AppNavGraph
+import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 
 @Composable
@@ -46,7 +48,9 @@ fun StudyPulseApp(
         Box(
             modifier = modifier.fillMaxSize()
         ) {
-            AppNavGraph()
+            Surface(color = WhiteSecondary) {
+                AppNavGraph()
+            }
 
             SnackbarHost(
                 hostState = snackbarState,

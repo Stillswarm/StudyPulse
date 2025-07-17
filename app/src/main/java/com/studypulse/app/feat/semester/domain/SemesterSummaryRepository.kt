@@ -1,6 +1,7 @@
 package com.studypulse.app.feat.semester.domain
 
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
+import kotlinx.coroutines.flow.Flow
 
 interface SemesterSummaryRepository {
     suspend fun put(minAttendance: Int): Result<Unit>
@@ -13,4 +14,6 @@ interface SemesterSummaryRepository {
     suspend fun decUnmarked(by: Int): Result<Unit>
     suspend fun incCancelled(by: Int): Result<Unit>
     suspend fun decCancelled(by: Int): Result<Unit>
+
+     fun getSummaryFlow(): Flow<SemesterSummary>
 }

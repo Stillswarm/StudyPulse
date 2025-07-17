@@ -11,4 +11,6 @@ data class CourseSummary(
     val absentRecords: Int,
     val unmarkedRecords: Int,
     val minAttendance: Int,
-)
+) {
+    val totalClasses = presentRecords + absentRecords + unmarkedRecords
+}

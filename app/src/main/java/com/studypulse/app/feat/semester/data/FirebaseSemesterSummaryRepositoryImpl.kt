@@ -9,6 +9,8 @@ import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
 import com.studypulse.app.feat.semester.domain.model.SemesterSummaryDto
 import com.studypulse.app.feat.semester.domain.model.toDomain
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
@@ -121,5 +123,22 @@ class FirebaseSemesterSummaryRepositoryImpl(
                     "cancelledRecords",
                     FieldValue.increment(-by.toLong())
                 ).await()
+        }
+    
+    override fun getSummaryFlow() =
+        callbackFlow { 
+            val listener = summaryDocument()
+                .addSnapshotListener { snap, error ->
+                    if (error != null) {
+                        Log.e("tag", "error: $error")
+                    }
+                    
+                    snap?.let { 
+                        val e = it.toObject(SemesterSummaryDto::class.java)?.toDomain()
+                        if (e != null) trySend(e)
+                    }
+                }
+
+            awaitClose { listener.remove() }
         }
 }

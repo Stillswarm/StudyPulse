@@ -4,8 +4,11 @@ import com.studypulse.app.StudyPulseDatabase
 import com.studypulse.app.feat.attendance.attendance.data.FirebaseAttendanceRepositoryImpl
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceDao
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
+import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetCourseWiseSummariesUseCase
+import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetCourseWiseSummariesUseCaseImpl
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
 import com.studypulse.app.feat.attendance.attendance.presentation.home.AttendanceScreenViewModel
+import com.studypulse.app.feat.attendance.attendance.presentation.overview.AttendanceOverviewScreenViewModel
 import com.studypulse.app.feat.attendance.calender.ui.AttendanceCalendarScreenViewModel
 import com.studypulse.app.feat.attendance.courses.data.FirebaseCourseRepositoryImpl
 import com.studypulse.app.feat.attendance.courses.data.FirebaseCourseSummaryRepositoryImpl
@@ -20,7 +23,9 @@ import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPer
 import com.studypulse.app.feat.attendance.courses.presentation.course.CoursesScreenViewModel
 import com.studypulse.app.feat.attendance.courses.presentation.course_details.CourseDetailsScreenViewModel
 import com.studypulse.app.feat.attendance.schedule.presentation.ScheduleScreenViewModel
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val attendanceModule = module {
@@ -40,6 +45,9 @@ val attendanceModule = module {
     single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get(), get(), get(), get(), get()) }
     single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get(), get(), get()) }
 
+    // use-cases
+    factoryOf(::GetCourseWiseSummariesUseCaseImpl) bind GetCourseWiseSummariesUseCase::class
+
     // VM
     viewModelOf(::CoursesScreenViewModel)
     viewModelOf(::ScheduleScreenViewModel)
@@ -49,5 +57,6 @@ val attendanceModule = module {
     viewModelOf(::AttendanceScreenViewModel)
     viewModelOf(::AttendanceCalendarScreenViewModel)
     viewModelOf(::AttendanceStatsSharedViewModel)
+    viewModelOf(::AttendanceOverviewScreenViewModel)
 
 }
