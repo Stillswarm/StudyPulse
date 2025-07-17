@@ -11,7 +11,6 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +42,7 @@ class AttendanceScreenViewModel(
     fun fetchStatBoxData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            delay(1_000)
+//            delay(1_000)
             if (semesterIdFlow.value != "") {
                 supervisorScope {
                     Log.d("tag", "fetching stat box data")

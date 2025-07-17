@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.app.ui.theme.StudyPulseTheme
 import org.koin.androidx.compose.koinViewModel
 
 val LocalCurrentUser = compositionLocalOf<String?> { null }
@@ -21,7 +22,9 @@ class MainActivity : ComponentActivity() {
             val appViewModel = koinViewModel<AppViewModel>()
             val currentUser by appViewModel.currentUid.collectAsState()
             CompositionLocalProvider(LocalCurrentUser provides currentUser) {
-                StudyPulseApp()
+                StudyPulseTheme {
+                    StudyPulseApp()
+                }
             }
         }
     }

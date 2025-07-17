@@ -1,23 +1,30 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.home
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -41,10 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
+import com.studypulse.app.common.ui.components.LargeAppTopBar
 import com.studypulse.app.common.ui.modifier.gradientFill
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
+import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.GreenDark
 import com.studypulse.app.ui.theme.Purple
@@ -60,7 +69,7 @@ fun AttendanceScreen(
     onNavigateToAttendanceCalendar: () -> Unit,
     onNavigateToAttendanceOverview: () -> Unit,
     modifier: Modifier = Modifier,
-    vm: AttendanceScreenViewModel = koinViewModel()
+    vm: AttendanceScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val semId by vm.semesterIdFlow.collectAsStateWithLifecycle()
@@ -73,22 +82,25 @@ fun AttendanceScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        Column {
-            AppTopBar(
-                backgroundColor = Gold,
-                title = "Track Attendance",
-                navigationIcon = R.drawable.logo_pulse,
-                onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
-                actionIcon = R.drawable.ic_profile,
-                onActionClick = onNavigateToProfile,
-                foregroundGradient = Brush.linearGradient(
-                    colorStops = arrayOf(
-                        Pair(0f, Purple),
-                        Pair(59f, Color.Black)
-                    )
-                ),
-            )
+        LargeAppTopBar(
+            backgroundColor = Gold,
+            title = "Your Ultimate Bunk Mate!",
+            navigationIcon = R.drawable.logo_pulse,
+            onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
+            actionIcon = R.drawable.ic_profile,
+            onActionClick = onNavigateToProfile,
+            foregroundGradient = Brush.linearGradient(
+                colorStops = arrayOf(
+                    Pair(0f, Purple),
+                    Pair(59f, Color.Black)
+                )
+            ),
+            imageRes = R.drawable.im_books_black,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
 
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(Modifier.height(200.dp)) // because top bar takes up 250.dp
             if (state.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -112,117 +124,108 @@ fun AttendanceScreen(
                         }
                     },
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).noRippleClickable { onNavigateToAddSemester() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .padding(top = 50.dp)
+                        .noRippleClickable { onNavigateToAddSemester() },
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(20.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     item {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White
+                            ),
+                            border = BorderStroke(2.dp, Gold),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 4.dp
+                            ),
+                            shape = RoundedCornerShape(16.dp)
                         ) {
-                            Text(
-                                text = "Quick Stats",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = (-0.01).sp,
-                            )
-
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    StatBox(
-                                        title = "Classes Unmarked",
-                                        value = state.unmarkedCount,
-                                        onClick = onNavigateToAttendanceCalendar,
-//                                        modifier = Modifier.weight(1f)
-                                    )
-                                    StatBox(
-                                        title = "100% Attendance",
-                                        value = state.fullAttendanceCount,
-                                        onClick = onNavigateToAttendanceOverview,
-//                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    StatBox(
-                                        title = "Low Attendance",
-                                        value = state.lowAttendanceCount,
-                                        onClick = onNavigateToAttendanceOverview,
-                                    )
-                                    StatBox(
-                                        title = "Overall Percentage",
-                                        value = state.attendancePercentage,
-                                        onClick = onNavigateToCourseList,
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Text(
-                                text = "Quick Attendance",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = (-0.01).sp,
-                            )
-
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                items(5, key = { it }) {
-                                    QuickAttendanceBox(courseCode = "Course $it")
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            Text(
-                                text = "Report",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = (-0.01).sp,
-                            )
-
-                            LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 8.dp),
-                                verticalAlignment = Alignment.Bottom,
-                                horizontalArrangement = Arrangement.spacedBy(
-                                    12.dp,
-                                    alignment = Alignment.CenterHorizontally
-                                )
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(state.courseWiseSummaries) {
-                                    VerticalGraphBar(courseName = it.courseName, height = vm.getPercent(it) / 100f)
+                                Text(
+                                    text = "Quick Stats",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        StatBox(
+                                            title = "Classes Unmarked",
+                                            value = state.unmarkedCount,
+                                            onClick = onNavigateToAttendanceCalendar,
+//                                        modifier = Modifier.weight(1f)
+                                        )
+                                        StatBox(
+                                            title = "100% Attendance",
+                                            value = state.fullAttendanceCount,
+                                            onClick = onNavigateToAttendanceOverview,
+//                                        modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        StatBox(
+                                            title = "Low Attendance",
+                                            value = state.lowAttendanceCount,
+                                            onClick = onNavigateToAttendanceOverview,
+                                        )
+                                        StatBox(
+                                            title = "Overall Percentage",
+                                            value = state.attendancePercentage,
+                                            onClick = onNavigateToCourseList,
+                                        )
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    item {
+                        DashboardNavButton(
+                            icon = R.drawable.ic_stats,
+                            title = "Attendance Overview",
+                            desc = "View detailed statistics",
+                            onClick = onNavigateToAttendanceOverview,
+                        )
+                    }
+
+                    item {
+                        DashboardNavButton(
+                            icon = R.drawable.ic_book,
+                            title = "Courses Overview",
+                            desc = "Manage your courses",
+                            onClick = onNavigateToCourseList
+                        )
+                    }
+
+                    item {
+                        DashboardNavButton(
+                            icon = R.drawable.ic_calender,
+                            title = "Attendance Calendar",
+                            desc = "Mark attendance by date",
+                            onClick = onNavigateToAttendanceCalendar
+                        )
                     }
                 }
             }
@@ -235,7 +238,7 @@ fun StatBox(
     title: String,
     value: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
@@ -252,22 +255,22 @@ fun StatBox(
             fontStyle = FontStyle.Italic,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .offset((-8).dp, (16).dp)
                 .gradientFill(
                     Brush.linearGradient(
                         colorStops = arrayOf(
-                            Pair(0f, Purple),
-                            Pair(0.99f, Gold.copy(alpha = 0.75f))
+                            Pair(0.0f, Color.Black.copy(0.75f)),
+                            Pair(0.99f, Gold)
                         )
                     )
                 )
+                .align(Alignment.BottomStart)
+                .offset((-8).dp, (16).dp)
         )
 
         Text(
             text = title,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.05).sp,
             modifier = Modifier
                 .fillMaxWidth(0.75f)
@@ -283,7 +286,7 @@ fun StatBox(
 @Composable
 fun QuickAttendanceBox(
     courseCode: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
@@ -337,7 +340,7 @@ fun QuickAttendanceBox(
 fun VerticalGraphBar(
     courseName: String,
     height: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -370,5 +373,60 @@ fun VerticalGraphBar(
         Text(
             courseName
         )
+    }
+}
+
+@Composable
+fun DashboardNavButton(
+    @DrawableRes icon: Int,
+    title: String,
+    desc: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Gold.copy(alpha = 0.1f))
+            .noRippleClickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Gold),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null,
+                )
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    lineHeight = 24.sp,
+                )
+
+                Text(
+                    text = desc,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = DarkGray
+                )
+            }
+        }
     }
 }
