@@ -1,9 +1,13 @@
 package com.studypulse.app.feat.attendance.calender.ui.components
 
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,61 +41,104 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceReco
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.PeriodWithAttendance
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import com.studypulse.app.ui.theme.DarkGray
+import com.studypulse.app.ui.theme.Gold
+import com.studypulse.app.ui.theme.GreenNormal
+import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.app.ui.theme.Red
+import com.studypulse.app.ui.theme.WarmWhite
+import com.studypulse.app.ui.theme.WhiteSecondary
 import java.time.LocalDate
 
 @Composable
 fun DayCoursesBottomSheetContent(
     periodList: List<PeriodWithAttendance>,
     localDate: LocalDate,
+    onCancelDay: () -> Unit,
     onClose: () -> Unit,
     onPresent: (PeriodWithAttendance) -> Unit,
     onAbsent: (PeriodWithAttendance) -> Unit,
     onCancelled: (PeriodWithAttendance) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+    var dayCancelled by remember { mutableStateOf(false) }
+    Box(modifier = modifier
+        .fillMaxSize()
+        .background(WhiteSecondary)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            contentPadding = PaddingValues(bottom = 80.dp) // Space for button
         ) {
-            Column {
-                Text(
-                    text = localDate.toFullString(),
-                    fontSize = 18.sp,
-                    lineHeight = 28.sp
-                )
 
-                Spacer(Modifier.height(4.dp))
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = "Class Schedule",
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = Color.Gray
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = localDate.toFullString(),
+                            fontSize = 18.sp,
+                            lineHeight = 28.sp
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Text(
+                            text = "Class Schedule",
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = DarkGray
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "hide",
+                        modifier = Modifier.noRippleClickable { onClose() }
+                    )
+                }
             }
 
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "hide",
-                modifier = Modifier.noRippleClickable { onClose() }
-            )
-        }
+            item {
+                Button(
+                    onClick = {
+                        dayCancelled = true
+                        onCancelDay()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Gold.copy(alpha = 0.2f)
+                    ),
+                    border = BorderStroke(2.dp, Gold),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Mark as Holiday/Cancelled",
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = Color.Black
+                    )
+                }
+            }
 
-        periodList.forEach { periodWithAttendance ->
-            BottomSheetItem(
-                period = periodWithAttendance.period,
-                attendanceRecord = periodWithAttendance.attendanceRecord,
-                onPresent = { onPresent(periodWithAttendance) },
-                onAbsent = { onAbsent(periodWithAttendance) },
-                onCancelled = { onCancelled(periodWithAttendance) }
-            )
+            items(periodList) { periodWithAttendance ->
+                BottomSheetItem(
+                    period = periodWithAttendance.period,
+                    attendanceRecord = periodWithAttendance.attendanceRecord,
+                    onPresent = { onPresent(periodWithAttendance) },
+                    onAbsent = { onAbsent(periodWithAttendance) },
+                    onCancelled = { onCancelled(periodWithAttendance) },
+                    dayCancelled = dayCancelled
+                )
+            }
         }
     }
 }
@@ -98,19 +149,21 @@ fun BottomSheetItem(
     onAbsent: () -> Unit,
     onCancelled: () -> Unit,
     period: Period,
+    dayCancelled: Boolean,
     attendanceRecord: AttendanceRecord?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.LightGray.copy(alpha = 0.4f))
+            .background(WarmWhite)
+            .border(1.dp, Gold, RoundedCornerShape(12.dp))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
@@ -122,7 +175,7 @@ fun BottomSheetItem(
             Text(
                 text = "${period.startTime} - ${period.endTime}",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = DarkGray,
                 lineHeight = 20.sp
             )
 
@@ -130,7 +183,8 @@ fun BottomSheetItem(
                 attendanceRecord = attendanceRecord,
                 onPresent = onPresent,
                 onAbsent = onAbsent,
-                onCancelled = onCancelled
+                onCancelled = onCancelled,
+                dayCancelled = dayCancelled
             )
         }
     }
@@ -143,10 +197,15 @@ fun AttendanceStatusButtonsRow(
     onAbsent: () -> Unit,
     onCancelled: () -> Unit,
     modifier: Modifier = Modifier,
+    dayCancelled: Boolean = false,
 ) {
-    var presentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.PRESENT) Color.Gray else Color.Green) }
-    var absentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.ABSENT) Color.Gray else Color.Red) }
-    var cancelledColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.CANCELLED) Color.Gray else Color.DarkGray) }
+    Log.d("tag", "AttendanceStatusButtonsRow: $dayCancelled")
+    var dayCancelled by remember {
+        mutableStateOf(dayCancelled)
+    }
+    var presentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.PRESENT) LightGray else GreenNormal) }
+    var absentColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.ABSENT) LightGray else Red) }
+    var cancelledColor by remember { mutableStateOf(if (attendanceRecord == null || attendanceRecord.status != AttendanceStatus.CANCELLED) LightGray else DarkGray) }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -157,12 +216,13 @@ fun AttendanceStatusButtonsRow(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .size(32.dp)
-                .background(presentColor)
+                .background(if (dayCancelled) DarkGray else presentColor)
                 .noRippleClickable {
                     onPresent()
-                    presentColor = Color.Green
-                    cancelledColor = Color.Gray
-                    absentColor = Color.Gray
+                    presentColor = GreenNormal
+                    cancelledColor = LightGray
+                    absentColor = LightGray
+                    dayCancelled = false
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -179,12 +239,13 @@ fun AttendanceStatusButtonsRow(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .size(32.dp)
-                .background(absentColor)
+                .background(if (dayCancelled) DarkGray else absentColor)
                 .noRippleClickable {
                     onAbsent()
-                    absentColor = Color.Red
-                    presentColor = Color.Gray
-                    cancelledColor = Color.Gray
+                    absentColor = Red
+                    presentColor = LightGray
+                    cancelledColor = LightGray
+                    dayCancelled = false
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -201,12 +262,13 @@ fun AttendanceStatusButtonsRow(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .size(32.dp)
-                .background(cancelledColor)
+                .background(if (dayCancelled) DarkGray else cancelledColor)
                 .noRippleClickable {
                     onCancelled()
-                    cancelledColor = Color.DarkGray
-                    presentColor = Color.Gray
-                    absentColor = Color.Gray
+                    cancelledColor = DarkGray
+                    presentColor = LightGray
+                    dayCancelled = false
+                    absentColor = LightGray
                 },
             contentAlignment = Alignment.Center
         ) {

@@ -1,11 +1,12 @@
 package com.studypulse.app.feat.attendance.calender.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
-import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
@@ -60,6 +61,18 @@ class AttendanceCalendarScreenViewModel(
         _state.update { it.copy(selectedDate = null) }
     }
 
+    fun onDayCancelled() {
+        if (_state.value.selectedDate == null || _state.value.selectedDate!!.isAfter(LocalDate.now())) {
+            viewModelScope.launch {
+                SnackbarController.sendEvent(SnackbarEvent(message = "Can't mark attendance for future dates"))
+            }
+        }
+        _state.value.periodsList.forEach { periodWithAttendance ->
+            Log.d("tag", periodWithAttendance.period.courseName + " " + periodWithAttendance.attendanceRecord?.id)
+            markAttendance(periodWithAttendance, AttendanceStatus.CANCELLED)
+        }
+    }
+
     fun markAttendance(periodWithAttendance: PeriodWithAttendance, status: AttendanceStatus) {
         if (_state.value.selectedDate == null || _state.value.selectedDate!!.isAfter(LocalDate.now())) {
             viewModelScope.launch {
@@ -74,6 +87,7 @@ class AttendanceCalendarScreenViewModel(
                     courseId = periodWithAttendance.period.courseId
                 )
             viewModelScope.launch {
+                Log.d("tag", "marking ${record.id}")
                 attendanceRepository.upsertAttendance(record)
             }
         }

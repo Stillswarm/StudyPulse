@@ -61,7 +61,7 @@ fun AppTopBar(
                 painter = painterResource(id = navigationIcon),
                 contentDescription = "nav icon",
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .noRippleClickable { onNavigationClick() }
                     .gradientFill(foregroundGradient),
                 tint = titleColor

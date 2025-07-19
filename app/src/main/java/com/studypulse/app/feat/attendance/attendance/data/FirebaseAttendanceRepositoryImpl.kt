@@ -33,16 +33,15 @@ class FirebaseAttendanceRepositoryImpl(
         db.collection("users/${getUserId()}/attendance")
 
     override suspend fun upsertAttendance(attendanceRecord: AttendanceRecord) {
-        Log.d("tag", "inside upsert")
         val collection = getAttendanceCollection()
         val docId = attendanceRecord.id.ifBlank {
             collection.document().id
         }
-        Log.d("tag", docId)
+        Log.d("tag", getUserId())
 
         val courseId = attendanceRecord.courseId
         val doc = collection.document(docId).get().await()
-        Log.d("tag", "$courseId and ${doc.id}")
+        Log.d("tag", "about  to unmark")
         when (doc.get("status")) {
             "PRESENT" -> {
                 semesterSummaryRepository.decPresent(1)
@@ -50,12 +49,14 @@ class FirebaseAttendanceRepositoryImpl(
             }
 
             "ABSENT" -> {
+                Log.d("tag", "about  to unmark 1")
                 semesterSummaryRepository.decAbsent(1)
+                Log.d("tag", "about  to unmark 2")
                 courseSummaryRepository.decAbsent(courseId, 1)
+                Log.d("tag", "about  to unmark 3")
             }
 
             "UNMARKED" -> {
-                Log.d("tag", "inside when unmarked")
                 semesterSummaryRepository.decUnmarked(1)
                 courseSummaryRepository.decUnmarked(courseId, 1)
             }

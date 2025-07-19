@@ -69,7 +69,9 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     }
 
     composable<Route.AttendanceCalendarRoute> {
-        AttendanceCalendarScreen()
+        AttendanceCalendarScreen(
+            navigateUp = { navController.navigateUp() }
+        )
     }
 
     composable<Route.AttendanceRoute> {

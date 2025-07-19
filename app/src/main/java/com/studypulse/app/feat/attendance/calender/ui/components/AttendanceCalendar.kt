@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import com.studypulse.app.common.util.DayCellInfo
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.getAbbreviatedName
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.ui.theme.Gold
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -140,7 +142,7 @@ fun DayCell(
     onClick: (LocalDate?) -> Unit,
 ) {
     val cellSize = 48.dp
-    val circleRadius = 32.dp
+    val highlightBoxSize = 40.dp
     val dotSize = 4.dp
 
     Box(
@@ -152,11 +154,18 @@ fun DayCell(
         if (info.isToday && info.dayOfMonth != null) {
             Box(
                 modifier = Modifier
-                    .size(circleRadius)
+                    .size(highlightBoxSize)
                     .drawBehind {
-                        drawCircle(
-                            color = Color.Blue,
-                            style = Stroke(width = 2.dp.toPx())
+                        // Fill
+                        drawRoundRect(
+                            color = Gold.copy(alpha = 0.1f),
+                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+                        )
+                        // Border
+                        drawRoundRect(
+                            color = Gold,
+                            style = Stroke(width = 2.dp.toPx()),
+                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
                         )
                     }
             )
@@ -165,9 +174,9 @@ fun DayCell(
         if (info.isSelected && info.dayOfMonth != null) {
             Box(
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .size(circleRadius)
-                    .background(color = Color.Blue)
+                    .clip(RoundedCornerShape(12.dp))
+                    .size(highlightBoxSize)
+                    .background(color = Gold)
             )
         }
 
@@ -178,7 +187,7 @@ fun DayCell(
                 color = when {
                     info.isSelected -> Color.White
                     info.isToday -> Color.Unspecified
-                    else -> Color(0xFF333333)
+                    else -> Color.Black
                 }
             )
         }
@@ -189,7 +198,7 @@ fun DayCell(
                     .align(Alignment.BottomCenter)
                     .offset(y = 4.dp)
                     .size(dotSize)
-                    .background(color = if (info.isSelected) Color(0xFFFF007A) else Color(0xFF007AFF))
+                    .background(color = if (info.isSelected) Gold else Color(0xFF007AFF))
             )
         }
     }
