@@ -5,5 +5,6 @@ data class SignInScreenState(
     val password: String = "",
     val errorMsg: String? = null,
     val emailSent: Boolean = false,
-    val counter: Int = 30
+    val counter: Int = 30,
+    val error: String? = null,
 )

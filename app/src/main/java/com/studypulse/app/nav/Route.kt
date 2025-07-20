@@ -1,5 +1,6 @@
 package com.studypulse.app.nav
 
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import kotlinx.serialization.Serializable
 
 object Route {
@@ -16,7 +17,7 @@ object Route {
     data class CourseDetailRoute(val courseId: String)
 
     @Serializable
-    data class AddPeriodRoute(val courseId: String)
+    data class AddPeriodRoute(val courseId: String, val day: Day? = null)
 
     @Serializable
     data class ScheduleRoute(val courseId: String?)

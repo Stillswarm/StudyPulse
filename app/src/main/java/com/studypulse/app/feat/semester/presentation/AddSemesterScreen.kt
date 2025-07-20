@@ -43,8 +43,8 @@ import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.toFullString
 import com.studypulse.app.common.util.toLocalDate
 import com.studypulse.app.feat.semester.domain.model.SemesterName
-import com.studypulse.app.ui.theme.GreenDark
 import com.studypulse.app.ui.theme.GreenLight
+import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -74,7 +74,7 @@ fun AddSemesterScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             AppTopBar(
-                backgroundColor = GreenDark,
+                backgroundColor = GreenSecondary,
                 foregroundGradient = null,
                 title = "Change Active Semester",
                 titleColor = Color.White,
@@ -291,7 +291,7 @@ fun AddSemesterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp, 0.dp, 8.dp, 0.dp))
-                        .background(GreenDark)
+                        .background(GreenSecondary)
                 ) {
                     Text(
                         text = "Submit",

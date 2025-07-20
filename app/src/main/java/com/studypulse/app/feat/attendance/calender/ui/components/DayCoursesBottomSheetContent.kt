@@ -54,6 +54,7 @@ import java.time.LocalDate
 fun DayCoursesBottomSheetContent(
     periodList: List<PeriodWithAttendance>,
     localDate: LocalDate,
+    buttonEnabled: Boolean,
     onCancelDay: () -> Unit,
     onClose: () -> Unit,
     onPresent: (PeriodWithAttendance) -> Unit,
@@ -112,11 +113,12 @@ fun DayCoursesBottomSheetContent(
                         dayCancelled = true
                         onCancelDay()
                     },
+                    enabled = buttonEnabled,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Gold.copy(alpha = 0.2f)
+                        containerColor = Gold.copy(alpha = 0.2f),
                     ),
-                    border = BorderStroke(2.dp, Gold),
+                    border = BorderStroke(2.dp, Gold.copy(alpha = if (buttonEnabled) 1f else 0.2f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(

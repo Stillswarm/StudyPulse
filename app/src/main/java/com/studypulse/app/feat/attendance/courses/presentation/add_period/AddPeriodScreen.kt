@@ -1,9 +1,10 @@
 package com.studypulse.app.feat.attendance.courses.presentation.add_period
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,12 +15,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -27,18 +25,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.components.TimeInputDialog
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
+import com.studypulse.app.common.util.formatWithLeadingZero
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
-import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.DarkGray
+import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import org.koin.androidx.compose.koinViewModel
 
@@ -47,14 +51,15 @@ import org.koin.androidx.compose.koinViewModel
 fun AddPeriodScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AddPeriodScreenViewModel = koinViewModel()
+    viewModel: AddPeriodScreenViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     Box(
-        modifier = modifier.fillMaxSize()) {
+        modifier = modifier.fillMaxSize()
+    ) {
         Column {
             AppTopBar(
-                backgroundColor = GreenDark,
+                backgroundColor = GreenSecondary,
                 foregroundGradient = null,
                 title = "Add Period",
                 titleColor = Color.White,
@@ -64,7 +69,12 @@ fun AddPeriodScreen(
                 onActionClick = null
             )
 
-            Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Day",
@@ -74,13 +84,14 @@ fun AddPeriodScreen(
                     )
 
                     var expanded by remember { mutableStateOf(false) }
-                    OutlinedButton(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                        onClick = { expanded = !expanded },
-                        contentPadding = PaddingValues(16.dp)
+                            .padding(horizontal = 12.dp)
+                            .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
+                            .noRippleClickable { expanded = !expanded }
+                            .background(Color.Transparent)
+                            .padding(0.dp)
                     ) {
                         Column {
                             Row(
@@ -99,24 +110,28 @@ fun AddPeriodScreen(
                                 )
                             }
 
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
+                            AnimatedVisibility(
+                                visible = expanded,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp)
+                                    .clip(RoundedCornerShape(0, 0, 0, 8))
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
                             ) {
-                                Day.entries.forEachIndexed { index, day ->
-                                    DropdownMenuItem(
-                                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                        text = { Text(day.name.convertToSentenceCase(), fontSize = 16.sp) },
-                                        onClick = {
-                                            viewModel.onDayChange(day)
-                                            expanded = false
-                                        }
-                                    )
-                                    if (index < Day.entries.size - 1) {
-                                        HorizontalDivider()
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Day.entries.forEachIndexed { idx, y ->
+                                        Text(
+                                            y.toString(),
+                                            color = Color.Black,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 8.dp)
+                                                .noRippleClickable {
+                                                    viewModel.onDayChange(y)
+                                                    expanded = false
+                                                },
+                                            textAlign = TextAlign.Center
+                                        )
+                                        if (idx < 6) HorizontalDivider()
                                     }
                                 }
                             }
@@ -126,46 +141,48 @@ fun AddPeriodScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Start Time",
+                        text = "Start Time (24-hr Clock)",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
 
-                    val startTimePickerState = rememberTimePickerState(
-                        initialHour = state.startTimeHour,
-                        initialMinute = state.startTimeMinute,
-                        is24Hour = true
-                    )
-                    TimeInputDialog(
-                        timePickerState = startTimePickerState,
-                        onTimeChange = { h, m ->
-                            viewModel.onStartTimeChange(h, m)
-                        },
-                        containerColor = LightGray
-                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(LightGray)
+                            .noRippleClickable { viewModel.showStartTimePicker() }
+                    ) {
+                        Text(
+                            text = "${formatWithLeadingZero(state.startTimeHour)} : ${formatWithLeadingZero(state.startTimeMinute)}",
+                            color = DarkGray,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "End Time",
+                        text = "End Time (24-hr Clock)",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
 
-                    val endTimePickerState = rememberTimePickerState(
-                        initialHour = state.endTimeHour,
-                        initialMinute = state.endTimeMinute,
-                        is24Hour = true
-                    )
-                    TimeInputDialog(
-                        timePickerState = endTimePickerState,
-                        onTimeChange = { h, m ->
-                            viewModel.onEndTimeChange(h, m)
-                        },
-                        containerColor = LightGray
-                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(LightGray)
+                            .noRippleClickable { viewModel.showEndTimePicker() }
+                    ) {
+                        Text(
+                            text = "${formatWithLeadingZero(state.endTimeHour)} : ${formatWithLeadingZero(state.endTimeMinute)}",
+                            color = DarkGray,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
 
                 Button(
@@ -174,7 +191,7 @@ fun AddPeriodScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = GreenDark)
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenSecondary)
                 ) {
                     Text(
                         text = "Add Period",
@@ -186,6 +203,40 @@ fun AddPeriodScreen(
                     )
                 }
             }
+        }
+
+            val startTimePickerState = rememberTimePickerState(
+                initialHour = state.startTimeHour,
+                initialMinute = state.startTimeMinute,
+                is24Hour = true
+            )
+        if (state.showStartTimePicker) {
+            TimeInputDialog(
+                onDismissRequest = { viewModel.hideStartTimePicker() },
+                timePickerState = startTimePickerState,
+                onTimeChange = { h, m ->
+                    viewModel.onStartTimeChange(h, m)
+                },
+                modifier = Modifier.align(Alignment.Center),
+                containerColor = LightGray,
+            )
+        }
+
+        val endTimePickerState = rememberTimePickerState(
+            initialHour = state.endTimeHour,
+            initialMinute = state.endTimeMinute,
+            is24Hour = true
+        )
+        if (state.showEndTimePicker) {
+            TimeInputDialog(
+                onDismissRequest = { viewModel.hideEndTimePicker() },
+                timePickerState = endTimePickerState,
+                onTimeChange = { h, m ->
+                    viewModel.onEndTimeChange(h, m)
+                },
+                modifier = Modifier.align(Alignment.Center),
+                containerColor = LightGray
+            )
         }
     }
 }

@@ -12,7 +12,20 @@
           "package_name": "com.studypulse.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "398752624684-bc83l7s0599ascgc16j3el0v62jems19.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.studypulse.app",
+            "certificate_hash": "7f6e89a1256a170f4d14c4685b927d7da6bfd271"
+          }
+        },
+        {
+          "client_id": "398752624684-fm71njnm976gjh2294ooef7m1snd2lnv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCcRUvij1Z0C54fXFLvOUf07WJHOyKdlAw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "398752624684-fm71njnm976gjh2294ooef7m1snd2lnv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

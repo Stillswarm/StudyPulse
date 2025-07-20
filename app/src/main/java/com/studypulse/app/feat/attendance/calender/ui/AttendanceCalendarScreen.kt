@@ -9,9 +9,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
@@ -22,7 +21,6 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStat
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceCalendar
 import com.studypulse.app.feat.attendance.calender.ui.components.DayCoursesBottomSheetContent
 import com.studypulse.app.ui.theme.Gold
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -31,9 +29,18 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AttendanceCalendarScreen(
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AttendanceCalendarScreenViewModel = koinViewModel()
+    viewModel: AttendanceCalendarScreenViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    val dayCoursesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    LaunchedEffect(state.showBottomSheet) {
+        if (state.showBottomSheet) dayCoursesBottomSheetState.show()
+        else {
+            viewModel.clearSelectedDate()
+            dayCoursesBottomSheetState.hide()
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar(
@@ -48,29 +55,30 @@ fun AttendanceCalendarScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        val dayCoursesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-        val scope = rememberCoroutineScope()
-        val hideSheetAndClearDate = remember {
-            {
-                scope.launch {
-                    viewModel.clearSelectedDate()
-                    dayCoursesBottomSheetState.hide()
-                }
-            }
-        }
+//        val scope = rememberCoroutineScope()
+//        val hideSheetAndClearDate = remember {
+//            {
+//                scope.launch {
+//                    viewModel.clearSelectedDate()
+////                    dayCoursesBottomSheetState.hide()
+//                    viewModel.updateShowBottomSheet(false)
+//                }
+//            }
+//        }
 
         DisposableEffect(Unit) {
             onDispose {
-                scope.launch {
-                    dayCoursesBottomSheetState.hide()
+//                scope.launch {
+                    viewModel.updateShowBottomSheet(false)
+//                    dayCoursesBottomSheetState.hide()
                 }
-            }
+//            }
         }
 
         state.selectedDate?.let {
-            if (dayCoursesBottomSheetState.isVisible) {
+            if (state.showBottomSheet && dayCoursesBottomSheetState.isVisible) {
                 ModalBottomSheet(
-                    onDismissRequest = { hideSheetAndClearDate() },
+                    onDismissRequest = { viewModel.updateShowBottomSheet(false) },
                     sheetState = dayCoursesBottomSheetState,
                     shape = RectangleShape,
                     dragHandle = {}
@@ -78,8 +86,9 @@ fun AttendanceCalendarScreen(
                     DayCoursesBottomSheetContent(
                         periodList = state.periodsList,
                         localDate = state.selectedDate!!,
+                        buttonEnabled = state.periodsList.isNotEmpty(),
                         onClose = {
-                            hideSheetAndClearDate()
+                            viewModel.updateShowBottomSheet(false)
                         },
                         onPresent = {
                             viewModel.markAttendance(it, AttendanceStatus.PRESENT)
@@ -102,7 +111,8 @@ fun AttendanceCalendarScreen(
             eventDates = emptySet(),
             onDateSelected = {
                 viewModel.onDateSelected(it)
-                scope.launch { dayCoursesBottomSheetState.show() }
+                viewModel.updateShowBottomSheet(true)
+//                scope.launch { dayCoursesBottomSheetState.show() }
             },
             onMonthChanged = { viewModel.onMonthChanged(it) }
         )

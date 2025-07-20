@@ -1,8 +1,8 @@
 package com.studypulse.app.feat.user.data
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
 import com.studypulse.app.feat.user.domain.UserRepository
 import com.studypulse.app.feat.user.domain.model.User
@@ -19,7 +19,6 @@ class FirebaseUserRepositoryImpl(
     override suspend fun fetchCurrentUser() =
         kotlin.runCatching {
             val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-            Log.d("fcuk", userId)
             db.collection("users")
                 .document(userId)
                 .get()
@@ -28,17 +27,15 @@ class FirebaseUserRepositoryImpl(
                 ?.toDomain()
         }
 
-    override suspend fun addUser(user: User) =
-        try {
-            val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-            db.collection("users").document(userId)
-                .set(user.toDto())
-                .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-
+    override suspend fun addUser(user: User) = try {
+        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
+        db.collection("users").document(userId)
+            .set(user.toDto(), SetOptions.merge()) // This will merge with existing data
+            .await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
     // todo
     override suspend fun deleteUser(user: User) = Result.success(Unit)
 

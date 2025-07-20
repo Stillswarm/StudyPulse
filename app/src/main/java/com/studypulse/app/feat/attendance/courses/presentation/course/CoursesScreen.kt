@@ -39,7 +39,7 @@ import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenSecondary
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -115,7 +115,7 @@ fun CoursesScreen(
         }
 
         AppTopBar(
-            backgroundColor = GreenDark,
+            backgroundColor = GreenSecondary,
             title = "Add Course",
             titleColor = Color.White,
             navigationIcon = R.drawable.logo_pulse,
@@ -136,7 +136,7 @@ fun CoursesScreen(
             modifier = Modifier.align(Alignment.BottomEnd)
                 .padding(32.dp).size(64.dp),
             shape = RoundedCornerShape(16.dp, 0.dp, 16.dp, 0.dp),
-            containerColor = GreenDark,
+            containerColor = GreenSecondary,
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -157,7 +157,7 @@ fun CourseItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, GreenDark, RoundedCornerShape(8.dp))
+            .border(1.dp, GreenSecondary, RoundedCornerShape(8.dp))
             .noRippleClickable { onCourseDetails(course.id) }
     ) {
         Row(

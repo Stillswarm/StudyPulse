@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.schedule.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,14 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,113 +38,133 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.app.R
+import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.getAbbreviatedName
 import com.studypulse.app.common.util.to12HourString
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import com.studypulse.app.ui.theme.DarkGray
+import com.studypulse.app.ui.theme.GreenSecondary
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToFullSchedule: () -> Unit,
-    navigateToAddPeriod: (String) -> Unit,
+    navigateToAddPeriod: (String, Day) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ScheduleScreenViewModel = koinViewModel()
+    viewModel: ScheduleScreenViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text("My Schedule") }
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AppTopBar(
+                backgroundColor = GreenSecondary,
+                foregroundGradient = null,
+                title = "Class Timetable",
+                navigationIcon = R.drawable.ic_arrow_left,
+                onNavigationClick = { onNavigateBack },
+                actionIcon = null,
+                onActionClick = null,
+                titleColor = Color.White,
             )
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .padding(horizontal = 16.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                LazyRow {
-                    Day.entries.forEach { day ->
-                        val current = state.currentDay == day
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .drawWithContent {
-                                        drawContent()
-                                        drawLine(
-                                            color = if (current) Color.Blue else Color.Gray,
-                                            start = Offset(0f, size.height),
-                                            end = Offset(size.width, size.height),
-                                            strokeWidth = if (current) 2.dp.toPx() else 0.5.dp.toPx()
-                                        )
-                                    }
-                                    .clickable { viewModel.toggleDay(day) },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = day.name.convertToSentenceCase().getAbbreviatedName(),
-                                    fontSize = 14.sp,
-                                    lineHeight = 20.sp,
-                                    fontWeight = if (current) FontWeight.SemiBold else FontWeight.Normal,
-                                    color = if (current) Color.Blue else Color.Black,
-                                    modifier = Modifier.padding(
-                                        horizontal = 24.dp,
-                                        vertical = 17.dp
+            LazyRow {
+                Day.entries.forEach { day ->
+                    val current = state.currentDay == day
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .drawWithContent {
+                                    drawContent()
+                                    drawLine(
+                                        color = if (current) GreenSecondary else Color.Gray,
+                                        start = Offset(0f, size.height),
+                                        end = Offset(size.width, size.height),
+                                        strokeWidth = if (current) 4.dp.toPx() else 0.5.dp.toPx()
                                     )
+                                }
+                                .clickable { viewModel.toggleDay(day) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = day.name.convertToSentenceCase().getAbbreviatedName(),
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                fontWeight = if (current) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (current) GreenSecondary else Color.Black,
+                                modifier = Modifier.padding(
+                                    horizontal = 24.dp,
+                                    vertical = 17.dp
                                 )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                if (state.schedule.isEmpty()) {
-                    Text(
-                        text = "No schedule yet!",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp,
-                        lineHeight = 28.sp,
-                        color = Color.Gray
-                    )
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        items(state.schedule) {
-                            ScheduleItem(
-                                period = it,
                             )
                         }
                     }
                 }
+            }
 
-                HorizontalDivider()
+            Spacer(Modifier.height(8.dp))
 
-                state.courseId?.let {
-                    OutlinedButton(
-                        onClick = {
-                            navigateToAddPeriod(it)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(text = "Add Period")
-                    }
-
-                    TextButton(
-                        onClick = onNavigateToFullSchedule,
-                    ) {
-                        Text(
-                            text = "View Full Schedule",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
+            if (state.schedule.isEmpty()) {
+                Text(
+                    text = "No schedule yet!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp,
+                    lineHeight = 28.sp,
+                    color = DarkGray
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(state.schedule) {
+                        ScheduleItem(
+                            period = it,
                         )
                     }
+                }
+                HorizontalDivider(Modifier.padding(16.dp))
+            }
+
+            state.courseId?.let {
+                OutlinedButton(
+                    onClick = {
+                        navigateToAddPeriod(it, state.currentDay)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = GreenSecondary,
+                    ),
+                    border = BorderStroke(1.dp, GreenSecondary)
+                ) {
+                    Text(text = "Add New Period", modifier = Modifier.padding(8.dp))
+                }
+
+                TextButton(
+                    onClick = onNavigateToFullSchedule,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = GreenSecondary
+                    )
+                ) {
+                    Text(
+                        text = "View Full Schedule",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
@@ -153,7 +174,7 @@ fun ScheduleScreen(
 @Composable
 fun ScheduleItem(
     period: Period,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier

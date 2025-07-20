@@ -6,9 +6,12 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 data class AttendanceCalendarScreenState(
+    val semesterStartDate: LocalDate = LocalDate.now(),
+    val semesterEndDate: LocalDate = LocalDate.now(),
     val yearMonth: YearMonth = YearMonth.now(),
     val selectedDate: LocalDate? = null,
     val periodsList: List<PeriodWithAttendance> = emptyList(),
+    val showBottomSheet: Boolean = false
 )
 
 data class PeriodWithAttendance(

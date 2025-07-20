@@ -10,6 +10,7 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceReco
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,35 +22,66 @@ import java.time.YearMonth
 
 class AttendanceCalendarScreenViewModel(
     private val attendanceRepository: AttendanceRepository,
+    private val semesterRepository: SemesterRepository,
     private val periodRepository: PeriodRepository,
 ) : ViewModel() {
     private val initialData = AttendanceCalendarScreenState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
 
-    fun onDateSelected(newDate: LocalDate?) {
+    init {
         viewModelScope.launch {
-            periodRepository.getAllPeriodsFilteredByDayOfWeek(
-                Day.valueOf(newDate?.dayOfWeek?.name?.uppercase() ?: "MONDAY")
-            )
-                .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }
-                .onSuccess { periodFlow ->
-                    periodFlow.flowOn(Dispatchers.IO).collect { periods ->
-                        _state.update {
-                            it.copy(
-                                selectedDate = newDate,
-                                periodsList = periods.map { period ->
-                                    PeriodWithAttendance(
-                                        period = period,
-                                        attendanceRecord = newDate?.let { it1 ->
-                                            attendanceRepository.getAttendanceForPeriodAndDate(period.id, it1)
-                                        }
-                                    )
-                                }
-                            )
+            val sem = semesterRepository.getActiveSemester().getOrNull()
+            if (sem == null) {
+                SnackbarController.sendEvent(SnackbarEvent("Can't find an active semester"))
+                return@launch
+            }
+            _state.update {
+                it.copy(
+                    semesterStartDate = sem.startDate,
+                    sem.endDate
+                )
+            }
+        }
+    }
+
+    fun onDateSelected(newDate: LocalDate?) {
+        if (newDate == null) return
+
+        // if outside semester range
+        if (newDate.isBefore(_state.value.semesterStartDate) || newDate.isAfter(_state.value.semesterEndDate)) {
+            _state.update {
+                it.copy(
+                    selectedDate = newDate,
+                    periodsList = emptyList(),
+                )
+            }
+        } else {
+            viewModelScope.launch {
+                periodRepository.getAllPeriodsFilteredByDayOfWeek(
+                    Day.valueOf(newDate.dayOfWeek.name.uppercase())
+                )
+                    .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }
+                    .onSuccess { periodFlow ->
+                        periodFlow.flowOn(Dispatchers.IO).collect { periods ->
+                            _state.update {
+                                it.copy(
+                                    selectedDate = newDate,
+                                    periodsList = periods.map { period ->
+                                        PeriodWithAttendance(
+                                            period = period,
+                                            attendanceRecord =
+                                                attendanceRepository.getAttendanceForPeriodAndDate(
+                                                    period.id,
+                                                    newDate
+                                                )
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
-                }
+            }
         }
     }
 
@@ -68,13 +100,21 @@ class AttendanceCalendarScreenViewModel(
             }
         }
         _state.value.periodsList.forEach { periodWithAttendance ->
-            Log.d("tag", periodWithAttendance.period.courseName + " " + periodWithAttendance.attendanceRecord?.id)
+            Log.d(
+                "tag",
+                periodWithAttendance.period.courseName + " " + periodWithAttendance.attendanceRecord?.id
+            )
             markAttendance(periodWithAttendance, AttendanceStatus.CANCELLED)
         }
     }
 
+    fun updateShowBottomSheet(show: Boolean) {
+        _state.update { it.copy(showBottomSheet = show) }
+    }
+
     fun markAttendance(periodWithAttendance: PeriodWithAttendance, status: AttendanceStatus) {
         if (_state.value.selectedDate == null || _state.value.selectedDate!!.isAfter(LocalDate.now())) {
+            _state.update { it.copy(showBottomSheet = false) }
             viewModelScope.launch {
                 SnackbarController.sendEvent(SnackbarEvent(message = "Can't mark attendance for future dates"))
             }

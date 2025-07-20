@@ -2,7 +2,6 @@ package com.studypulse.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -20,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import com.studypulse.app.nav.AppNavGraph
 import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
@@ -33,30 +32,35 @@ fun StudyPulseApp(
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(drawerShape = RectangleShape) {
-                Icon(
-                    painter = painterResource(R.drawable.logo_pulse),
-                    contentDescription = "brand logo",
-                    tint = Color.Unspecified
-                )
-            }
-        }
+    // Main content including navigation and drawers
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
-        Box(
-            modifier = modifier.fillMaxSize()
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet(drawerShape = RectangleShape) {
+                    Icon(
+                        painter = painterResource(R.drawable.logo_pulse),
+                        contentDescription = "brand logo",
+                        tint = Color.Unspecified
+                    )
+                }
+            }
         ) {
             Surface(color = WhiteSecondary) {
                 AppNavGraph()
             }
+        }
 
+        Popup(
+            alignment = Alignment.BottomCenter,
+            onDismissRequest = { /* no-op, we only dismiss via the hostState */ }
+        ) {
             SnackbarHost(
                 hostState = snackbarState,
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
+
             )
         }
     }

@@ -6,6 +6,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.util.Locale
+import kotlin.text.format
 
 fun LocalTime.to12HourString() : String {
     val formatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a")
@@ -37,4 +39,12 @@ fun LocalDate.toTimestamp(): Timestamp {
 
 fun Timestamp.toLocalDate(): LocalDate {
     return this.toDate().toInstant().atZone(ZoneOffset.UTC).toLocalDate()
+}
+
+fun formatWithLeadingZero(number: Int): String {
+    // %02d means:
+    // d: format as a decimal integer
+    // 2: width of 2 characters
+    // 0: pad with leading zeros
+    return String.format(Locale.getDefault(), "%02d", number)
 }

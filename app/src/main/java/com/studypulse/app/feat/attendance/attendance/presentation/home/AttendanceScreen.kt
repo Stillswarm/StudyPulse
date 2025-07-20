@@ -55,7 +55,7 @@ import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.Purple
 import com.studypulse.app.ui.theme.WarmWhite
 import kotlinx.coroutines.launch
@@ -106,7 +106,7 @@ fun AttendanceScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = GreenDark)
+                    CircularProgressIndicator(color = Gold)
                 }
             } else if (semId == "") {
                 Text(
@@ -116,7 +116,7 @@ fun AttendanceScreen(
                         withStyle(
                             style = SpanStyle(
                                 fontWeight = FontWeight.Bold,
-                                color = GreenDark,
+                                color = GreenSecondary,
                                 textDecoration = TextDecoration.Underline
                             )
                         ) {

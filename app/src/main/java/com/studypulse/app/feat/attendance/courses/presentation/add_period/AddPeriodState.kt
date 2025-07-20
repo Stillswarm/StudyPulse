@@ -8,4 +8,6 @@ data class AddPeriodState(
     val startTimeMinute: Int,
     val endTimeHour: Int,
     val endTimeMinute: Int,
+    val showStartTimePicker: Boolean = false,
+    val showEndTimePicker: Boolean = false,
 )

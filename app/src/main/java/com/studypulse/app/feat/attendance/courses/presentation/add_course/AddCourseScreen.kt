@@ -44,7 +44,7 @@ import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.GreenLight
 import com.studypulse.app.ui.theme.LightGray
 import kotlinx.coroutines.launch
@@ -78,7 +78,7 @@ fun AddCourseScreen(
     Box(modifier = modifier.fillMaxSize()) {
         Column {
             AppTopBar(
-                backgroundColor = GreenDark,
+                backgroundColor = GreenSecondary,
                 foregroundGradient = null,
                 title = "Add Course",
                 titleColor = Color.White,
@@ -168,7 +168,7 @@ fun AddCourseScreen(
 
                                     withStyle(
                                         SpanStyle(
-                                            color = GreenDark,
+                                            color = GreenSecondary,
                                             fontWeight = FontWeight.Medium,
                                             textDecoration = TextDecoration.Underline
                                         )
@@ -192,7 +192,7 @@ fun AddCourseScreen(
                                     vm.updateCurrentSemester(it)
                                 },
                                 selectedSemesterId = state.activeSemester?.id ?: "",
-                                buttonColor = GreenDark,
+                                buttonColor = GreenSecondary,
                                 onAddSemester = {
                                     scope.launch { semSheetState.hide() }
                                     onNavigateToAddSemester()
@@ -203,7 +203,7 @@ fun AddCourseScreen(
                         Button(
                             onClick = { vm.onSubmit(onNavigateBack) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = GreenDark,
+                                containerColor = GreenSecondary,
                             ),
                             shape = RoundedCornerShape(8.dp, 0.dp, 8.dp, 0.dp),
                             modifier = Modifier.fillMaxWidth(),
