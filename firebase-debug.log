@@ -1,0 +1,101 @@
+[debug] [2025-07-16T17:57:17.789Z] ----------------------------------------------------------------------
+[debug] [2025-07-16T17:57:17.795Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\abhi5\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js functions:shell
+[debug] [2025-07-16T17:57:17.796Z] CLI Version:   14.10.1
+[debug] [2025-07-16T17:57:17.796Z] Platform:      win32
+[debug] [2025-07-16T17:57:17.797Z] Node Version:  v22.17.0
+[debug] [2025-07-16T17:57:17.797Z] Time:          Wed Jul 16 2025 23:27:17 GMT+0530 (India Standard Time)
+[debug] [2025-07-16T17:57:17.798Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-07-16T17:57:17.802Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-07-16T17:57:18.159Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-16T17:57:18.159Z] > authorizing via signed-in user (sri.dev.abhi@gmail.com)
+[debug] [2025-07-16T17:57:18.159Z] [iam] checking project studypulse-fca6c for permissions ["firebase.projects.get"]
+[debug] [2025-07-16T17:57:18.160Z] Checked if tokens are valid: false, expires at: 1752651994648
+[debug] [2025-07-16T17:57:18.160Z] Checked if tokens are valid: false, expires at: 1752651994648
+[debug] [2025-07-16T17:57:18.161Z] > refreshing access token with scopes: []
+[debug] [2025-07-16T17:57:18.162Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-07-16T17:57:18.162Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-07-16T17:57:18.500Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-07-16T17:57:18.500Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-07-16T17:57:18.510Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/studypulse-fca6c:testIamPermissions [none]
+[debug] [2025-07-16T17:57:18.510Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/studypulse-fca6c:testIamPermissions x-goog-quota-user=projects/studypulse-fca6c
+[debug] [2025-07-16T17:57:18.510Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studypulse-fca6c:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-07-16T17:57:18.983Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-07-16T17:57:18.983Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2025-07-16T17:57:20.264Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/studypulse-fca6c:testIamPermissions 200
+[debug] [2025-07-16T17:57:20.264Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studypulse-fca6c:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-07-16T17:57:20.273Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-16T17:57:20.332Z] defaultcredentials: writing to file C:\Users\abhi5\AppData\Roaming\firebase\sri_dev.abhi_gmail.com_application_default_credentials.json
+[debug] [2025-07-16T17:57:20.335Z] DEBUG: Setting GAC to C:\Users\abhi5\AppData\Roaming\firebase\sri_dev.abhi_gmail.com_application_default_credentials.json
+[debug] [2025-07-16T17:57:20.336Z] Checked if tokens are valid: true, expires at: 1752692237501
+[debug] [2025-07-16T17:57:20.336Z] Checked if tokens are valid: true, expires at: 1752692237501
+[debug] [2025-07-16T17:57:20.336Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studypulse-fca6c/adminSdkConfig [none]
+[debug] [2025-07-16T17:57:20.890Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studypulse-fca6c/adminSdkConfig 200
+[debug] [2025-07-16T17:57:20.891Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/studypulse-fca6c/adminSdkConfig {"projectId":"studypulse-fca6c","storageBucket":"studypulse-fca6c.firebasestorage.app"}
+[debug] [2025-07-16T17:57:20.930Z] [functions] Watching "C:\Users\abhi5\AndroidStudioProjects\StudyPulse\functions" for Cloud Functions...
+[debug] [2025-07-16T17:57:20.939Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-07-16T17:57:25.777Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "private": true
+}
+[debug] [2025-07-16T17:57:25.778Z] Building nodejs source
+[debug] [2025-07-16T17:57:25.780Z] Failed to find version of module node: reached end of search path C:\Users\abhi5\AndroidStudioProjects\StudyPulse\functions\node_modules
+[warn] !  functions: Your requested "node" version "18" doesn't match your global version "22". Using node@22 from host. 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2025-07-16T17:57:25.795Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-07-16T17:57:25.813Z] Found firebase-functions binary at 'C:\Users\abhi5\AndroidStudioProjects\StudyPulse\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8020
+
+[debug] [2025-07-16T17:57:27.748Z] Got response from /__/functions.yaml {"endpoints":{"unmarkCron":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"5 18 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"unmarkCron"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}]}
+[debug] [2025-07-16T17:57:31.819Z] [functions] Loaded functions definitions from source: unmarkCron.
+[debug] [2025-07-16T17:57:31.820Z] [functions[us-central1-unmarkCron]] function ignored because the pubsub emulator does not exist or is not running.
+[info] i  functions: Loaded functions: unmarkCron 
+[warn] !  functions: The following emulators are not running, calls to these services will affect production: firestore, database, pubsub, storage, eventarc, tasks 
+[debug] [2025-07-16T17:57:49.539Z] shell:unmarkCron: trigger={"entryPoint":"unmarkCron","platform":"gcfv2","region":"us-central1","name":"unmarkCron","id":"us-central1-unmarkCron","codebase":"default","availableMemoryMb":256,"labels":{"EVENTARC_CLOUD_EVENT_SOURCE":"run-emulated.googleapis.com/projects/studypulse-fca6c/locations/us-central1/services/unmarkCron"},"timeoutSeconds":60,"secretEnvironmentVariables":[],"eventTrigger":{"eventType":"pubsub","resource":""},"schedule":{"schedule":"5 18 * * *","timeZone":"Asia/Kolkata","retryConfig":{}}}
+[debug] [2025-07-16T17:57:49.539Z] shell:unmarkCron: opts={}, data={}
+[debug] [2025-07-16T17:57:49.561Z] DEBUG: [worker-pool] addWorker(us-central1-unmarkCron)
+[debug] [2025-07-16T17:57:49.562Z] DEBUG: [worker-pool] Adding worker with key us-central1-unmarkCron, total=1
+[debug] [2025-07-16T17:57:51.106Z] DEBUG: [runtime-status] [5740] Resolved module firebase-admin {"declared":true,"installed":true,"version":"12.7.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-admin\\lib\\index.js"}
+[debug] [2025-07-16T17:57:51.107Z] DEBUG: [runtime-status] [5740] Resolved module firebase-functions {"declared":true,"installed":true,"version":"4.9.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-functions\\lib\\v1\\index.js"}
+[debug] [2025-07-16T17:57:51.108Z] DEBUG: [runtime-status] [5740] Outgoing network have been stubbed. [{"name":"http","status":"mocked"},{"name":"http","status":"mocked"},{"name":"https","status":"mocked"},{"name":"https","status":"mocked"},{"name":"net","status":"mocked"}]
+[debug] [2025-07-16T17:57:51.109Z] DEBUG: [runtime-status] [5740] Resolved module firebase-functions {"declared":true,"installed":true,"version":"4.9.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-functions\\lib\\v1\\index.js"}
+[debug] [2025-07-16T17:57:52.016Z] DEBUG: [runtime-status] [5740] Checked functions.config() {"config":{}}
+[debug] [2025-07-16T17:57:52.017Z] DEBUG: [runtime-status] [5740] firebase-functions has been stubbed. {"functionsResolution":{"declared":true,"installed":true,"version":"4.9.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-functions\\lib\\v1\\index.js"}}
+[debug] [2025-07-16T17:57:52.018Z] DEBUG: [runtime-status] [5740] Resolved module firebase-functions {"declared":true,"installed":true,"version":"4.9.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-functions\\lib\\v1\\index.js"}
+[debug] [2025-07-16T17:57:52.020Z] DEBUG: [runtime-status] [5740] Resolved module firebase-admin {"declared":true,"installed":true,"version":"12.7.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-admin\\lib\\index.js"}
+[debug] [2025-07-16T17:57:52.028Z] DEBUG: [runtime-status] [5740] Resolved module firebase-functions {"declared":true,"installed":true,"version":"4.9.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-functions\\lib\\v1\\index.js"}
+[debug] [2025-07-16T17:57:52.028Z] DEBUG: [runtime-status] [5740] firebase-admin has been stubbed. {"adminResolution":{"declared":true,"installed":true,"version":"12.7.0","resolution":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions\\node_modules\\firebase-admin\\lib\\index.js"}}
+[debug] [2025-07-16T17:57:52.040Z] DEBUG: [runtime-status] [5740] Functions runtime initialized. {"cwd":"C:\\Users\\abhi5\\AndroidStudioProjects\\StudyPulse\\functions","node_version":"22.17.0"}
+[debug] [2025-07-16T17:57:52.041Z] DEBUG: [runtime-status] [5740] Listening to port: \\?\pipe\fire_emu_2c2b70d5b5715476
+[debug] [2025-07-16T17:57:52.062Z] DEBUG: [worker-us-central1-unmarkCron-70f9e6ab-3e9a-4502-85a1-0bdd9e967d91]: IDLE
+[info] >  Current time: 2025-07-16T17:57:52.104Z {"user":"Current time: 2025-07-16T17:57:52.104Z","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"\u001b[90m> \u001b[39m Current time: 2025-07-16T17:57:52.104Z"}}
+[warn] !  Google API requested!
+   - URL: "https://oauth2.googleapis.com/token"
+   - Be careful, this may be a production service. {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"Google API requested!\n   - URL: \"https://oauth2.googleapis.com/token\"\n   - Be careful, this may be a production service."}}
+[info] >  Found 2 unprocessed attendance records {"user":"Found 2 unprocessed attendance records","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"\u001b[90m> \u001b[39m Found 2 unprocessed attendance records"}}
+[info] >  Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP {"user":"Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"\u001b[90m> \u001b[39m Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP"}}
+[info] >  Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP {"user":"Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"\u001b[90m> \u001b[39m Processing attendance for user: u3JwrJeZ9Egc2HILtJDV2yxUCHO2, semester: PFluF6uFRLendP9UkogI, course: nM9pTNCooFwYefD4d9mP"}}
+[info] >  Processed 2 attendance docs. {"user":"Processed 2 attendance docs.","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-unmarkCron"},"extension":{},"message":"\u001b[90m> \u001b[39m Processed 2 attendance docs."}}

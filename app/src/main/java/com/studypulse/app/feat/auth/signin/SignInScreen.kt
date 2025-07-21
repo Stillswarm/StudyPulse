@@ -16,19 +16,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -48,9 +53,13 @@ import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.app.ui.theme.Red
+import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(
     modifier: Modifier = Modifier,
@@ -58,6 +67,10 @@ fun SignInScreen(
     vm: SignInScreenViewModel = koinViewModel()
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val forgotPasswordBottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+    )
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.emailSent) {
         if (state.emailSent) {
@@ -111,13 +124,16 @@ fun SignInScreen(
             ),
             singleLine = true,
             onValueChange = { vm.updateEmail(it) },
-            label = { Text("Enter your email address") }
+            placeholder = { Text("Enter your email address", fontSize = 14.sp) },
+//            label = { Text("Enter your email address", fontSize = 12.sp) },
+
         )
 
         TextField(
             value = state.password,
             onValueChange = { vm.updatePassword(it) },
-            label = { Text("Enter correct password") },
+//            label = { Text("Enter correct password", fontSize = 14.sp) },
+            placeholder = { Text("Enter correct password", fontSize = 14.sp) },
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp)),
@@ -132,10 +148,24 @@ fun SignInScreen(
             singleLine = true
         )
 
+        Text(
+            text = if (state.emailSent) "Email sent successfully" else "Forgot Password?",
+            color = Color.Blue,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .fillMaxWidth()
+                .noRippleClickable {
+                    vm.updateBottomSheetEmail(state.email)
+                    scope.launch { forgotPasswordBottomSheetState.show() }
+                }
+        )
+
         state.error?.let { error ->
             Text(
                 text = error,
-                color = Color.Red,
+                color = Red,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
@@ -199,7 +229,7 @@ fun SignInScreen(
 
         Text(
             text = buildAnnotatedString {
-                append("Already have an account? ")
+                append("Don't have an account? ")
                 val clickableAnnotation = LinkAnnotation.Clickable("sign_in") {
                     navigateToSignUp()
                 }
@@ -209,11 +239,71 @@ fun SignInScreen(
                             color = Color.Blue,
                         )
                     ) {
-                        append("Sign In")
+                        append("Sign Up")
                     }
                 }
             },
             style = MaterialTheme.typography.bodyMedium
         )
+    }
+
+    if (forgotPasswordBottomSheetState.isVisible) {
+        ModalBottomSheet(
+            onDismissRequest = { scope.launch { forgotPasswordBottomSheetState.hide() } },
+            sheetState = forgotPasswordBottomSheetState,
+            shape = RectangleShape,
+            containerColor = WhiteSecondary,
+            dragHandle = {}
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp)),
+                    value = state.bottomSheetEmail,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = LightGray.copy(alpha = 0.2f),
+                        focusedContainerColor = LightGray,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = DarkGray,
+                    ),
+                    singleLine = true,
+                    onValueChange = { vm.updateBottomSheetEmail(it) },
+                    placeholder = { Text("Enter your email address", fontSize = 14.sp) },
+//                    label = { Text("Enter your email address") }
+                )
+
+                state.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = Red,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Button(
+                    onClick = { vm.sendPasswordResetEmail() },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !state.emailSent,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                ) {
+                    Text(
+                        text = if (state.emailSent) "Retry in ${state.counter} seconds" else "Send Recovery Email",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+        }
     }
 }

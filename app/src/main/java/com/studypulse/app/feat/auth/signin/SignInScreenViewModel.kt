@@ -2,6 +2,7 @@ package com.studypulse.app.feat.auth.signin
 
 import android.app.Application
 import android.content.Context
+import android.util.Patterns
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 
 class SignInScreenViewModel(
     private val userRepository: UserRepository,
-    private val app: Application,
+    app: Application,
 ) : ViewModel() {
     private val auth = Firebase.auth
     private val initialData = SignInScreenState()
@@ -49,32 +50,71 @@ class SignInScreenViewModel(
 
     fun updateEmail(new: String) {
         _state.update {
-            it.copy(errorMsg = null, email = new, emailSent = false, counter = RESET_COOLDOWN)
+            it.copy(error = null, email = new, emailSent = false, counter = RESET_COOLDOWN)
+        }
+    }
+
+    fun updateBottomSheetEmail(new: String) {
+        _state.update {
+            it.copy(
+                error = null,
+                bottomSheetEmail = new,
+                emailSent = false,
+                counter = RESET_COOLDOWN
+            )
         }
     }
 
     fun updatePassword(new: String) {
         _state.update {
-            it.copy(errorMsg = null, password = new, emailSent = false, counter = RESET_COOLDOWN)
+            it.copy(error = null, password = new, emailSent = false, counter = RESET_COOLDOWN)
         }
     }
 
     fun signIn() {
+        if (!credentialsOk()) return
         viewModelScope.launch {
             auth.signInWithEmailAndPassword(_state.value.email.trim(), _state.value.password)
                 .addOnCompleteListener { task ->
                     if (!task.isSuccessful) {
                         val exception = task.exception
                         _state.update {
-                            it.copy(errorMsg = exception?.message)
+                            it.copy(error = exception?.message)
                         }
                     }
                 }
         }
     }
 
+    private fun credentialsOk(): Boolean {
+
+        if (_state.value.email.isEmpty()) {
+            _state.update { it.copy(error = "Email cannot be empty") }
+            return false
+        }
+
+        if (incorrectEmail(_state.value.email)) {
+            _state.update { it.copy(error = "Please enter a valid email") }
+            return false
+        }
+
+
+        if (_state.value.password.isEmpty()) {
+            _state.update { it.copy(error = "Password cannot be empty") }
+            return false
+        }
+
+        return true
+    }
+
+    private fun incorrectEmail(email: String) = !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+
     fun sendPasswordResetEmail() {
-        auth.sendPasswordResetEmail(_state.value.email.trim())
+        if (incorrectEmail(_state.value.bottomSheetEmail)) {
+            _state.update { it.copy(error = "Please enter a valid email") }
+            return
+        }
+        auth.sendPasswordResetEmail(_state.value.bottomSheetEmail.trim())
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _state.update {
@@ -87,7 +127,7 @@ class SignInScreenViewModel(
                     when (val e = task.exception) {
                         is FirebaseAuthInvalidUserException -> {
                             _state.update {
-                                it.copy(errorMsg = null, emailSent = true, counter = RESET_COOLDOWN)
+                                it.copy(error = null, emailSent = true, counter = RESET_COOLDOWN)
                             }
                             viewModelScope.launch {
                                 SnackbarController.sendEvent(SnackbarEvent(message = "Reset Email Sent"))
@@ -96,13 +136,13 @@ class SignInScreenViewModel(
 
                         is FirebaseAuthInvalidCredentialsException -> {
                             _state.update {
-                                it.copy(errorMsg = "Invalid email format")
+                                it.copy(error = "Invalid email format")
                             }
                         }
 
                         else -> {
                             _state.update {
-                                it.copy(errorMsg = e?.message)
+                                it.copy(error = e?.message)
                             }
                         }
                     }
@@ -125,7 +165,8 @@ class SignInScreenViewModel(
     fun handleGoogleSignIn(context: Context) {
         viewModelScope.launch {
             try {
-                val response = CredentialManager.create(context).getCredential(context, credentialRequest)
+                val response =
+                    CredentialManager.create(context).getCredential(context, credentialRequest)
                 // ➊ We know this is a federated (Google) credential
                 val custom = response.credential as CustomCredential
                 val googleToken = GoogleIdTokenCredential.createFrom(custom.data).idToken

@@ -13,13 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.studypulse.app.ui.theme.DarkGray
 
 @Composable
 fun OrDivider(
     modifier: Modifier = Modifier,
     text: String = " or ",
-    lineColor: Color = DarkGray,
+    lineColor: Color = Color.Gray,
     textStyle: TextStyle = MaterialTheme.typography.bodySmall,
     lineThickness: Dp = 1.dp,
     horizontalPadding: Dp = 8.dp
