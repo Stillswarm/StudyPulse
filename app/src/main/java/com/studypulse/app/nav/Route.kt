@@ -3,55 +3,56 @@ package com.studypulse.app.nav
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import kotlinx.serialization.Serializable
 
+interface NavigableRoute
+
 object Route {
     @Serializable
-    data object HomeRoute
+    data object HomeRoute : NavigableRoute
 
     @Serializable
-    data object CourseRoute
+    data object CourseRoute : NavigableRoute
 
     @Serializable
-    data object AddCourseRoute
+    data object AddCourseRoute : NavigableRoute
 
     @Serializable
-    data class CourseDetailRoute(val courseId: String)
+    data class CourseDetailRoute(val courseId: String) : NavigableRoute
 
     @Serializable
-    data class AddPeriodRoute(val courseId: String, val day: Day? = null)
+    data class AddPeriodRoute(val courseId: String, val day: Day? = null) : NavigableRoute
 
     @Serializable
-    data class ScheduleRoute(val courseId: String?)
+    data class ScheduleRoute(val courseId: String?) : NavigableRoute
 
     @Serializable
-    data object AttendanceCalendarRoute
+    data object AttendanceCalendarRoute : NavigableRoute
 
     @Serializable
-    data object AttendanceRoute
+    data object AttendanceRoute : NavigableRoute
 
     @Serializable
-    data object AttendanceOverviewRoute
+    data object AttendanceOverviewRoute : NavigableRoute
 
     @Serializable
-    data class AttendanceDetailsRoute(val courseId: String)
+    data class AttendanceDetailsRoute(val courseId: String) : NavigableRoute
 
     @Serializable
-    data object AttendanceStatsSharedRoute
-
+    data object AttendanceStatsSharedRoute : NavigableRoute
 
     // AUTH ROUTES START
 
     @Serializable
-    data object SignUpRoute
+    data object SignUpRoute : NavigableRoute
 
     @Serializable
-    data object SignInRoute
+    data object SignInRoute : NavigableRoute
 
     @Serializable
-    data object ProfileRoute
+    data object ProfileRoute : NavigableRoute
 
     // AUTH ROUTES END
 
     @Serializable
-    data object AddSemesterRoute
+    data object AddSemesterRoute : NavigableRoute
 
 }

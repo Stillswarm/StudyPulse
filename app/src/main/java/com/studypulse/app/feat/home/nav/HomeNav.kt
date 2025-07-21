@@ -9,7 +9,7 @@ import com.studypulse.app.nav.Route
 fun NavGraphBuilder.homeGraph(navController: NavController) {
     composable<Route.HomeRoute> {
         HomeScreen(
-            onNavigateToAttendance = { navController.navigate(Route.AttendanceRoute) }
+            navigate = { navController.navigate(it) },
         )
     }
 }

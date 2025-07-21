@@ -418,8 +418,8 @@ fun DashboardNavButton(
             Column {
                 Text(
                     text = title,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
+                    fontWeight = FontWeight(525),
+                    fontSize = 15.sp,
                     lineHeight = 24.sp,
                 )
 

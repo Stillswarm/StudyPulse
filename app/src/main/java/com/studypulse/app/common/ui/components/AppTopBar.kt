@@ -64,7 +64,7 @@ fun AppTopBar(
                     .size(32.dp)
                     .noRippleClickable { onNavigationClick() }
                     .gradientFill(foregroundGradient),
-                tint = titleColor
+                tint = Color.Unspecified
             )
 
             Text(
@@ -80,13 +80,13 @@ fun AppTopBar(
                     painter = painterResource(id = actionIcon),
                     contentDescription = "nav icon",
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(28.dp)
                         .noRippleClickable { onActionClick() }
                         .gradientFill(foregroundGradient),
-                    tint = Color.Unspecified
+                    tint = titleColor
                 )
             } else {
-                Box(modifier = Modifier.size(36.dp))
+                Box(modifier = Modifier.size(28.dp))
             }
         }
     }
