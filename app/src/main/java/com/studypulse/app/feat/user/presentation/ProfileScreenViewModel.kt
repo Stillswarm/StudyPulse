@@ -2,6 +2,7 @@ package com.studypulse.app.feat.user.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.semester.domain.SemesterRepository
@@ -17,7 +18,8 @@ import java.time.LocalDate
 
 class ProfileScreenViewModel(
     private val userRepository: UserRepository,
-    private val semesterRepository: SemesterRepository
+    private val semesterRepository: SemesterRepository,
+    private val auth: FirebaseAuth,
 ) : ViewModel() {
     private val initialData = ProfileScreenState()
     private val _state = MutableStateFlow(initialData)
@@ -113,6 +115,17 @@ class ProfileScreenViewModel(
                 currentInstitution = _state.value.user?.institution ?: "",
                 editingInstitution = true
             )
+        }
+    }
+
+    fun signOut(navigateToLogin: () -> Unit) {
+        viewModelScope.launch {
+            // This clears the FirebaseAuth session
+            auth.signOut()
+            navigateToLogin()
+            SnackbarController.sendEvent(SnackbarEvent("Signed out successfully. See you soon!"))
+            // If you're using Google One‑Tap or similar, also clear that here:
+            // credentialManager.cancel()  // or your own clear logic todo
         }
     }
 

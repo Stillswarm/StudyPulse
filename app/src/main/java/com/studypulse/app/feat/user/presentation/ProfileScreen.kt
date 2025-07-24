@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,6 +52,7 @@ import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.LightGray
 import com.studypulse.app.ui.theme.WarmWhite
+import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -58,7 +61,8 @@ import org.koin.androidx.compose.koinViewModel
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onAddNewSemester: () -> Unit,
-    vm: ProfileScreenViewModel = koinViewModel()
+    navigateToLogin: () -> Unit,
+    vm: ProfileScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -116,7 +120,7 @@ fun ProfileScreen(
 
                         Row(
                             modifier = Modifier
-                                .height(200.dp)
+                                .height(220.dp)
                                 .fillMaxWidth()
                                 .padding(start = 16.dp)
                                 .align(Alignment.BottomCenter),
@@ -174,7 +178,7 @@ fun ProfileScreen(
                         ) {
                             Text(
                                 text = "Name",
-                                fontSize = 20.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
 
@@ -212,7 +216,7 @@ fun ProfileScreen(
                         ) {
                             Text(
                                 text = "Institution",
-                                fontSize = 20.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
 
@@ -243,10 +247,11 @@ fun ProfileScreen(
                             )
                         )
 
+                        // active semester info and bottom sheet
                         state.currentSemester?.let { sem ->
                             Text(
                                 text = "Current Semester",
-                                fontSize = 20.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
 
@@ -281,6 +286,32 @@ fun ProfileScreen(
                                 selectedSemesterId = sem.id,
                                 onAddSemester = onAddNewSemester
                             )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(DarkGray)
+                                .noRippleClickable { vm.signOut(navigateToLogin) }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = null,
+                                    tint = WhiteSecondary,
+                                )
+
+                                Text(
+                                    text = "Sign Out",
+                                    fontSize = 14.sp,
+                                    color = WhiteSecondary
+                                )
+                            }
                         }
                     }
                 }
