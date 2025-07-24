@@ -27,4 +27,8 @@ class RoomPeriodRepositoryImpl(
     override suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>> {
         return Result.success(periodDao.getAllPeriodsFilteredByDayOfWeek(day))
     }
+
+    override suspend fun deletePeriod(periodId: String): Result<Unit> {
+        TODO("Not yet implemented")
+    }
 }

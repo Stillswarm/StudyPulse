@@ -13,7 +13,7 @@ object Route {
     data object CourseRoute : NavigableRoute
 
     @Serializable
-    data object AddCourseRoute : NavigableRoute
+    data class AddCourseRoute(val courseId: String? = null) : NavigableRoute
 
     @Serializable
     data class CourseDetailRoute(val courseId: String) : NavigableRoute

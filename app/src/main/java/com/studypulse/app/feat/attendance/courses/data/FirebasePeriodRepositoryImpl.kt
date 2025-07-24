@@ -54,7 +54,7 @@ class FirebasePeriodRepositoryImpl(
                 .document()
             ref.set(periodData.toDto().copy(id = ref.id)).await()
 
-            var countPast = 0
+            var countPast = 0L
             val today = LocalDate.now()
             var current = semester.startDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(period.day.name)))
             val batch: WriteBatch = db.batch()
@@ -143,5 +143,38 @@ class FirebasePeriodRepositoryImpl(
 
                 awaitClose { listener.remove() }
             }
+        }
+
+    override suspend fun deletePeriod(periodId: String) =
+        runCatching {
+            val userId =
+                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+            val semesterId = getActiveSemId()
+
+            // obtain all attendance records associated with this period
+            val attendanceQuery = db.collection("users")
+                .document(userId)
+                .collection("attendance")
+                .whereEqualTo("periodId", periodId)
+                .get()
+                .await()
+
+            val batch = db.batch()
+            for (doc in attendanceQuery.documents) {
+                batch.delete(doc.reference)
+            }
+
+            // obtain the period
+            val periodRef = db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .document(semesterId)
+                .collection("periods")
+                .document(periodId)
+            batch.delete(periodRef)
+
+            // batch delete period and all associated records
+            batch.commit().await()
+            Unit
         }
 }

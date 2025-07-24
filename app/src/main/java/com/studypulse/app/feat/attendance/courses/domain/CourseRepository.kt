@@ -4,7 +4,7 @@ import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import kotlinx.coroutines.flow.Flow
 
 interface CourseRepository {
-    suspend fun addCourse(course: Course): Result<Unit>
+    suspend fun upsertCourse(course: Course): Result<Unit>
     suspend fun getCourseById(id: String): Result<Course?>
     suspend fun getAllCourses(): Result<List<Course>>
     fun getAllCoursesFlow(): Flow<List<Course>>

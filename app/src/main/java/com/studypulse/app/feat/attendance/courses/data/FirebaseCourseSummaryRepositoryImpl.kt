@@ -9,11 +9,15 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseSummaryDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
+import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseCourseSummaryRepositoryImpl(
     private val auth: FirebaseAuth,
+    private val semesterSummaryRepository: SemesterSummaryRepository,
     private val db: FirebaseFirestore,
     private val ds: AppDatastore,
 ) : CourseSummaryRepository {
@@ -51,74 +55,99 @@ class FirebaseCourseSummaryRepositoryImpl(
                 .toObject(CourseSummaryDto::class.java)!!.toDomain()
         }
 
-    override suspend fun incPresent(courseId: String, by: Int): Result<Unit> =
+    override suspend fun delete(courseId: String) =
+        runCatching {
+            val docRef = summaryDocument(courseId).get().await()
+            val absent = docRef.get("absentRecords")
+            val present = docRef.get("presentRecords")
+            val unmarked = docRef.get("unmarkedRecords")
+            val cancelled = docRef.get("cancelledRecords")
+            Log.d("tag", "absent: $absent, present: $present, unmarked: $unmarked, cancelled: $cancelled")
+
+            // reset this course summary's data in the semester summary
+            coroutineScope {
+                launch { semesterSummaryRepository.decPresent(present as Long) }
+                launch { semesterSummaryRepository.decAbsent(absent as Long) }
+                launch { semesterSummaryRepository.decCancelled(cancelled as Long) }
+                launch { semesterSummaryRepository.decUnmarked(unmarked as Long) }
+            }
+
+            Log.d("tag", "sem sum updated")
+
+            // now delete the document itself
+            summaryDocument(courseId).delete().await()
+            Log.d("tag", "should be deleted now")
+            Unit
+        }.onFailure { Log.d("tag", "error: $it") }
+
+    override suspend fun incPresent(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "presentRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
         }
 
-    override suspend fun decPresent(courseId: String, by: Int): Result<Unit> =
+    override suspend fun decPresent(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "presentRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 
-    override suspend fun incAbsent(courseId: String, by: Int): Result<Unit> =
+    override suspend fun incAbsent(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId).update(
                 "absentRecords",
-                FieldValue.increment(by.toLong())
+                FieldValue.increment(by)
             ).await()
         }
 
-    override suspend fun decAbsent(courseId: String, by: Int): Result<Unit> =
+    override suspend fun decAbsent(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "absentRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 
-    override suspend fun incUnmarked(courseId: String, by: Int): Result<Unit> =
+    override suspend fun incUnmarked(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
         }
 
-    override suspend fun decUnmarked(courseId: String, by: Int): Result<Unit> =
+    override suspend fun decUnmarked(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 
-    override suspend fun incCancelled(courseId: String, by: Int): Result<Unit> =
+    override suspend fun incCancelled(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
         }
 
-    override suspend fun decCancelled(courseId: String, by: Int): Result<Unit> =
+    override suspend fun decCancelled(courseId: String, by: Long): Result<Unit> =
         runCatching {
             summaryDocument(courseId)
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 

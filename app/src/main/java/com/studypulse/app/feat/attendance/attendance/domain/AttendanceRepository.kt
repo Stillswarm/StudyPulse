@@ -17,4 +17,5 @@ interface AttendanceRepository {
         monthStartDate: LocalDate,
         endDate: LocalDate
     ): Result<Set<LocalDate>>
+    suspend fun deleteAttendance(attendanceRecordId: String): Result<Unit>
 }

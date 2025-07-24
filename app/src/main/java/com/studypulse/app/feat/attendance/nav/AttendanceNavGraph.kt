@@ -29,7 +29,7 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     composable<Route.CourseRoute> {
         CoursesScreen(
             onAddNewCourse = {
-                navController.navigate(Route.AddCourseRoute)
+                navController.navigate(Route.AddCourseRoute(it))
             },
             onCourseTimetable = {
                 navController.navigate(Route.ScheduleRoute(it))

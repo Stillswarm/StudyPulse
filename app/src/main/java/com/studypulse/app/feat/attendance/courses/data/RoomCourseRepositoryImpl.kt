@@ -23,7 +23,7 @@ class RoomCourseRepositoryImpl(
         return Result.success(courseDao.getCourseById(id.toLongOrNull() ?: 0L).toDomain())
     }
 
-    override suspend fun addCourse(course: Course): Result<Unit> {
+    override suspend fun upsertCourse(course: Course): Result<Unit> {
         return Result.success(courseDao.insertCourse(course.toEntity()))
     }
 

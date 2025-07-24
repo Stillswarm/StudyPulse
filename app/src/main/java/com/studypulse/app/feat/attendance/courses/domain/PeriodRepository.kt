@@ -9,4 +9,5 @@ interface PeriodRepository {
     suspend fun addNewPeriod(period: Period)
     suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: String, day: Day): Result<Flow<List<Period>>>
     suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>>
+    suspend fun deletePeriod(periodId: String): Result<Unit>
 }

@@ -44,8 +44,8 @@ import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.GreenLight
+import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -66,7 +66,7 @@ fun AddCourseScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                vm.loadAllSemesters()
+                scope.launch { vm.loadAllSemesters() }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -80,7 +80,7 @@ fun AddCourseScreen(
             AppTopBar(
                 backgroundColor = GreenSecondary,
                 foregroundGradient = null,
-                title = "Add Course",
+                title = if (vm.courseId == null) "Add Course" else "Edit Course",
                 titleColor = Color.White,
                 navigationIcon = R.drawable.ic_arrow_left,
                 onNavigationClick = onNavigateBack,
@@ -143,7 +143,7 @@ fun AddCourseScreen(
                         // min required attendance
                         TextField(
                             value = state.minAttendance?.toString() ?: "",
-                            onValueChange = { vm.updateMinAttendance(it.toInt()) },
+                            onValueChange = { vm.updateMinAttendance(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

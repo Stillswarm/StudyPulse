@@ -64,7 +64,7 @@ fun AppTopBar(
                     .size(32.dp)
                     .noRippleClickable { onNavigationClick() }
                     .gradientFill(foregroundGradient),
-                tint = Color.Unspecified
+                tint = if (foregroundGradient == null) titleColor else Color.Unspecified
             )
 
             Text(

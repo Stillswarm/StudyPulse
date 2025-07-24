@@ -5,11 +5,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
+import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
 import com.studypulse.app.feat.attendance.courses.domain.model.toDto
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
@@ -20,6 +24,7 @@ class FirebaseCourseRepositoryImpl(
     private val ds: AppDatastore,
     private val auth: FirebaseAuth,
     private val courseSummaryRepository: CourseSummaryRepository,
+    private val periodRepository: PeriodRepository,
 ) : CourseRepository {
     suspend fun getSemesterId(): String = ds.semesterIdFlow.first()
     override fun getAllCoursesFlow(): Flow<List<Course>> {
@@ -109,7 +114,7 @@ class FirebaseCourseRepositoryImpl(
             doc.toObject(CourseDto::class.java)?.copy(id = doc.id)?.toDomain()
         }
 
-    override suspend fun addCourse(course: Course): Result<Unit> =
+    override suspend fun upsertCourse(course: Course): Result<Unit> =
         runCatching {
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
@@ -162,6 +167,29 @@ class FirebaseCourseRepositoryImpl(
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val semesterId = ds.semesterIdFlow.first()
 
+            // Query all periods for this course
+            val periodQuery = db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .document(semesterId)
+                .collection("periods")
+                .whereEqualTo("courseId", id)
+                .get()
+                .await()
+
+            coroutineScope {
+                val deleteJobs = periodQuery.documents.map { periodDoc ->
+                    async {
+                        periodRepository.deletePeriod(periodDoc.id)
+                    }
+                }
+                deleteJobs.awaitAll()
+            }
+
+            // delete the course summary
+            courseSummaryRepository.delete(id)
+
+            // Finally, delete this course document
             db.collection("users")
                 .document(userId)
                 .collection("semesters")

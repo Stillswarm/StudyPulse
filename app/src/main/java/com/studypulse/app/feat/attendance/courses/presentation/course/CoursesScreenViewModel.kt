@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,30 @@ class CoursesScreenViewModel(
                             it.copy(courses = courses, isLoading = false)
                         }
                     }
+                }
+        }
+    }
+
+    fun deleteCourse(courseId: String) {
+        viewModelScope.launch {
+            courseRepository.deleteCourse(courseId)
+                .onFailure {
+                    SnackbarController.sendEvent(SnackbarEvent("Error occurred while deleting"))
+                }
+                .onSuccess {
+                    SnackbarController.sendEvent(SnackbarEvent("Course deleted"))
+                }
+        }
+    }
+
+    fun updateCourse(new: Course) {
+        viewModelScope.launch {
+            courseRepository.upsertCourse(new)
+                .onFailure {
+                    SnackbarController.sendEvent(SnackbarEvent("Error occurred while updating"))
+                }
+                .onSuccess {
+                    SnackbarController.sendEvent(SnackbarEvent("Course updated"))
                 }
         }
     }

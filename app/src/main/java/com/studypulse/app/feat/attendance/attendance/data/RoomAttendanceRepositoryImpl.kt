@@ -52,4 +52,8 @@ class RoomAttendanceRepositoryImpl(
     override suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun deleteAttendance(attendanceRecordId: String): Result<Unit> {
+        TODO("Not yet implemented")
+    }
 }

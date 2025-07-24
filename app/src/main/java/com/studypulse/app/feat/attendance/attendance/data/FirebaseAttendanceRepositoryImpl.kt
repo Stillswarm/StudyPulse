@@ -259,4 +259,10 @@ class FirebaseAttendanceRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteAttendance(attendanceRecordId: String) =
+        runCatching {
+            getAttendanceCollection().document(attendanceRecordId).delete().await()
+            Unit
+        }
 }

@@ -53,39 +53,39 @@ class FirebaseSemesterSummaryRepositoryImpl(
             domainObject
         }
 
-    override suspend fun incPresent(by: Int): Result<Unit> =
+    override suspend fun incPresent(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "presentRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
         }
 
-    override suspend fun decPresent(by: Int): Result<Unit> =
+    override suspend fun decPresent(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "presentRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 
-    override suspend fun incAbsent(by: Int): Result<Unit> =
+    override suspend fun incAbsent(by: Long): Result<Unit> =
         runCatching {
             summaryDocument().update(
                 "absentRecords",
-                FieldValue.increment(by.toLong())
+                FieldValue.increment(by)
             ).await()
         }
 
-    override suspend fun decAbsent(by: Int): Result<Unit> =
+    override suspend fun decAbsent(by: Long): Result<Unit> =
         runCatching {
             Log.d("tag", "decrementing absent")
             val doc = summaryDocument()
                 .update(
                     "absentRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 )
 
             Log.d("tag", "obtained doc ref")
@@ -94,40 +94,40 @@ class FirebaseSemesterSummaryRepositoryImpl(
             Unit
         }.onFailure { Log.d("tag", "error: $it") }
 
-    override suspend fun incUnmarked(by: Int): Result<Unit> =
+    override suspend fun incUnmarked(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
             Log.d("tag", "incremented unmarked")
         }
 
-    override suspend fun decUnmarked(by: Int): Result<Unit> =
+    override suspend fun decUnmarked(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "unmarkedRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
 
-    override suspend fun incCancelled(by: Int): Result<Unit> =
+    override suspend fun incCancelled(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(by.toLong())
+                    FieldValue.increment(by)
                 ).await()
         }
 
-    override suspend fun decCancelled(by: Int): Result<Unit> =
+    override suspend fun decCancelled(by: Long): Result<Unit> =
         runCatching {
             summaryDocument()
                 .update(
                     "cancelledRecords",
-                    FieldValue.increment(-by.toLong())
+                    FieldValue.increment(-by)
                 ).await()
         }
     
