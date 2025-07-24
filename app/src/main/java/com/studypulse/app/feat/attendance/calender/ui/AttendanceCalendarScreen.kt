@@ -23,7 +23,6 @@ import com.studypulse.app.feat.attendance.calender.ui.components.DayCoursesBotto
 import com.studypulse.app.ui.theme.Gold
 import org.koin.compose.viewmodel.koinViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceCalendarScreen(
@@ -114,7 +113,8 @@ fun AttendanceCalendarScreen(
                 viewModel.updateShowBottomSheet(true)
 //                scope.launch { dayCoursesBottomSheetState.show() }
             },
-            onMonthChanged = { viewModel.onMonthChanged(it) }
+            onMonthChanged = { viewModel.onMonthChanged(it) },
+            unmarkedPeriods = state.unmarkedDates
         )
     }
 }

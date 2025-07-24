@@ -24,8 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +51,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
+import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.app.common.ui.components.LargeAppTopBar
+import com.studypulse.app.common.ui.components.SemesterBottomSheetItem
 import com.studypulse.app.common.ui.modifier.gradientFill
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
@@ -61,6 +65,7 @@ import com.studypulse.app.ui.theme.WarmWhite
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceScreen(
     onNavigateToAddSemester: () -> Unit,
@@ -74,9 +79,11 @@ fun AttendanceScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val semId by vm.semesterIdFlow.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val semesterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
 
     LaunchedEffect(semId) {
-        if (semId.isNotBlank()) vm.fetchStatBoxData()
+        if (semId.isNotBlank()) vm.fetchInitialData()
     }
 
     Box(
@@ -111,7 +118,7 @@ fun AttendanceScreen(
             } else if (semId == "") {
                 Text(
                     text = buildAnnotatedString {
-                        append("No active semester found. You can add a new semester by clicking")
+                        append("No active semester found. You can pick or add an active semester ")
 
                         withStyle(
                             style = SpanStyle(
@@ -120,7 +127,7 @@ fun AttendanceScreen(
                                 textDecoration = TextDecoration.Underline
                             )
                         ) {
-                            append(" here")
+                            append("here")
                         }
                     },
                     textAlign = TextAlign.Center,
@@ -128,7 +135,7 @@ fun AttendanceScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .padding(top = 50.dp)
-                        .noRippleClickable { onNavigateToAddSemester() },
+                        .noRippleClickable { scope.launch { semesterSheetState.show() } },
                 )
             } else {
                 LazyColumn(
@@ -137,6 +144,7 @@ fun AttendanceScreen(
                     contentPadding = PaddingValues(20.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
+                    // stat box
                     item {
                         Card(
                             colors = CardDefaults.cardColors(
@@ -172,13 +180,11 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Classes Unmarked",
                                             value = state.unmarkedCount,
-                                            onClick = onNavigateToAttendanceCalendar,
 //                                        modifier = Modifier.weight(1f)
                                         )
                                         StatBox(
                                             title = "100% Attendance",
                                             value = state.fullAttendanceCount,
-                                            onClick = onNavigateToAttendanceOverview,
 //                                        modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -189,12 +195,10 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Low Attendance",
                                             value = state.lowAttendanceCount,
-                                            onClick = onNavigateToAttendanceOverview,
                                         )
                                         StatBox(
                                             title = "Overall Percentage",
                                             value = state.attendancePercentage,
-                                            onClick = onNavigateToCourseList,
                                         )
                                     }
                                 }
@@ -202,6 +206,44 @@ fun AttendanceScreen(
                         }
                     }
 
+                    // empty course prompt
+                    if (state.courseWiseSummaries.isEmpty()) {
+                        item {
+                            Text(
+                                text = "You haven't added any courses yet. Click on \"Courses Overview\" to get started.",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .padding(top = 50.dp)
+                                    .noRippleClickable { scope.launch { semesterSheetState.show() } },
+                            )
+                        }
+                    }
+
+                    // active semester
+                    state.activeSemester?.let { sem ->
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Gold.copy(0.2f))
+                            ) {
+                                SemesterBottomSheetItem(
+                                    selectedSemester = sem.id,
+                                    semester = sem,
+                                    onSemesterClick = {
+                                        scope.launch { semesterSheetState.show() }
+                                    },
+                                    buttonColor = Gold,
+                                )
+                            }
+                        }
+                    }
+
+                    // attendance overview
                     item {
                         DashboardNavButton(
                             icon = R.drawable.ic_stats,
@@ -211,6 +253,7 @@ fun AttendanceScreen(
                         )
                     }
 
+                    // courses overview
                     item {
                         DashboardNavButton(
                             icon = R.drawable.ic_book,
@@ -220,6 +263,7 @@ fun AttendanceScreen(
                         )
                     }
 
+                    // attendance calendar
                     item {
                         DashboardNavButton(
                             icon = R.drawable.ic_calender,
@@ -231,6 +275,16 @@ fun AttendanceScreen(
                 }
             }
         }
+
+        AllSemestersBottomSheet(
+            sheetState = semesterSheetState,
+            semesterList = state.semesterList,
+            selectedSemesterId = state.activeSemester?.id ?: "",
+            onSemesterClick = vm::onChangeActiveSemester,
+            onAddSemester = onNavigateToAddSemester,
+            onDismiss = { scope.launch { semesterSheetState.hide() } },
+            buttonColor = Gold
+        )
     }
 }
 
@@ -238,7 +292,6 @@ fun AttendanceScreen(
 fun StatBox(
     title: String,
     value: Int,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -248,7 +301,6 @@ fun StatBox(
             .clip(RoundedCornerShape(8.dp))
             .background(WarmWhite)
             .border(2.dp, Gold, RoundedCornerShape(8.dp))
-            .noRippleClickable { onClick() }
     ) {
         Text(
             text = value.toString(),

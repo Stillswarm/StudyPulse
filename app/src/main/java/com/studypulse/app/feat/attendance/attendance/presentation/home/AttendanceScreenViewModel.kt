@@ -8,7 +8,9 @@ import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
+import com.studypulse.app.feat.semester.domain.SemesterRepository
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
+import com.studypulse.app.feat.semester.domain.model.Semester
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +21,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import java.time.LocalDate
 
 class AttendanceScreenViewModel(
     private val semesterSummaryRepository: SemesterSummaryRepository,
     private val courseSummaryRepository: CourseSummaryRepository,
+    private val semesterRepository: SemesterRepository,
     ds: AppDatastore,
 ) : ViewModel() {
     private val initialData = AttendanceScreenState()
@@ -36,60 +40,97 @@ class AttendanceScreenViewModel(
     )
 
     init {
-        fetchStatBoxData()
-    }
-
-    fun fetchStatBoxData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-//            delay(1_000)
-            if (semesterIdFlow.value != "") {
-                supervisorScope {
-                    Log.d("tag", "fetching stat box data")
-                    val semDataDef = async { semesterSummaryRepository.get() }
-                    val courseDataDef = async { courseSummaryRepository.getSummaryForAllCourses() }
+            fetchSemesterList()
+            launch { fetchInitialData() }
+            _state.update { it.copy(isLoading = false) }
+        }
+    }
 
-                    val courseData = courseDataDef.await().getOrElse { error ->
-                        Log.d("tag", error.message ?: "unknown error in course")
-                        SnackbarController.sendEvent(
-                            SnackbarEvent("Failed to fetch courses summary: ${error.message ?: "Unknown error"}")
-                        )
-                        _state.update { it.copy(isLoading = false) }
-                        return@supervisorScope
-                    }
-                    val semData = semDataDef.await().getOrElse { error ->
-                        Log.d("tag", error.message ?: "unknown error in sem")
-                        SnackbarController.sendEvent(
-                            SnackbarEvent("Failed to fetch semester summary: ${error.message ?: "Unknown error"}")
-                        )
-                        _state.update { it.copy(isLoading = false) }
-                        return@supervisorScope
-                    }
-                    Log.d("tag", "course data: $courseData")
-                    _state.update {
-                        it.copy(
-                            unmarkedCount = semData.unmarkedRecords,
-                            courseWiseSummaries = courseData,
-                            fullAttendanceCount = courseData.filter { entry -> getPercent(entry) == 100 }.size,
-                            lowAttendanceCount = courseData.filter { entry -> getPercent(entry) < entry.minAttendance }.size,
-                            attendancePercentage = getPercentForSem(semData),
-                            isLoading = false
-                        )
-                    }
-                    Log.d("tag", "have now: " + state.value.courseWiseSummaries.toString())
+    suspend fun fetchInitialData() {
+        _state.update { it.copy(isLoading = true) }
+        if (semesterIdFlow.value != "") {
+            supervisorScope {
+                Log.d("tag", "fetching stat box data")
+                val semSummaryDataDef = async { semesterSummaryRepository.get() }
+                val courseDataDef = async { courseSummaryRepository.getSummaryForAllCourses() }
+                val semDataDef = async { semesterRepository.getAllSemesters() }
+                val activeSemDef = async { semesterRepository.getActiveSemester() }
+
+                val courseData = courseDataDef.await().getOrElse { error ->
+                    Log.d("tag", error.message ?: "unknown error in course")
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch courses summary: ${error.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
                 }
-            } else _state.update { it.copy(isLoading = false) }
+                val semSummaryData = semSummaryDataDef.await().getOrElse { error ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch semester summary: ${error.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+                val semData = semDataDef.await().getOrElse { e ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch semester list: ${e.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+                val activeSem = activeSemDef.await().getOrElse { e ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch active semester: ${e.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+                _state.update {
+                    it.copy(
+                        unmarkedCount = semSummaryData.unmarkedRecords,
+                        courseWiseSummaries = courseData,
+                        fullAttendanceCount = courseData.filter { entry -> getPercent(entry) == 100 }.size,
+                        lowAttendanceCount = courseData.filter { entry -> getPercent(entry) < entry.minAttendance }.size,
+                        attendancePercentage = getPercentForSem(semSummaryData),
+                        isLoading = false,
+                        activeSemester = activeSem,
+                        semesterList = semData
+                    )
+                }
+            }
+        }
+    }
+
+    suspend fun fetchSemesterList() {
+        semesterRepository.getAllSemesters().onSuccess { semList ->
+            _state.update { it.copy(semesterList = semList) }
         }
     }
 
     fun getPercent(courseSummary: CourseSummary): Int {
-        val total = courseSummary.presentRecords + courseSummary.absentRecords + courseSummary.unmarkedRecords
+        val total =
+            courseSummary.presentRecords + courseSummary.absentRecords + courseSummary.unmarkedRecords
         Log.d("tag", "total: $total, present: ${courseSummary.presentRecords}")
         return if (total == 0) 0 else (courseSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
     }
 
     fun getPercentForSem(semesterSummary: SemesterSummary): Int {
-        val total = semesterSummary.presentRecords + semesterSummary.absentRecords + semesterSummary.unmarkedRecords
+        val total =
+            semesterSummary.presentRecords + semesterSummary.absentRecords + semesterSummary.unmarkedRecords
         return if (total == 0) 0 else (semesterSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
+    }
+
+    fun onChangeActiveSemester(new: Semester) {
+        if (new == _state.value.activeSemester) return
+        viewModelScope.launch {
+            if (new.endDate < LocalDate.now()) {
+                SnackbarController.sendEvent(SnackbarEvent("Active semester cannot be in the past"))
+            } else {
+                semesterRepository.markCurrent(new.id)
+                    .onSuccess { _state.update { it.copy(activeSemester = new) } }
+            }
+        }
     }
 }

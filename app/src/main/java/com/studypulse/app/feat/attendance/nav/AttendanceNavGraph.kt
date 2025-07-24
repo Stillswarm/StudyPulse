@@ -31,8 +31,8 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
             onAddNewCourse = {
                 navController.navigate(Route.AddCourseRoute)
             },
-            onCourseDetails = {
-                navController.navigate(Route.CourseDetailRoute(it))
+            onCourseTimetable = {
+                navController.navigate(Route.ScheduleRoute(it))
             }
         )
     }

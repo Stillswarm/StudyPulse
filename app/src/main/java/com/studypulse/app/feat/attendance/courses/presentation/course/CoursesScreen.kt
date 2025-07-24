@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.attendance.courses.presentation.course
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,9 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -30,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,7 +46,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CoursesScreen(
     onAddNewCourse: () -> Unit,
-    onCourseDetails: (String) -> Unit,
+    onCourseTimetable: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CoursesScreenViewModel = koinViewModel(),
 ) {
@@ -99,17 +98,28 @@ fun CoursesScreen(
             }
 
         } else {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .padding(top = 100.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(top = 100.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.value.courses.forEach { course ->
-                    CourseItem(onCourseDetails, course)
-                    Log.d("CourseItem", "Course: ${course.id}")
+                    item {
+                        CourseItem(onCourseTimetable, course)
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "You can add periods for a course by tapping on it.",
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        color = Color.DarkGray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                    )
                 }
             }
         }

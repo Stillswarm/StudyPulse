@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ fun AttendanceCalendar(
     eventDates: Set<LocalDate>,
     onDateSelected: (LocalDate?) -> Unit,
     onMonthChanged: (YearMonth) -> Unit,
+    unmarkedPeriods: Set<LocalDate>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -77,7 +80,7 @@ fun AttendanceCalendar(
 
             Icon(
                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                contentDescription = "Previous Month",
+                contentDescription = "Next Month",
                 modifier = Modifier.noRippleClickable { onMonthChanged(yearMonth.plusMonths(1)) }
             )
         }
@@ -104,7 +107,8 @@ fun AttendanceCalendar(
 
         DayGrid(
             gridCells = gridCells,
-            onDateSelected = onDateSelected
+            onDateSelected = onDateSelected,
+            unmarkedDates = unmarkedPeriods,
         )
     }
 }
@@ -113,6 +117,7 @@ fun AttendanceCalendar(
 fun DayGrid(
     gridCells: List<DayCellInfo>,
     onDateSelected: (LocalDate?) -> Unit,
+    unmarkedDates: Set<LocalDate>,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -130,7 +135,8 @@ fun DayGrid(
                     if (date != null) {
                         onDateSelected(date)
                     }
-                }
+                },
+                hasUnmarkedPeriods = unmarkedDates.contains(dayCell.date)
             )
         }
     }
@@ -139,6 +145,7 @@ fun DayGrid(
 @Composable
 fun DayCell(
     info: DayCellInfo,
+    hasUnmarkedPeriods: Boolean,
     onClick: (LocalDate?) -> Unit,
 ) {
     val cellSize = 48.dp
@@ -151,55 +158,63 @@ fun DayCell(
             .noRippleClickable { onClick(info.date) },
         contentAlignment = Alignment.Center
     ) {
-        if (info.isToday && info.dayOfMonth != null) {
-            Box(
-                modifier = Modifier
-                    .size(highlightBoxSize)
-                    .drawBehind {
-                        // Fill
-                        drawRoundRect(
-                            color = Gold.copy(alpha = 0.1f),
-                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
-                        )
-                        // Border
-                        drawRoundRect(
-                            color = Gold,
-                            style = Stroke(width = 2.dp.toPx()),
-                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
-                        )
-                    }
-            )
-        }
-
-        if (info.isSelected && info.dayOfMonth != null) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .size(highlightBoxSize)
-                    .background(color = Gold)
-            )
-        }
-
-        if (info.dayOfMonth != null) {
-            Text(
-                text = info.dayOfMonth.toString(),
-                fontSize = 14.sp,
-                color = when {
-                    info.isSelected -> Color.White
-                    info.isToday -> Color.Unspecified
-                    else -> Color.Black
+        BadgedBox(
+            badge = {
+                if (hasUnmarkedPeriods) {
+                    Badge(containerColor = Gold)
                 }
-            )
-        }
+            }
+        ) {
+            if (info.isToday && info.dayOfMonth != null) {
+                Box(
+                    modifier = Modifier
+                        .size(highlightBoxSize)
+                        .drawBehind {
+                            // Fill
+                            drawRoundRect(
+                                color = Gold.copy(alpha = 0.1f),
+                                cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+                            )
+                            // Border
+                            drawRoundRect(
+                                color = Gold,
+                                style = Stroke(width = 2.dp.toPx()),
+                                cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+                            )
+                        }
+                )
+            }
 
-        if (info.hasEvent && info.dayOfMonth != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = 4.dp)
-                    .size(dotSize)
-                    .background(color = if (info.isSelected) Gold else Color(0xFF007AFF))
-            )
+            if (info.isSelected && info.dayOfMonth != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .size(highlightBoxSize)
+                        .background(color = Gold)
+                )
+            }
+
+            if (info.dayOfMonth != null) {
+                Text(
+                    text = info.dayOfMonth.toString(),
+                    fontSize = 14.sp,
+                    color = when {
+                        info.isSelected -> Color.White
+                        info.isToday -> Color.Unspecified
+                        else -> Color.Black
+                    }
+                )
+            }
+
+            if (info.hasEvent && info.dayOfMonth != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .offset(y = 4.dp)
+                        .size(dotSize)
+                        .background(color = if (info.isSelected) Gold else Color(0xFF007AFF))
+                )
+            }
         }
     }
 }

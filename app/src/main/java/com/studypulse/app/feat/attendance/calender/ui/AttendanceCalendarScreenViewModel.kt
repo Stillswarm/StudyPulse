@@ -39,10 +39,12 @@ class AttendanceCalendarScreenViewModel(
             _state.update {
                 it.copy(
                     semesterStartDate = sem.startDate,
-                    sem.endDate
+                    semesterEndDate = sem.endDate,
+                    semesterId = sem.id
                 )
             }
         }
+        onMonthChanged(_state.value.yearMonth)
     }
 
     fun onDateSelected(newDate: LocalDate?) {
@@ -86,7 +88,19 @@ class AttendanceCalendarScreenViewModel(
     }
 
     fun onMonthChanged(newYearMonth: YearMonth) {
-        _state.update { it.copy(yearMonth = newYearMonth) }
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    yearMonth = newYearMonth,
+                    unmarkedDates = attendanceRepository.getDatesWithUnmarkedAttendance(
+                        it.semesterId,
+                        newYearMonth.atDay(1),
+                        LocalDate.now()
+                    ).getOrNull() ?: emptySet()
+                )
+            }
+
+        }
     }
 
     fun clearSelectedDate() {
@@ -94,19 +108,67 @@ class AttendanceCalendarScreenViewModel(
     }
 
     fun onDayCancelled() {
-        if (_state.value.selectedDate == null || _state.value.selectedDate!!.isAfter(LocalDate.now())) {
+        val selectedDate = _state.value.selectedDate
+        if (selectedDate == null || selectedDate.isAfter(LocalDate.now())) {
             viewModelScope.launch {
                 SnackbarController.sendEvent(SnackbarEvent(message = "Can't mark attendance for future dates"))
             }
+            return
         }
-        _state.value.periodsList.forEach { periodWithAttendance ->
-            Log.d(
-                "tag",
-                periodWithAttendance.period.courseName + " " + periodWithAttendance.attendanceRecord?.id
-            )
-            markAttendance(periodWithAttendance, AttendanceStatus.CANCELLED)
+
+        viewModelScope.launch {
+            val periodsForDay = _state.value.periodsList
+            if (periodsForDay.isEmpty()){
+                // Potentially fetch periods if not already loaded, though they should be if a date is selected.
+                Log.w("ViewModel", "No periods found for day cancellation on $selectedDate")
+                // Potentially show a snackbar or handle appropriately
+                return@launch
+            }
+
+            try {
+                val recordsToCancel = periodsForDay.map { pwa ->
+                    pwa.attendanceRecord?.copy(status = AttendanceStatus.CANCELLED)
+                        ?: AttendanceRecord(
+                            periodId = pwa.period.id,
+                            date = selectedDate,
+                            status = AttendanceStatus.CANCELLED,
+                            courseId = pwa.period.courseId
+                        )
+                }
+                attendanceRepository.upsertManyAttendance(recordsToCancel) // Assuming a bulk upsert function
+
+                // After successful cancellation, check if the selected date still has pending items
+                // (it shouldn't if all were just cancelled, but this keeps logic consistent)
+                checkAndUpdatePendingStatusForDate(selectedDate)
+
+
+            } catch (e: Exception) {
+                Log.e("ViewModel", "Failed to cancel day's attendance", e)
+                SnackbarController.sendEvent(SnackbarEvent("Failed to cancel day: ${e.message}"))
+            }
         }
     }
+
+    /**
+     * Checks if the given date still has any pending attendance records and updates
+     * the `datesWithPendingAttendance` set in the state accordingly.
+     */
+    private fun checkAndUpdatePendingStatusForDate(date: LocalDate) {
+        viewModelScope.launch {
+            // This repository function needs to check if *any* record for this date is PENDING
+            val hasPending = attendanceRepository.hasPendingAttendanceForDate(_state.value.semesterId, date).getOrDefault(false)
+
+            _state.update { currentState ->
+                val updatedPendingDates = if (hasPending) {
+                    currentState.unmarkedDates + date
+                } else {
+                    currentState.unmarkedDates - date
+                }
+                currentState.copy(unmarkedDates = updatedPendingDates)
+            }
+        }
+    }
+
 
     fun updateShowBottomSheet(show: Boolean) {
         _state.update { it.copy(showBottomSheet = show) }

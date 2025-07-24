@@ -1,5 +1,6 @@
 package com.studypulse.app.common.util
 
+import kotlin.math.ceil
 import kotlin.math.max
 
 object MathUtils {
@@ -15,7 +16,7 @@ object MathUtils {
     ): Int {
         val total = present + absent + unmarked
         // how many presents you need across all total classes
-        val requiredPresents = (minPercent / 100.0 * total).toInt()
+        val requiredPresents = ceil((minPercent / 100.0 * total)).toInt()
         // max you can convert from unmarked into absences:
         return max(0, (present + unmarked) - requiredPresents)
     }

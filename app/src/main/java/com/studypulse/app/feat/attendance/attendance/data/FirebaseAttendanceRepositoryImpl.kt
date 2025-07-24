@@ -13,10 +13,12 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.toDomain
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDto
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class FirebaseAttendanceRepositoryImpl(
@@ -194,5 +196,67 @@ class FirebaseAttendanceRepositoryImpl(
             awaitClose { listener.remove() }
         }
 
+    override suspend fun getDatesWithUnmarkedAttendance(
+        semesterId: String,
+        monthStartDate: LocalDate,
+        endDate: LocalDate
+    ): Result<Set<LocalDate>> = withContext(Dispatchers.IO) {
+        try {
+            val snapshot = getAttendanceCollection()
+                .whereEqualTo("semesterId", semesterId)
+                .whereGreaterThanOrEqualTo("date", monthStartDate.toTimestamp())
+                .whereLessThanOrEqualTo("date", endDate.toTimestamp())
+                .whereEqualTo("status", AttendanceStatus.UNMARKED.name)
+                .get()
+                .await()
 
+            val dates = snapshot.documents.mapNotNull { doc ->
+                try {
+                    val timestamp = doc.getTimestamp("date")
+                    timestamp?.toDate()?.toInstant()?.atZone(java.time.ZoneId.systemDefault())?.toLocalDate()
+                } catch (e: Exception) {
+
+                    null
+                }
+            }.toSet()
+            Result.success(dates)
+        } catch (e: Exception) {
+            Log.e("AttendanceRepo", "Error fetching dates with pending attendance", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun hasPendingAttendanceForDate(semesterId: String, date: LocalDate): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val snapshot = getAttendanceCollection()
+                .whereEqualTo("semesterId", semesterId)
+                .whereEqualTo("date", date.toTimestamp())
+                .whereEqualTo("status", AttendanceStatus.UNMARKED.name)
+                .limit(1)
+                .get()
+                .await()
+            Result.success(!snapshot.isEmpty)
+        } catch (e: Exception) {
+            Log.e("AttendanceRepo", "Error checking pending attendance for date $date", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val batch = db.batch()
+            val collection = getAttendanceCollection()
+            records.forEach { record ->
+                val docId = record.id.ifBlank { collection.document().id }
+                val updatedRecord = record.copy(id = docId)
+                val docRef = collection.document(docId)
+                batch.set(docRef, updatedRecord.toDto())
+            }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("AttendanceRepo", "Error bulk upserting attendance", e)
+            Result.failure(e)
+        }
+    }
 }

@@ -10,4 +10,11 @@ interface AttendanceRepository {
     suspend fun getAttendanceForPeriodAndDate(periodId: String, date: LocalDate) : AttendanceRecord?
     fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>>
     fun getAttendanceGroupedByCourse(): Flow<Map<String, List<AttendanceRecord>>>
+    suspend fun hasPendingAttendanceForDate(semesterId: String, date: LocalDate): Result<Boolean>
+    suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit>
+    suspend fun getDatesWithUnmarkedAttendance(
+        semesterId: String,
+        monthStartDate: LocalDate,
+        endDate: LocalDate
+    ): Result<Set<LocalDate>>
 }

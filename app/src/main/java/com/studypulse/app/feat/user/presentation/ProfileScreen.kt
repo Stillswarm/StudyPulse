@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.user.presentation
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -264,7 +263,6 @@ fun ProfileScreen(
                                     selectedSemester = sem.id,
                                     semester = sem,
                                     onSemesterClick = {
-                                        Log.d("fcuk", "here 2")
                                         scope.launch { semSheetState.show() }
                                     },
                                     buttonColor = DarkGray,

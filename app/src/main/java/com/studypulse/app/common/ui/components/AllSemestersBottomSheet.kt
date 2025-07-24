@@ -35,7 +35,6 @@ fun AllSemestersBottomSheet(
     onAddSemester: () -> Unit,
     selectedSemesterId: String,
     buttonColor: Color,
-    modifier: Modifier = Modifier
 ) {
     if (sheetState.isVisible) {
         ModalBottomSheet(
@@ -50,7 +49,7 @@ fun AllSemestersBottomSheet(
             ) {
                 Text(
                     text = "Select Semester",
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold
                 )
 
@@ -63,7 +62,7 @@ fun AllSemestersBottomSheet(
                 ) {
                     Text(
                         text = "+ Add New",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                     )
                 }
             }
@@ -100,17 +99,20 @@ fun SemesterBottomSheetItem(
         ) {
             Text(
                 text = "${semester.name.name.convertToSentenceCase()} Semester, Year ${semester.year}",
-                fontSize = 16.sp,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 24.sp,
             )
 
             Text(
                 text = "${semester.startDate} - ${semester.endDate}",
                 fontSize = 14.sp,
+                lineHeight = 20.sp,
             )
         }
         RadioButton(
             selected = semester.id == selectedSemester,
-            onClick = { },
+            onClick = {  },     // outer box is clickable
             colors = RadioButtonDefaults.colors(
                 selectedColor = buttonColor
             )
