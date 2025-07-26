@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
-import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
@@ -60,29 +59,34 @@ class AttendanceCalendarScreenViewModel(
             }
         } else {
             viewModelScope.launch {
-                periodRepository.getAllPeriodsFilteredByDayOfWeek(
-                    Day.valueOf(newDate.dayOfWeek.name.uppercase())
-                )
-                    .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }
-                    .onSuccess { periodFlow ->
-                        periodFlow.flowOn(Dispatchers.IO).collect { periods ->
-                            _state.update {
-                                it.copy(
-                                    selectedDate = newDate,
-                                    periodsList = periods.map { period ->
-                                        PeriodWithAttendance(
-                                            period = period,
-                                            attendanceRecord =
-                                                attendanceRepository.getAttendanceForPeriodAndDate(
-                                                    period.id,
-                                                    newDate
-                                                )
-                                        )
-                                    }
-                                )
+                try {
+                    periodRepository.getAllPeriodsFilteredByDayOfWeek(
+                        Day.valueOf(newDate.dayOfWeek.name.uppercase())
+                    )
+                        .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }
+                        .onSuccess { periodFlow ->
+                            periodFlow.flowOn(Dispatchers.IO).collect { periods ->
+                                _state.update {
+                                    it.copy(
+                                        selectedDate = newDate,
+                                        periodsList = periods.map { period ->
+                                            PeriodWithAttendance(
+                                                period = period,
+                                                attendanceRecord =
+                                                    attendanceRepository.getAttendanceForPeriodAndDate(
+                                                        period.id,
+                                                        newDate
+                                                    )!!
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
-                    }
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    SnackbarController.sendEvent(SnackbarEvent("Error fetching schedule " + e.localizedMessage))
+                }
             }
         }
     }
@@ -117,35 +121,21 @@ class AttendanceCalendarScreenViewModel(
         }
 
         viewModelScope.launch {
-            val periodsForDay = _state.value.periodsList
-            if (periodsForDay.isEmpty()){
-                // Potentially fetch periods if not already loaded, though they should be if a date is selected.
-                Log.w("ViewModel", "No periods found for day cancellation on $selectedDate")
-                // Potentially show a snackbar or handle appropriately
-                return@launch
-            }
-
             try {
-                val recordsToCancel = periodsForDay.map { pwa ->
-                    pwa.attendanceRecord?.copy(status = AttendanceStatus.CANCELLED)
-                        ?: AttendanceRecord(
-                            periodId = pwa.period.id,
-                            date = selectedDate,
-                            status = AttendanceStatus.CANCELLED,
-                            courseId = pwa.period.courseId
-                        )
-                }
-                attendanceRepository.upsertManyAttendance(recordsToCancel) // Assuming a bulk upsert function
-
-                // After successful cancellation, check if the selected date still has pending items
-                // (it shouldn't if all were just cancelled, but this keeps logic consistent)
-                checkAndUpdatePendingStatusForDate(selectedDate)
-
+                val periodsForDay = _state.value.periodsList
+                if (periodsForDay.isEmpty()) return@launch
+                periodsForDay.map { pwa ->
+                    pwa.attendanceRecord.copy(status = AttendanceStatus.CANCELLED)
+                }.map { launch { attendanceRepository.upsertAttendance(it) } }
 
             } catch (e: Exception) {
-                Log.e("ViewModel", "Failed to cancel day's attendance", e)
-                SnackbarController.sendEvent(SnackbarEvent("Failed to cancel day: ${e.message}"))
+                SnackbarController.sendEvent(SnackbarEvent(message = "Error marking attendance: ${e.message}"))
             }
+        }
+
+        _state.update {
+            val new = it.unmarkedDates - selectedDate
+            it.copy(unmarkedDates = new)
         }
     }
 
@@ -156,7 +146,9 @@ class AttendanceCalendarScreenViewModel(
     private fun checkAndUpdatePendingStatusForDate(date: LocalDate) {
         viewModelScope.launch {
             // This repository function needs to check if *any* record for this date is PENDING
-            val hasPending = attendanceRepository.hasPendingAttendanceForDate(_state.value.semesterId, date).getOrDefault(false)
+            val hasPending =
+                attendanceRepository.hasPendingAttendanceForDate(_state.value.semesterId, date)
+                    .getOrDefault(false)
 
             _state.update { currentState ->
                 val updatedPendingDates = if (hasPending) {
@@ -182,12 +174,7 @@ class AttendanceCalendarScreenViewModel(
             }
         } else {
             val record =
-                periodWithAttendance.attendanceRecord?.copy(status = status) ?: AttendanceRecord(
-                    periodId = periodWithAttendance.period.id,
-                    date = _state.value.selectedDate!!,
-                    status = status,
-                    courseId = periodWithAttendance.period.courseId
-                )
+                periodWithAttendance.attendanceRecord.copy(status = status)
             viewModelScope.launch {
                 Log.d("tag", "marking ${record.id}")
                 attendanceRepository.upsertAttendance(record)

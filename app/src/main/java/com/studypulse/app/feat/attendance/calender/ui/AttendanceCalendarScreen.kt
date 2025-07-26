@@ -98,7 +98,10 @@ fun AttendanceCalendarScreen(
                         onCancelled = {
                             viewModel.markAttendance(it, AttendanceStatus.CANCELLED)
                         },
-                        onCancelDay = { viewModel.onDayCancelled() }
+                        onCancelDay = {
+                            viewModel.onDayCancelled()
+                            viewModel.updateShowBottomSheet(false)
+                        }
                     )
                 }
             }

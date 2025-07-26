@@ -235,7 +235,8 @@ fun AddSemesterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
-                        .background(LightGray),
+                        .background(LightGray)
+                        .noRippleClickable { showDatePicker = !showDatePicker },
                     contentAlignment = Alignment.Center
                 ) {
 
@@ -256,7 +257,6 @@ fun AddSemesterScreen(
                             contentDescription = "Expand",
                             modifier = Modifier
                                 .padding(8.dp)
-                                .noRippleClickable { showDatePicker = !showDatePicker }
                         )
                     }
                 }

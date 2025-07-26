@@ -212,10 +212,9 @@ fun AttendanceScreen(
                             Text(
                                 text = "You haven't added any courses yet. Click on \"Courses Overview\" to get started.",
                                 textAlign = TextAlign.Center,
+                                fontSize = 14.sp,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .padding(top = 50.dp)
                                     .noRippleClickable { scope.launch { semesterSheetState.show() } },
                             )
                         }

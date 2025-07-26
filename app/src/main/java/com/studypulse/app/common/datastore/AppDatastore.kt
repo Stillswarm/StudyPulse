@@ -23,4 +23,10 @@ class AppDatastore(
             prefs[DatastoreKeys.SEMESTER_ID] = semesterId
         }
     }
+
+    suspend fun clearSemesterId() {
+        context.preferencesDataStore.edit { prefs ->
+            prefs.clear()
+        }
+    }
 }

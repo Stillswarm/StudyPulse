@@ -18,5 +18,5 @@ data class AttendanceCalendarScreenState(
 
 data class PeriodWithAttendance(
     val period: Period,
-    val attendanceRecord: AttendanceRecord?
+    val attendanceRecord: AttendanceRecord
 )

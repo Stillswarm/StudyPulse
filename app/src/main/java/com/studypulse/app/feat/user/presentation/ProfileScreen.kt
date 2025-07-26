@@ -35,6 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -83,14 +84,13 @@ fun ProfileScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(WarmWhite)
     ) {
         if (!state.isLoading && state.user == null) {
             Text(
                 text = "Unable to fetch profile data. Please try again later.",
-                fontSize = 24.sp,
+                fontSize = 16.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.padding(16.dp).align(Alignment.Center)
             )
         } else {
             state.user?.let { user ->
@@ -167,7 +167,11 @@ fun ProfileScreen(
                     ) {
                         Text(
                             text = user.email,
-                            fontSize = 24.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 24.sp,
+                            letterSpacing = 1.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             fontWeight = FontWeight.SemiBold
                         )
 
