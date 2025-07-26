@@ -1,12 +1,12 @@
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore, FieldValue, Timestamp} = require("firebase-admin/firestore");
-
+const functions = require('firebase-functions');
 initializeApp();
 
 exports.unmarkCron = onSchedule({
   schedule: "5 18 * * *",
-  timeZone: "Asia/Kolkata"
+  timeZone: "Asia/Kolkata",
 }, async (event) => {
   const db = getFirestore();
   const now = Timestamp.now();
@@ -14,10 +14,10 @@ exports.unmarkCron = onSchedule({
   // 1) Find all unprocessed docs with date <= now
   console.log("Current time:", now.toDate());
   const snapshot = await db
-    .collectionGroup("attendance")
-    .where("date", "<=", now)
-    .where("processed", "==", false)
-    .get();
+      .collectionGroup("attendance")
+      .where("date", "<=", now)
+      .where("processed", "==", false)
+      .get();
 
   console.log(`Found ${snapshot.size} unprocessed attendance records`);
 
@@ -35,34 +35,34 @@ exports.unmarkCron = onSchedule({
 
     // a) Update semester summary - use set with merge to create if doesn't exist
     const semSummaryRef = db
-      .collection("users")
-      .doc(data.userId)
-      .collection("semesters")
-      .doc(data.semesterId)
-      .collection("sem_summaries")
-      .doc("sem_summary");
+        .collection("users")
+        .doc(data.userId)
+        .collection("semesters")
+        .doc(data.semesterId)
+        .collection("sem_summaries")
+        .doc("sem_summary");
 
     batch.set(semSummaryRef, {
-      unmarkedRecords: FieldValue.increment(1)
-    }, { merge: true });
+      unmarkedRecords: FieldValue.increment(1),
+    }, {merge: true});
 
     // b) Update course summary - use set with merge to create if doesn't exist
     const courseSummaryRef = db
-      .collection("users")
-      .doc(data.userId)
-      .collection("semesters")
-      .doc(data.semesterId)
-      .collection("courses")
-      .doc(data.courseId)
-      .collection("course_summaries")
-      .doc("course_summary");
+        .collection("users")
+        .doc(data.userId)
+        .collection("semesters")
+        .doc(data.semesterId)
+        .collection("courses")
+        .doc(data.courseId)
+        .collection("course_summaries")
+        .doc("course_summary");
 
     batch.set(courseSummaryRef, {
-      unmarkedRecords: FieldValue.increment(1)
-    }, { merge: true });
+      unmarkedRecords: FieldValue.increment(1),
+    }, {merge: true});
 
     // c) Mark attendance doc processed
-    batch.update(doc.ref, { processed: true });
+    batch.update(doc.ref, {processed: true});
   }
 
   // 3) Commit the batch
@@ -70,3 +70,49 @@ exports.unmarkCron = onSchedule({
   console.log(`Processed ${snapshot.size} attendance docs.`);
   return null;
 });
+
+const nodemailer = require('nodemailer');
+exports.notifyFeedback = functions
+  .runWith({
+    secrets: ['SMTP_USER', 'SMTP_PASS', 'TEAM_EMAIL'],
+    memory: '256MB',
+    timeoutSeconds: 60
+  })
+  .region('us-central1')
+  .firestore
+  .document('feedback/{docId}')
+  .onCreate(async (snap, ctx) => {
+
+      console.log('🔥 notifyFeedback triggered — docId =', ctx.params.docId);
+      const data = snap.data();
+      console.log(' 🔍 Payload:', data);
+
+      const { userId, message, createdAt } = data;
+    const timestamp = createdAt?.toDate?.().toISOString() || new Date().toISOString();
+
+    // Access secrets via environment variables
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const teamEmail = process.env.TEAM_EMAIL;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: smtpUser, pass: smtpPass }
+    });
+
+    const mailOptions = {
+      from: `"My App Feedback" <${smtpUser}>`,
+      to: teamEmail,
+      subject: `📝 Feedback from ${userId}`,
+      text: `At ${timestamp}, user ${userId} wrote:\n\n${message}`
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('Feedback email sent for', ctx.params.docId);
+    } catch (err) {
+      console.error('Error sending feedback email:', err);
+    }
+
+    return null;
+  });

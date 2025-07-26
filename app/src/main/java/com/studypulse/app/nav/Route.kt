@@ -55,4 +55,7 @@ object Route {
     @Serializable
     data object AddSemesterRoute : NavigableRoute
 
+    @Serializable
+    data object FeedbackRoute : NavigableRoute
+
 }

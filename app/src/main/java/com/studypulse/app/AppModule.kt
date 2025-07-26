@@ -8,6 +8,9 @@ import com.google.firebase.firestore.firestore
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.di.attendanceModule
 import com.studypulse.app.feat.auth.di.authModule
+import com.studypulse.app.feat.feedback.FeedbackScreenViewModel
+import com.studypulse.app.feat.feedback.data.FeedbackRepository
+import com.studypulse.app.feat.feedback.data.FeedbackRepositoryImpl
 import com.studypulse.app.feat.semester.di.semesterModule
 import com.studypulse.app.feat.user.di.userModule
 import org.koin.android.ext.koin.androidContext
@@ -35,6 +38,10 @@ val appModule = module {
     // DB
     single<StudyPulseDatabase> { StudyPulseDatabase.getDatabase(get()) }
 
+    // Feedback Repository
+    single<FeedbackRepository> { FeedbackRepositoryImpl(get(), get()) }
+
     // VM
     viewModelOf(::AppViewModel)
+    viewModelOf(::FeedbackScreenViewModel)
 }
