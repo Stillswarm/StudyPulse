@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.user.data
 
-import com.algolia.client.api.SearchClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -15,7 +14,7 @@ import kotlinx.coroutines.tasks.await
 class FirebaseUserRepositoryImpl(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,
-    private val searchClient: SearchClient,
+//    private val searchClient: SearchClient,
 ) : UserRepository {
 
     override suspend fun fetchCurrentUser() =

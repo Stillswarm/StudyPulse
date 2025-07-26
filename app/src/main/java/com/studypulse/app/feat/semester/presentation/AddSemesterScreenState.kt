@@ -10,5 +10,8 @@ data class AddSemesterScreenState(
     val endDate: LocalDate? = null,
     val minAttendance: Int? = null,
     val isLoading: Boolean = false,
-    val errorMsg: String? = null
+    val errorMsg: String? = null,
+    val showConfirmationPopup: Boolean = false,
+    val granted: Boolean = false,    // set when user wants to submit even after the popup warning
+    val dateRange: String = "",
 )

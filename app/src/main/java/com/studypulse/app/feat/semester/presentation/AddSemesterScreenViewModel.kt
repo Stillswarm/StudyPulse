@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class AddSemesterScreenViewModel(
     private val semesterRepository: SemesterRepository,
@@ -34,9 +35,37 @@ class AddSemesterScreenViewModel(
         _state.update { it.copy(endDate = new, errorMsg = null) }
     }
 
+    fun updateShowConfirmationPopup(new: Boolean) {
+        _state.update { it.copy(showConfirmationPopup = new) }
+    }
+
+    fun updateGranted(new: Boolean) {
+        _state.update { it.copy(granted = new) }
+    }
+
     fun submit(navigateUp: () -> Unit) {
         if (validateData()) {
+
+            // check for abnormal date range
             val s = _state.value
+            val startDate = s.startDate
+            val endDate = s.endDate
+            if (startDate != null && endDate != null) {
+                val days = ChronoUnit.DAYS.between(startDate, endDate).toInt() + 1
+                val months = ChronoUnit.MONTHS.between(
+                    startDate.withDayOfMonth(1),
+                    endDate.withDayOfMonth(1)
+                )
+                if (!s.granted) {
+                    if (days < 28) {
+                        _state.update { it.copy(showConfirmationPopup = true, dateRange = "$days days") }
+                        return
+                    } else if (months > 11) {
+                        _state.update { it.copy(showConfirmationPopup = true, dateRange = "$months months") }
+                        return
+                    }
+                }
+            }
             viewModelScope.launch {
                 semesterRepository.addActiveSemester(
                     Semester(
@@ -50,6 +79,13 @@ class AddSemesterScreenViewModel(
                     )
                 )
 
+                _state.update {
+                    it.copy(
+                        showConfirmationPopup = false,
+                        granted = false,
+                        dateRange = "",
+                    )
+                }
                 navigateUp()
             }
         }

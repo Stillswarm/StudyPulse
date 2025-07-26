@@ -2,6 +2,7 @@ package com.studypulse.app.feat.semester.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -27,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
@@ -43,6 +49,7 @@ import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.toFullString
 import com.studypulse.app.common.util.toLocalDate
 import com.studypulse.app.feat.semester.domain.model.SemesterName
+import com.studypulse.app.ui.theme.GreenDark
 import com.studypulse.app.ui.theme.GreenLight
 import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
@@ -53,7 +60,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddSemesterScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
-    vm: AddSemesterScreenViewModel = koinViewModel()
+    vm: AddSemesterScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val dateRangePickerState = rememberDateRangePickerState()
@@ -318,6 +325,62 @@ fun AddSemesterScreen(
                 },
                 onDismiss = { showDatePicker = false }
             )
+        }
+
+        if (state.showConfirmationPopup) {
+            Popup(
+                alignment = Alignment.Center,
+                onDismissRequest = { vm.updateShowConfirmationPopup(false) },
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .shadow(12.dp, shape = RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(GreenLight)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "You have chosen a semester that is ${state.dateRange} long. Semesters aren't typically this long. Are you sure you want to proceed?",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            vm.updateShowConfirmationPopup(false)   // hide popup
+                            vm.updateGranted(true)
+                            vm.submit(onNavigateBack) // delete
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GreenDark
+                        )
+                    ) {
+                        Text(text = "Continue anyway")
+                    }
+
+                    OutlinedButton(
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = GreenDark
+                        ),
+                        border = BorderStroke(1.dp, GreenSecondary),
+                        onClick = {
+                            vm.updateShowConfirmationPopup(false)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(text = "Go back and change")
+                    }
+                }
+            }
         }
     }
 }

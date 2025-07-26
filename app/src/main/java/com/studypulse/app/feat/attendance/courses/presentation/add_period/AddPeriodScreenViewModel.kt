@@ -22,7 +22,7 @@ class AddPeriodScreenViewModel(
     private val semesterRepository: SemesterRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val initialData = AddPeriodState(
+    private val initialData = AddPeriodScreenState(
         selectedDay = savedStateHandle.get<Day>("day") ?: Day.MONDAY,
         startTimeHour = 9,
         startTimeMinute = 0,
@@ -72,6 +72,14 @@ class AddPeriodScreenViewModel(
         _state.update { it.copy(endTimeHour = newHour, endTimeMinute = newMinute) }
     }
 
+    fun updateShowConfirmationPopup(new: Boolean) {
+        _state.update { it.copy(showConfirmationPopup = new) }
+    }
+
+    fun updateGranted(new: Boolean) {
+        _state.update { it.copy(granted = new) }
+    }
+
     fun onSubmit(navigateBack: () -> Unit) {
         if (_state.value.startTimeHour > _state.value.endTimeHour) {
             viewModelScope.launch {
@@ -79,6 +87,23 @@ class AddPeriodScreenViewModel(
             }
             return
         }
+
+        // check for abnormal date range
+        val s = _state.value
+        val startTime = LocalTime.of(s.startTimeHour, s.startTimeMinute)
+        val endTime = LocalTime.of(s.endTimeHour, s.endTimeMinute)
+        val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes()
+        if (!s.granted) {
+            if (durationMinutes < 30) {
+                _state.update { it.copy(showConfirmationPopup = true, timeRange = "$durationMinutes minutes") }
+                return
+            } else if (durationMinutes > 180) {
+                _state.update { it.copy(showConfirmationPopup = true, timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes") }
+                return
+            }
+        }
+
+
         viewModelScope.launch {
             periodRepository.addNewPeriod(
                 Period(
@@ -86,16 +111,20 @@ class AddPeriodScreenViewModel(
                     courseName = courseRepository.getCourseById(courseId).getOrNull()?.courseName
                         ?: "",
                     day = _state.value.selectedDay,
-                    startTime = LocalTime.of(
-                        _state.value.startTimeHour,
-                        _state.value.startTimeMinute
-                    ),
-                    endTime = LocalTime.of(_state.value.endTimeHour, _state.value.endTimeMinute),
+                    startTime = startTime,
+                    endTime = endTime,
                     semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
 
                 )
             )
 
+            _state.update {
+                it.copy(
+                    showConfirmationPopup = false,
+                    granted = false,
+                    timeRange = "",
+                )
+            }
             navigateBack()
         }
     }

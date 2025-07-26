@@ -1,6 +1,7 @@
 package com.studypulse.app.feat.attendance.courses.presentation.add_period
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -28,11 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
@@ -42,6 +46,8 @@ import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.formatWithLeadingZero
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.ui.theme.DarkGray
+import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenLight
 import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import org.koin.androidx.compose.koinViewModel
@@ -51,9 +57,9 @@ import org.koin.androidx.compose.koinViewModel
 fun AddPeriodScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AddPeriodScreenViewModel = koinViewModel(),
+    vm: AddPeriodScreenViewModel = koinViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -126,7 +132,7 @@ fun AddPeriodScreen(
                                                 .fillMaxWidth()
                                                 .padding(vertical = 8.dp)
                                                 .noRippleClickable {
-                                                    viewModel.onDayChange(y)
+                                                    vm.onDayChange(y)
                                                     expanded = false
                                                 },
                                             textAlign = TextAlign.Center
@@ -151,10 +157,14 @@ fun AddPeriodScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(LightGray)
-                            .noRippleClickable { viewModel.showStartTimePicker() }
+                            .noRippleClickable { vm.showStartTimePicker() }
                     ) {
                         Text(
-                            text = "${formatWithLeadingZero(state.startTimeHour)} : ${formatWithLeadingZero(state.startTimeMinute)}",
+                            text = "${formatWithLeadingZero(state.startTimeHour)} : ${
+                                formatWithLeadingZero(
+                                    state.startTimeMinute
+                                )
+                            }",
                             color = DarkGray,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier.padding(16.dp)
@@ -174,10 +184,14 @@ fun AddPeriodScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(LightGray)
-                            .noRippleClickable { viewModel.showEndTimePicker() }
+                            .noRippleClickable { vm.showEndTimePicker() }
                     ) {
                         Text(
-                            text = "${formatWithLeadingZero(state.endTimeHour)} : ${formatWithLeadingZero(state.endTimeMinute)}",
+                            text = "${formatWithLeadingZero(state.endTimeHour)} : ${
+                                formatWithLeadingZero(
+                                    state.endTimeMinute
+                                )
+                            }",
                             color = DarkGray,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier.padding(16.dp)
@@ -187,7 +201,7 @@ fun AddPeriodScreen(
 
                 Button(
                     onClick = {
-                        viewModel.onSubmit(onNavigateBack)
+                        vm.onSubmit(onNavigateBack)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -205,17 +219,17 @@ fun AddPeriodScreen(
             }
         }
 
-            val startTimePickerState = rememberTimePickerState(
-                initialHour = state.startTimeHour,
-                initialMinute = state.startTimeMinute,
-                is24Hour = true
-            )
+        val startTimePickerState = rememberTimePickerState(
+            initialHour = state.startTimeHour,
+            initialMinute = state.startTimeMinute,
+            is24Hour = true
+        )
         if (state.showStartTimePicker) {
             TimeInputDialog(
-                onDismissRequest = { viewModel.hideStartTimePicker() },
+                onDismissRequest = { vm.hideStartTimePicker() },
                 timePickerState = startTimePickerState,
                 onTimeChange = { h, m ->
-                    viewModel.onStartTimeChange(h, m)
+                    vm.onStartTimeChange(h, m)
                 },
                 modifier = Modifier.align(Alignment.Center),
                 containerColor = LightGray,
@@ -229,14 +243,69 @@ fun AddPeriodScreen(
         )
         if (state.showEndTimePicker) {
             TimeInputDialog(
-                onDismissRequest = { viewModel.hideEndTimePicker() },
+                onDismissRequest = { vm.hideEndTimePicker() },
                 timePickerState = endTimePickerState,
                 onTimeChange = { h, m ->
-                    viewModel.onEndTimeChange(h, m)
+                    vm.onEndTimeChange(h, m)
                 },
                 modifier = Modifier.align(Alignment.Center),
                 containerColor = LightGray
             )
+        }
+        if (state.showConfirmationPopup) {
+            Popup(
+                alignment = Alignment.Center,
+                onDismissRequest = { vm.updateShowConfirmationPopup(false) },
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .shadow(12.dp, shape = RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(GreenLight)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "You have chosen a period that is ${state.timeRange} long. Classes aren't typically this long. Are you sure you want to proceed?",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            vm.updateShowConfirmationPopup(false)   // hide popup
+                            vm.updateGranted(true)
+                            vm.onSubmit(onNavigateBack) // delete
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GreenDark
+                        )
+                    ) {
+                        Text(text = "Continue anyway")
+                    }
+
+                    OutlinedButton(
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = GreenDark
+                        ),
+                        border = BorderStroke(1.dp, GreenSecondary),
+                        onClick = {
+                            vm.updateShowConfirmationPopup(false)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(text = "Go back and change")
+                    }
+                }
+            }
         }
     }
 }
