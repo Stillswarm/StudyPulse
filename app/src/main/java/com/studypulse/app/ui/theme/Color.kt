@@ -21,3 +21,5 @@ val GreenSecondary = Color(0xFF3B9E67)
 val GreenLight = Color(0xFFA2E0B4)
 val LightGray = Color(0xFFD9D9D9)
 val Red = Color(0xFFFF4444)
+
+val Lavender = Color(0xFFBEBEF2)

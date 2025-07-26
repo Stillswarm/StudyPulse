@@ -1,3 +1,5 @@
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +10,9 @@ plugins {
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
+
+val secrets = Properties()
+secrets.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "com.studypulse.app"
@@ -30,6 +35,30 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            buildConfigField(
+                "String",
+                "ALGOLIA_APP_ID",
+                "\"${secrets.getProperty("algolia.appId")}\""
+            )
+            buildConfigField(
+                "String",
+                "ALGOLIA_SEARCH_KEY",
+                "\"${secrets.getProperty("algolia.searchKey")}\""
+            )
+        }
+
+        debug {
+            buildConfigField(
+                "String",
+                "ALGOLIA_APP_ID",
+                "\"${secrets.getProperty("algolia.appId")}\""
+            )
+            buildConfigField(
+                "String",
+                "ALGOLIA_SEARCH_KEY",
+                "\"${secrets.getProperty("algolia.searchKey")}\""
+            )
         }
     }
     compileOptions {
@@ -41,6 +70,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -89,6 +119,10 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.android.gms:play-services-auth:21.3.0")
+
+    // algolia
+    implementation("com.algolia:algoliasearch-client-kotlin:3.25.1")
+
 
     // Credential Manager libraries
     implementation("androidx.credentials:credentials:1.5.0")

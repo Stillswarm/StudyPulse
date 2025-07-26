@@ -1,5 +1,6 @@
 package com.studypulse.app
 
+import com.algolia.client.api.SearchClient
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -40,6 +41,9 @@ val appModule = module {
 
     // Feedback Repository
     single<FeedbackRepository> { FeedbackRepositoryImpl(get(), get()) }
+
+    // Algolia Client
+    single { SearchClient(BuildConfig.ALGOLIA_APP_ID, BuildConfig.ALGOLIA_SEARCH_KEY) }
 
     // VM
     viewModelOf(::AppViewModel)
