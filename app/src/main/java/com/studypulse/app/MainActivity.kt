@@ -2,6 +2,7 @@ package com.studypulse.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
@@ -17,7 +18,12 @@ val LocalCurrentUser = compositionLocalOf<String?> { null }
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                scrim = 0x000000, // 20% black for light content over light background
+                darkScrim = 0x2000000.toInt() // 70% black for light content over dark background
+            )
+        )
         setContent {
             val appViewModel = koinViewModel<AppViewModel>()
             val currentUser by appViewModel.currentUid.collectAsState()

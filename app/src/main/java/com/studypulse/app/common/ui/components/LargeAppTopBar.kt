@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,7 +43,7 @@ fun LargeAppTopBar(
     titleColor: Color = Color.Unspecified,
     @DrawableRes imageRes: Int? = null,
 ) {
-    SetStatusBarColor(backgroundColor.luminance() > 0.5)
+    SetStatusBarColor(backgroundColor)
     Box(
         modifier = modifier
             .fillMaxWidth()
