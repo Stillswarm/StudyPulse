@@ -67,7 +67,7 @@ fun AddPeriodScreen(
             AppTopBar(
                 backgroundColor = GreenSecondary,
                 foregroundGradient = null,
-                title = "Add Period",
+                title = if (state.periodId.isNotEmpty()) "Edit Period" else "Add Period",
                 titleColor = Color.White,
                 navigationIcon = R.drawable.ic_arrow_left,
                 onNavigationClick = onNavigateBack,
@@ -208,7 +208,7 @@ fun AddPeriodScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = GreenSecondary)
                 ) {
                     Text(
-                        text = "Add Period",
+                        text = if (state.periodId.isNotEmpty()) "Update" else "Add Period",
                         fontSize = 16.sp,
                         color = Color.White,
                         lineHeight = 24.sp,

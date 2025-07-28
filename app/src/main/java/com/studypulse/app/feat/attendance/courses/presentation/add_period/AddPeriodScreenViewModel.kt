@@ -32,6 +32,27 @@ class AddPeriodScreenViewModel(
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
     private val courseId: String = checkNotNull(savedStateHandle["courseId"])
+    private val periodId: String? = savedStateHandle["periodId"]
+
+    init {
+        if (periodId != null) {
+            viewModelScope.launch {
+                val period = periodRepository.getPeriodById(periodId).getOrNull()
+                if (period != null) {
+                    _state.update {
+                        it.copy(
+                            periodId = periodId,
+                            selectedDay = period.day,
+                            startTimeHour = period.startTime.hour,
+                            startTimeMinute = period.startTime.minute,
+                            endTimeHour = period.endTime.hour,
+                            endTimeMinute = period.endTime.minute
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     fun showStartTimePicker() {
         _state.update {
@@ -95,10 +116,20 @@ class AddPeriodScreenViewModel(
         val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes()
         if (!s.granted) {
             if (durationMinutes < 30) {
-                _state.update { it.copy(showConfirmationPopup = true, timeRange = "$durationMinutes minutes") }
+                _state.update {
+                    it.copy(
+                        showConfirmationPopup = true,
+                        timeRange = "$durationMinutes minutes"
+                    )
+                }
                 return
             } else if (durationMinutes > 180) {
-                _state.update { it.copy(showConfirmationPopup = true, timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes") }
+                _state.update {
+                    it.copy(
+                        showConfirmationPopup = true,
+                        timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes"
+                    )
+                }
                 return
             }
         }
@@ -107,14 +138,15 @@ class AddPeriodScreenViewModel(
         viewModelScope.launch {
             periodRepository.addNewPeriod(
                 Period(
+                    id = _state.value.periodId, // if new period -> periodId = some valid id, else periodId = "", rest of the logic is in addNewPeriod()
                     courseId = courseId,
-                    courseName = courseRepository.getCourseById(courseId).getOrNull()?.courseName
+                    courseName = courseRepository.getCourseById(courseId)
+                        .getOrNull()?.courseName
                         ?: "",
                     day = _state.value.selectedDay,
                     startTime = startTime,
                     endTime = endTime,
                     semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
-
                 )
             )
 

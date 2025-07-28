@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
+import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecordDto
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
+import com.studypulse.app.feat.attendance.attendance.domain.model.toDomain
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.semester.domain.SemesterRepository
@@ -76,7 +78,7 @@ class AttendanceCalendarScreenViewModel(
                                                     attendanceRepository.getAttendanceForPeriodAndDate(
                                                         period.id,
                                                         newDate
-                                                    )!!
+                                                    ) ?: AttendanceRecordDto().toDomain()
                                             )
                                         }
                                     )
@@ -86,6 +88,7 @@ class AttendanceCalendarScreenViewModel(
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
                     SnackbarController.sendEvent(SnackbarEvent("Error fetching schedule " + e.localizedMessage))
+                    Log.d("tag", e.message ?: "unknown")
                 }
             }
         }

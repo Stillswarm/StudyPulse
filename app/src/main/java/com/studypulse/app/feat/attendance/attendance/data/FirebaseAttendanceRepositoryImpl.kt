@@ -128,9 +128,11 @@ class FirebaseAttendanceRepositoryImpl(
         date: LocalDate,
     ): AttendanceRecord? {
         Log.d("tag", "inside getAttendanceForPeriodAndDate")
+        val user = auth.currentUser ?: throw IllegalStateException("User not authenticated")
         val dateTimestamp = date.toTimestamp()
         Log.d("tag", "dateTimestamp: $dateTimestamp")
         val snapshot = db.collectionGroup("attendance")
+            .whereEqualTo("userId", user.uid)
             .whereEqualTo("periodId", periodId)
             .whereEqualTo("date", dateTimestamp)
             .limit(1)
@@ -142,7 +144,7 @@ class FirebaseAttendanceRepositoryImpl(
             try {
                 doc.toObject(AttendanceRecordDto::class.java)?.toDomain()
             } catch (e: Exception) {
-                null
+                throw e
             }
         }
     }
@@ -199,7 +201,7 @@ class FirebaseAttendanceRepositoryImpl(
     override suspend fun getDatesWithUnmarkedAttendance(
         semesterId: String,
         monthStartDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ): Result<Set<LocalDate>> = withContext(Dispatchers.IO) {
         try {
             val snapshot = getAttendanceCollection()
@@ -213,7 +215,8 @@ class FirebaseAttendanceRepositoryImpl(
             val dates = snapshot.documents.mapNotNull { doc ->
                 try {
                     val timestamp = doc.getTimestamp("date")
-                    timestamp?.toDate()?.toInstant()?.atZone(java.time.ZoneId.systemDefault())?.toLocalDate()
+                    timestamp?.toDate()?.toInstant()?.atZone(java.time.ZoneId.systemDefault())
+                        ?.toLocalDate()
                 } catch (e: Exception) {
 
                     null
@@ -226,7 +229,10 @@ class FirebaseAttendanceRepositoryImpl(
         }
     }
 
-    override suspend fun hasPendingAttendanceForDate(semesterId: String, date: LocalDate): Result<Boolean> = withContext(Dispatchers.IO) {
+    override suspend fun hasPendingAttendanceForDate(
+        semesterId: String,
+        date: LocalDate,
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             val snapshot = getAttendanceCollection()
                 .whereEqualTo("semesterId", semesterId)
@@ -242,23 +248,24 @@ class FirebaseAttendanceRepositoryImpl(
         }
     }
 
-    override suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val batch = db.batch()
-            val collection = getAttendanceCollection()
-            records.forEach { record ->
-                val docId = record.id.ifBlank { collection.document().id }
-                val updatedRecord = record.copy(id = docId)
-                val docRef = collection.document(docId)
-                batch.set(docRef, updatedRecord.toDto())
+    override suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                val batch = db.batch()
+                val collection = getAttendanceCollection()
+                records.forEach { record ->
+                    val docId = record.id.ifBlank { collection.document().id }
+                    val updatedRecord = record.copy(id = docId)
+                    val docRef = collection.document(docId)
+                    batch.set(docRef, updatedRecord.toDto())
+                }
+                batch.commit().await()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Log.e("AttendanceRepo", "Error bulk upserting attendance", e)
+                Result.failure(e)
             }
-            batch.commit().await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("AttendanceRepo", "Error bulk upserting attendance", e)
-            Result.failure(e)
         }
-    }
 
     override suspend fun deleteAttendance(attendanceRecordId: String) =
         runCatching {

@@ -58,8 +58,8 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     composable<Route.ScheduleRoute> {
         ScheduleScreen(
             onNavigateToFullSchedule = { navController.navigate(Route.ScheduleRoute(null)) },
-            navigateToAddPeriod = { courseId, day ->
-                navController.navigate(Route.AddPeriodRoute(courseId, day)) },
+            navigateToAddPeriod = { courseId, periodId, day ->
+                navController.navigate(Route.AddPeriodRoute(courseId, periodId, day)) },
             onNavigateBack = { navController.navigateUp() }
         )
     }

@@ -3,6 +3,7 @@ package com.studypulse.app.feat.attendance.courses.presentation.add_period
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 
 data class AddPeriodScreenState(
+    val periodId: String = "",
     val selectedDay: Day,
     val startTimeHour: Int,
     val startTimeMinute: Int,

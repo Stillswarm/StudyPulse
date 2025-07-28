@@ -19,7 +19,7 @@ object Route {
     data class CourseDetailRoute(val courseId: String) : NavigableRoute
 
     @Serializable
-    data class AddPeriodRoute(val courseId: String, val day: Day? = null) : NavigableRoute
+    data class AddPeriodRoute(val courseId: String, val periodId: String? = null, val day: Day? = null) : NavigableRoute
 
     @Serializable
     data class ScheduleRoute(val courseId: String?) : NavigableRoute

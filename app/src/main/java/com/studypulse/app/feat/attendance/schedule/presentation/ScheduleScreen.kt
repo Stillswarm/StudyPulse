@@ -62,7 +62,7 @@ import org.koin.androidx.compose.koinViewModel
 fun ScheduleScreen(
     onNavigateBack: () -> Unit,
     onNavigateToFullSchedule: () -> Unit,
-    navigateToAddPeriod: (String, Day) -> Unit,
+    navigateToAddPeriod: (String, String?, Day) -> Unit,
     modifier: Modifier = Modifier,
     vm: ScheduleScreenViewModel = koinViewModel(),
 ) {
@@ -139,10 +139,17 @@ fun ScheduleScreen(
                     items(state.schedule) {
                         ScheduleItem(
                             period = it,
-                            onEdit = { },
+                            onEdit = {
+                                if (state.courseId != null) navigateToAddPeriod(
+                                    state.courseId!!,
+                                    it.id,
+                                    it.day
+                                )
+                            },
                             onDelete = {
                                 vm.updatePeriodIdToDelete(it.id)
-                                vm.updateShowDeleteDialog(true) }
+                                vm.updateShowDeleteDialog(true)
+                            }
                         )
                     }
                 }
@@ -152,7 +159,7 @@ fun ScheduleScreen(
             state.courseId?.let {
                 OutlinedButton(
                     onClick = {
-                        navigateToAddPeriod(it, state.currentDay)
+                        navigateToAddPeriod(it, null, state.currentDay)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
