@@ -31,4 +31,8 @@ class RoomPeriodRepositoryImpl(
     override suspend fun deletePeriod(periodId: String): Result<Unit> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun updatePeriod(period: Period): Result<Unit> {
+        TODO("Not yet implemented")
+    }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface PeriodRepository {
     suspend fun getPeriodsByCourseIdSortedByDayOfWeek(courseId: String)
     suspend fun addNewPeriod(period: Period)
+    suspend fun updatePeriod(period: Period): Result<Unit>
     suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: String, day: Day): Result<Flow<List<Period>>>
     suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>>
     suspend fun deletePeriod(periodId: String): Result<Unit>

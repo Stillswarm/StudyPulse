@@ -1,6 +1,7 @@
 package com.studypulse.app.feat.attendance.schedule.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -31,21 +34,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.common.util.getAbbreviatedName
 import com.studypulse.app.common.util.to12HourString
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import com.studypulse.app.ui.theme.DarkGray
+import com.studypulse.app.ui.theme.GreenDark
+import com.studypulse.app.ui.theme.GreenLight
 import com.studypulse.app.ui.theme.GreenSecondary
 import org.koin.androidx.compose.koinViewModel
 
@@ -56,9 +64,9 @@ fun ScheduleScreen(
     onNavigateToFullSchedule: () -> Unit,
     navigateToAddPeriod: (String, Day) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ScheduleScreenViewModel = koinViewModel(),
+    vm: ScheduleScreenViewModel = koinViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -89,7 +97,7 @@ fun ScheduleScreen(
                                         strokeWidth = if (current) 4.dp.toPx() else 0.5.dp.toPx()
                                     )
                                 }
-                                .clickable { viewModel.toggleDay(day) },
+                                .clickable { vm.toggleDay(day) },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -131,6 +139,10 @@ fun ScheduleScreen(
                     items(state.schedule) {
                         ScheduleItem(
                             period = it,
+                            onEdit = { },
+                            onDelete = {
+                                vm.updatePeriodIdToDelete(it.id)
+                                vm.updateShowDeleteDialog(true) }
                         )
                     }
                 }
@@ -168,12 +180,69 @@ fun ScheduleScreen(
                 }
             }
         }
+
+        if (state.showDeleteDialog && state.periodIdToDelete != null) {
+            Popup(
+                alignment = Alignment.Center,
+                onDismissRequest = { vm.updateShowDeleteDialog(false) },
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .shadow(12.dp, shape = RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(GreenLight)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Are you sure you want to delete this period? All associated attendance data will be lost",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            vm.updateShowDeleteDialog(false)   // hide popup
+                            vm.deletePeriod(state.periodIdToDelete!!) // delete
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GreenDark
+                        )
+                    ) {
+                        Text(text = "Delete")
+                    }
+
+                    OutlinedButton(
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = GreenDark
+                        ),
+                        border = BorderStroke(1.dp, GreenSecondary),
+                        onClick = {
+                            vm.updateShowDeleteDialog(false)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun ScheduleItem(
     period: Period,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -205,11 +274,28 @@ fun ScheduleItem(
                 )
             }
 
-            Icon(
-                imageVector = Icons.Outlined.Edit,
-                contentDescription = "Expand",
-                tint = Color.DarkGray
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .noRippleClickable { onEdit() }
+                )
+
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .noRippleClickable {
+                            onDelete()
+                        }
+                )
+            }
         }
     }
 }

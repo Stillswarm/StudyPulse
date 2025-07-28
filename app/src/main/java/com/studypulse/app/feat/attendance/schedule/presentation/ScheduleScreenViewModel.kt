@@ -22,6 +22,8 @@ class ScheduleScreenViewModel(
         currentDay = Day.MONDAY,
         schedule = emptyList(),
         courseId = null,
+        showDeleteDialog = false,
+        periodIdToDelete = null
     )
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
@@ -44,6 +46,31 @@ class ScheduleScreenViewModel(
         }
 
         loadSchedule()
+    }
+
+    fun updateShowDeleteDialog(show: Boolean) {
+        _state.update {
+            it.copy(showDeleteDialog = show)
+        }
+    }
+
+    fun updatePeriodIdToDelete(periodId: String?) {
+        _state.update {
+            it.copy(periodIdToDelete = periodId)
+        }
+    }
+
+    fun deletePeriod(periodId: String) {
+        viewModelScope.launch {
+            periodRepository.deletePeriod(periodId)
+                .onSuccess {
+                    SnackbarController.sendEvent(SnackbarEvent(message = "Period deleted successfully"))
+                    loadSchedule()
+                }
+                .onFailure {
+                    SnackbarController.sendEvent(SnackbarEvent(message = "Failed to delete period"))
+                }
+        }
     }
 
     private fun loadSchedule() {
