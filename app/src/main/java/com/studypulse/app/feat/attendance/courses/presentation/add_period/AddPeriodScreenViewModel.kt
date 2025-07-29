@@ -9,9 +9,11 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import com.studypulse.app.feat.attendance.courses.domain.model.overlapsWith
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -102,6 +104,7 @@ class AddPeriodScreenViewModel(
     }
 
     fun onSubmit(navigateBack: () -> Unit) {
+        // sanity check
         if (_state.value.startTimeHour > _state.value.endTimeHour) {
             viewModelScope.launch {
                 SnackbarController.sendEvent(SnackbarEvent("start time cannot be after end time"))
@@ -134,21 +137,30 @@ class AddPeriodScreenViewModel(
             }
         }
 
-
+        // check if any collision
         viewModelScope.launch {
-            periodRepository.addNewPeriod(
-                Period(
-                    id = _state.value.periodId, // if new period -> periodId = some valid id, else periodId = "", rest of the logic is in addNewPeriod()
-                    courseId = courseId,
-                    courseName = courseRepository.getCourseById(courseId)
-                        .getOrNull()?.courseName
-                        ?: "",
-                    day = _state.value.selectedDay,
-                    startTime = startTime,
-                    endTime = endTime,
-                    semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
-                )
+            val periodToAdd = Period(
+                id = _state.value.periodId, // if new period -> periodId = some valid id, else periodId = "", rest of the logic is in addNewPeriod()
+                courseId = courseId,
+                courseName = courseRepository.getCourseById(courseId)
+                    .getOrNull()?.courseName
+                    ?: "",
+                day = _state.value.selectedDay,
+                startTime = startTime,
+                endTime = endTime,
+                semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
             )
+            val collision = periodRepository
+                .getAllPeriodsFilteredByDayOfWeek(_state.value.selectedDay)
+                .getOrNull()?.first()?.firstOrNull { period -> period.overlapsWith(periodToAdd) }
+
+            if (collision != null) {
+                SnackbarController.sendEvent(SnackbarEvent("Failed to add period. Period timings collide with another ${collision.courseName} period."))
+                return@launch
+            }
+
+            // all checks complete, safe to add now
+            periodRepository.addNewPeriod(periodToAdd)
 
             _state.update {
                 it.copy(

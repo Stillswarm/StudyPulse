@@ -22,3 +22,12 @@ enum class Day {
     SATURDAY,
     SUNDAY
 }
+
+fun Period.overlapsWith(other: Period): Boolean {
+    // only compare periods on the same day
+    if (this.day != other.day) return false
+
+    // intervals overlap if startA < endB AND endA > startB
+    return this.startTime.isBefore(other.endTime) &&
+            this.endTime.isAfter(other.startTime)
+}
