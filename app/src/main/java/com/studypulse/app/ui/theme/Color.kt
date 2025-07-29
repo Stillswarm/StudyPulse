@@ -23,3 +23,8 @@ val LightGray = Color(0xFFD9D9D9)
 val Red = Color(0xFFFF4444)
 
 val Lavender = Color(0xFFBEBEF2)
+val Orange = Color(0xFFFFA500)
+val Blue = Color(0xff4169E1)
+val Lime = Color(0xFF00FA9A)
+val Cyan = Color(0xFF40E0D0)
+val Pink = Color(0xFFFF1493)

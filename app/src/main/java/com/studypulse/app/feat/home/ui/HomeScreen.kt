@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,9 +33,15 @@ import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.nav.NavigableRoute
 import com.studypulse.app.nav.Route
+import com.studypulse.app.ui.theme.Blue
+import com.studypulse.app.ui.theme.Cyan
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.app.ui.theme.Lime
+import com.studypulse.app.ui.theme.Orange
+import com.studypulse.app.ui.theme.Pink
+import com.studypulse.app.ui.theme.Purple
 import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 
@@ -54,7 +62,55 @@ val homeScreenItems = listOf(
         Gold,
         active = true,
         route = Route.AttendanceRoute
-    )
+    ),
+    HomeScreenItem(
+        "Exam Portal",
+        "Manage your assessments",
+        icon = R.drawable.ic_notes,
+        color = Purple,
+        active = false,
+        route = null,
+    ),
+    HomeScreenItem(
+        "Tasks and Deadlines",
+        "Stay on top of your work",
+        R.drawable.ic_clock,
+        Pink,
+        active = false,
+        route = null,
+    ),
+    HomeScreenItem(
+        "Material Dump",
+        "Access your study resources",
+        icon = R.drawable.ic_file,
+        color = Orange,
+        active = false,
+        route = null,
+    ),
+    HomeScreenItem(
+        "Community",
+        "Connect with peers",
+        icon = R.drawable.ic_group,
+        color = Blue,
+        active = false,
+        route = null,
+    ),
+    HomeScreenItem(
+        "Flashcards",
+        "Revisions made easy",
+        R.drawable.ic_flashcards,
+        Cyan,
+        active = false,
+        route = null,
+    ),
+    HomeScreenItem(
+        "Budget Tracker",
+        "Manage your expenses",
+        icon = R.drawable.ic_bar_graph,
+        color = Lime,
+        active = false,
+        route = null,
+    ),
 )
 
 @Composable
@@ -79,22 +135,27 @@ fun HomeScreen(
             navigationIcon = R.drawable.logo_pulse,
             onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
             actionIcon = R.drawable.ic_profile,
-            onActionClick =  { navigate(Route.ProfileRoute) },
-            titleColor = WhiteSecondary
+            onActionClick = { navigate(Route.ProfileRoute) },
+            titleColor = WhiteSecondary,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        homeScreenItems.forEach { item ->
-            HomeScreenBox(
-                item = item,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .noRippleClickable { if (item.route != null) navigate(item.route) })
+        LazyColumn {
+            itemsIndexed(homeScreenItems) { idx, item ->
+                HomeScreenBox(
+                    item = item,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .noRippleClickable { if (item.route != null) navigate(item.route) },
+                    contentLeft = idx % 2 != 0
+                )
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreenBox(item: HomeScreenItem, modifier: Modifier = Modifier) {
+fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -115,14 +176,14 @@ fun HomeScreenBox(item: HomeScreenItem, modifier: Modifier = Modifier) {
             contentDescription = item.name,
             tint = DarkGray,
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .rotate(-45f)
+                .align(if (contentLeft) Alignment.BottomEnd else Alignment.BottomStart)
+                .rotate(if (contentLeft) 30f else -30f)
                 .size(64.dp)
         )
 
         Column(
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(if (contentLeft) Alignment.TopStart else Alignment.TopEnd)
                 .padding(16.dp)
         ) {
             Text(

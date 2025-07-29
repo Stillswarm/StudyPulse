@@ -3,8 +3,6 @@ package com.studypulse.app
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -16,11 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Popup
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.studypulse.app.common.ui.screen.NavigationDrawerContent
 import com.studypulse.app.nav.AppNavGraph
+import com.studypulse.app.nav.Route
 import com.studypulse.app.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 
@@ -31,6 +30,7 @@ fun StudyPulseApp(
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val navController: NavHostController = rememberNavController()
 
     // Main content including navigation and drawers
     Box(
@@ -39,17 +39,20 @@ fun StudyPulseApp(
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet(drawerShape = RectangleShape) {
-                    Icon(
-                        painter = painterResource(R.drawable.logo_pulse),
-                        contentDescription = "brand logo",
-                        tint = Color.Unspecified
-                    )
-                }
+                NavigationDrawerContent(
+                    navigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(Route.HomeRoute) {
+                                inclusive = false
+                            }
+                        }
+                    },
+                    drawerState = drawerState
+                )
             }
         ) {
             Surface(color = WhiteSecondary) {
-                AppNavGraph()
+                AppNavGraph(navController = navController)
             }
         }
 
