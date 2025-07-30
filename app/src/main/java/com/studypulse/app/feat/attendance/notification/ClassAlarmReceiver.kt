@@ -13,13 +13,21 @@ import androidx.core.content.ContextCompat
 
 class ClassAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val courseName = intent.getStringExtra("courseName") ?: "Next class"
-        val notifId = intent.getIntExtra("notifId", 0)
+        val periodId   = intent.getStringExtra("periodId")   ?: return
+        val courseId   = intent.getStringExtra("courseId")   ?: return
+        val courseName = intent.getStringExtra("courseName") ?: "Upcoming Class"
+        val semesterId = intent.getStringExtra("semesterId") ?: return
+        val userId     = intent.getStringExtra("userId")     ?: return
+        val notifId    = intent.getIntExtra("notifId", 0)
 
         val notification = NotificationHelper.buildClassNotification(
-            context,
-            courseName,
-            notifId
+            context     = context,
+            courseName  = courseName,
+            notifId     = notifId,
+            periodId    = periodId,
+            courseId    = courseId,
+            semesterId  = semesterId,
+            userId      = userId
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -32,6 +40,7 @@ class ClassAlarmReceiver : BroadcastReceiver() {
             if (hasPermission) {
                 try {
                     // send out notification
+                    Log.d("ClassAlarmReceiver", "Sending notification...")
                     NotificationManagerCompat.from(context).notify(notifId, notification)
                 } catch (se: SecurityException) {
                     Log.d("ClassAlarmReceiver", "Security Exception: ${se.message}")

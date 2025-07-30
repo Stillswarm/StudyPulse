@@ -12,7 +12,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
 
 object AlarmScheduler {
-    fun scheduleAlarmForPeriod(context: Context, period: Period) {
+    fun scheduleAlarmForPeriod(context: Context, period: Period, userId: String) {
         val now = ZonedDateTime.now()
 
         var nextDay = now.with(ChronoField.DAY_OF_WEEK, period.day.toCalendarDay())
@@ -27,7 +27,14 @@ object AlarmScheduler {
 
         val triggerMs = nextDay.minusMinutes(5).toInstant().toEpochMilli()
         val intent = Intent(context, ClassAlarmReceiver::class.java).apply {
+            putExtra("periodId", period.id)
+            putExtra("courseId", period.courseId)
             putExtra("courseName", period.courseName)
+            putExtra("semesterId", period.semesterId)
+            putExtra("userId", userId)
+            putExtra("dayOfWeek", period.day.ordinal)
+            putExtra("startHour", period.startTime.hour)
+            putExtra("startMinute", period.endTime.minute)
             putExtra("notifId", period.id.hashCode())
         }
 

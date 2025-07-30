@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
+    id("kotlin-parcelize")
 }
 
 val secrets = Properties()
@@ -139,5 +140,8 @@ dependencies {
 
     // google accompanist
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
+    
+    // Kotlin Parcel
+//    implementation("org.jetbrains.kotlinx:kotlinx-parcelize-runtime:1.9.0")
 
 }

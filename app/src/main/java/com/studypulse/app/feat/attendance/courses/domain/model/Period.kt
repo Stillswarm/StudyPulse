@@ -1,7 +1,10 @@
 package com.studypulse.app.feat.attendance.courses.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.time.LocalTime
 
+@Parcelize
 data class Period(
     val id: String = "",
     val semesterId: String,
@@ -11,7 +14,7 @@ data class Period(
     val startTime: LocalTime,
     val endTime: LocalTime,
     val createdAt: Long = System.currentTimeMillis()
-)
+) : Parcelable
 
 enum class Day {
     MONDAY,

@@ -39,11 +39,9 @@ class FirebaseAttendanceRepositoryImpl(
         val docId = attendanceRecord.id.ifBlank {
             collection.document().id
         }
-        Log.d("tag", getUserId())
 
         val courseId = attendanceRecord.courseId
         val doc = collection.document(docId).get().await()
-        Log.d("tag", "about  to unmark")
         when (doc.get("status")) {
             "PRESENT" -> {
                 semesterSummaryRepository.decPresent(1)
@@ -51,11 +49,8 @@ class FirebaseAttendanceRepositoryImpl(
             }
 
             "ABSENT" -> {
-                Log.d("tag", "about  to unmark 1")
                 semesterSummaryRepository.decAbsent(1)
-                Log.d("tag", "about  to unmark 2")
                 courseSummaryRepository.decAbsent(courseId, 1)
-                Log.d("tag", "about  to unmark 3")
             }
 
             "UNMARKED" -> {
@@ -70,28 +65,23 @@ class FirebaseAttendanceRepositoryImpl(
         }
 
         val updatedRecord = attendanceRecord.copy(id = docId)
-        Log.d("tag", updatedRecord.toString())
         when (updatedRecord.status) {
             AttendanceStatus.PRESENT -> {
-                Log.d("tag", "p")
                 semesterSummaryRepository.incPresent(1)
                 courseSummaryRepository.incPresent(courseId, 1)
             }
 
             AttendanceStatus.ABSENT -> {
-                Log.d("tag", "a")
                 semesterSummaryRepository.incAbsent(1)
                 courseSummaryRepository.incAbsent(courseId, 1)
             }
 
             AttendanceStatus.CANCELLED -> {
-                Log.d("tag", "c")
                 semesterSummaryRepository.incCancelled(1)
                 courseSummaryRepository.incCancelled(courseId, 1)
             }
 
             AttendanceStatus.UNMARKED -> {
-                Log.d("tag", "u")
                 semesterSummaryRepository.incUnmarked(1)
                 courseSummaryRepository.incUnmarked(courseId, 1)
             }

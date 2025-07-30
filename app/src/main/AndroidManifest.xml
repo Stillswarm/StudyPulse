@@ -30,6 +30,9 @@
         </activity>
 
         <receiver android:name=".feat.attendance.notification.ClassAlarmReceiver" />
+
+        <receiver android:name=".feat.attendance.notification.AttendanceActionReceiver" />
+
         <receiver
             android:name=".feat.attendance.notification.BootReceiver"
             android:exported="true">

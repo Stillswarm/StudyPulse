@@ -61,7 +61,10 @@ class FirebasePeriodRepositoryImpl(
                 .document(semester.id)
                 .collection("periods")
                 .document()
+            
             ref.set(periodData.toDto().copy(id = ref.id)).await()
+
+            val newPeriod = period.copy(id = ref.id)    // to send through to notification handler
 
             var countPast = 0L
             val today = LocalDate.now()
@@ -96,7 +99,8 @@ class FirebasePeriodRepositoryImpl(
             courseSummaryRepository.incUnmarked(period.courseId, countPast)
 
             // register for alarm notifications
-            AlarmScheduler.scheduleAlarmForPeriod(context, period)
+            Log.d("AttendanceActionReceiver", "period id from fprimpl: ${newPeriod.id}")
+            AlarmScheduler.scheduleAlarmForPeriod(context, newPeriod, userId)
         }
     }
 
