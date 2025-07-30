@@ -1,5 +1,6 @@
 package com.studypulse.app.common.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.feat.semester.domain.model.Semester
 
@@ -90,7 +90,7 @@ fun SemesterBottomSheetItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .noRippleClickable { onSemesterClick(semester) },
+            .clickable { onSemesterClick(semester) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

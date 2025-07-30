@@ -1,13 +1,13 @@
 package com.studypulse.app.common.util
 
 import com.google.firebase.Timestamp
+import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
-import kotlin.text.format
 
 fun LocalTime.to12HourString() : String {
     val formatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a")
@@ -47,4 +47,16 @@ fun formatWithLeadingZero(number: Int): String {
     // 2: width of 2 characters
     // 0: pad with leading zeros
     return String.format(Locale.getDefault(), "%02d", number)
+}
+
+fun Day.toCalendarDay(): Long {
+    return when (this) {
+        Day.MONDAY -> 1L
+        Day.TUESDAY -> 2L
+        Day.WEDNESDAY -> 3L
+        Day.THURSDAY -> 4L
+        Day.FRIDAY -> 5L
+        Day.SATURDAY -> 6L
+        Day.SUNDAY -> 7L
+    }
 }

@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.data
 
+import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,6 +17,7 @@ import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import com.studypulse.app.feat.attendance.courses.domain.model.PeriodDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
 import com.studypulse.app.feat.attendance.courses.domain.model.toDto
+import com.studypulse.app.feat.attendance.notification.AlarmScheduler
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -33,6 +35,7 @@ class FirebasePeriodRepositoryImpl(
     private val courseSummaryRepository: CourseSummaryRepository,
     private val db: FirebaseFirestore,
     private val ds: AppDatastore,
+    private val context: Context,
 ) : PeriodRepository {
     private suspend fun getActiveSemId() = ds.semesterIdFlow.first()
     override suspend fun getPeriodsByCourseIdSortedByDayOfWeek(courseId: String) {
@@ -91,12 +94,14 @@ class FirebasePeriodRepositoryImpl(
             batch.commit().await()
             semesterSummaryRepository.incUnmarked(countPast)
             courseSummaryRepository.incUnmarked(period.courseId, countPast)
+
+            // register for alarm notifications
+            AlarmScheduler.scheduleAlarmForPeriod(context, period)
         }
     }
 
     override suspend fun updatePeriod(period: Period) =
         runCatching {
-            Log.d("tag", "inside update")
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val semester =
@@ -113,7 +118,6 @@ class FirebasePeriodRepositoryImpl(
 
             val currentDay = periodRef.get().await().get("day")
             if (currentDay != null && currentDay != period.day.name) {
-                Log.d("tag", "day has changed, previous: $currentDay, new: ${period.day.name}")
                 // Query for attendance records related to this period
                 val attendanceDocs = db.collection("users")
                     .document(userId)
@@ -125,7 +129,6 @@ class FirebasePeriodRepositoryImpl(
                     .documents
                 val batch = db.batch()
 
-                Log.d("tag", "got all records: ${attendanceDocs.size}")
 
                 var current =
                     semester.startDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(period.day.name)))
@@ -136,12 +139,9 @@ class FirebasePeriodRepositoryImpl(
                     current = current.plusWeeks(1)
                 }
                 batch.commit().await()
-                Log.d("tag", "batch committed")
             }
 
-            Log.d("tag", "about to update period")
             periodRef.set(period.toDto()).await()
-            Log.d("tag", "updated period")
             Unit
         }
 
@@ -158,6 +158,20 @@ class FirebasePeriodRepositoryImpl(
                 .await()
                 .toObject(PeriodDto::class.java)
                 ?.toDomain()
+        }
+
+    override suspend fun getAllPeriods() =
+        runCatching {
+            val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+            db.collection("users")
+                .document(userId)
+                .collection("semesters")
+                .document(getActiveSemId())
+                .collection("periods")
+                .get()
+                .await()
+                .toObjects(PeriodDto::class.java)
+                .map { it.toDomain() }
         }
 
     override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(
@@ -278,6 +292,8 @@ class FirebasePeriodRepositoryImpl(
 
             // batch delete period and all associated records
             batch.commit().await()
-            Unit
+
+            // deregister from alarm notifications
+            AlarmScheduler.cancelAlarm(context, periodId)
         }
 }

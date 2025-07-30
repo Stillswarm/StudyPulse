@@ -1,8 +1,14 @@
 package com.studypulse.app.feat.auth.signup
 
+import android.Manifest.permission.POST_NOTIFICATIONS
+import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Patterns
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -16,6 +22,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.studypulse.app.R
+import com.studypulse.app.SnackbarController
+import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.user.domain.UserRepository
 import com.studypulse.app.feat.user.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +35,9 @@ class SignUpScreenViewModel(
     private val userRepository: UserRepository,
     private val app: Application,
 ) : ViewModel() {
+    companion object {
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+    }
     private var auth: FirebaseAuth = Firebase.auth
     private val initialData = SignUpScreenState()
     private val _state = MutableStateFlow(initialData)
@@ -54,7 +65,13 @@ class SignUpScreenViewModel(
         }
     }
 
-    fun signUp() {
+    fun signUp(activityContext: Activity?) {
+        if (activityContext == null) {
+            viewModelScope.launch {
+                SnackbarController.sendEvent(SnackbarEvent("No activity found"))
+                return@launch
+            }
+        }
         if (credentialsOk()) {
             auth.createUserWithEmailAndPassword(_state.value.email, _state.value.password)
                 .addOnCompleteListener { task ->
@@ -68,6 +85,21 @@ class SignUpScreenViewModel(
                                 )
                             )
                         }
+
+                        // check for notification permission
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(
+                                app,
+                                POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            ActivityCompat.requestPermissions(
+                                activityContext!!,
+                                arrayOf(POST_NOTIFICATIONS),
+                                REQUEST_CODE_POST_NOTIFICATIONS
+                            )
+                        }
+
                         // navigation happens automatically (see: AppNavGraph, AppViewModel)
                     } else {
                         _state.update {
@@ -78,15 +110,37 @@ class SignUpScreenViewModel(
         }
     }
 
-    fun handleGoogleSignIn(context: Context) {
+    fun handleGoogleSignIn(activity: Activity?, context: Context) {
         viewModelScope.launch {
+            if (activity == null) {
+                viewModelScope.launch {
+                    SnackbarController.sendEvent(SnackbarEvent("No activity found"))
+                    return@launch
+                }
+            }
             try {
-                val response = CredentialManager.create(context).getCredential(context, credentialRequest)
+                val response =
+                    CredentialManager.create(context).getCredential(context, credentialRequest)
                 // ➊ We know this is a federated (Google) credential
                 val custom = response.credential as CustomCredential
                 val googleToken = GoogleIdTokenCredential.createFrom(custom.data).idToken
                 // ➋ Now hand the token off to Firebase
                 signUpWithGoogle(googleToken)
+
+
+                // check for notification permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ContextCompat.checkSelfPermission(
+                        app,
+                        POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        activity!!,
+                        arrayOf(POST_NOTIFICATIONS),
+                        REQUEST_CODE_POST_NOTIFICATIONS
+                    )
+                }
             } catch (e: GetCredentialException) {
                 _state.update { it.copy(error = e.localizedMessage ?: "Unknown error") }
             }

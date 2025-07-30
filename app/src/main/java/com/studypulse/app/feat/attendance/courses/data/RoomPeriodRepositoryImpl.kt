@@ -39,4 +39,8 @@ class RoomPeriodRepositoryImpl(
     override suspend fun getPeriodById(id: String): Result<Period?> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getAllPeriods(): Result<List<Period>> {
+        TODO("Not yet implemented")
+    }
 }

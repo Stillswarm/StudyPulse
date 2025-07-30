@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.auth.signup
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ fun SignupScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val activity = LocalActivity.current
 
     Column(
         modifier = modifier
@@ -132,7 +134,7 @@ fun SignupScreen(
         }
 
         Button(
-            onClick = { vm.signUp() },
+            onClick = { vm.signUp(activity) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
@@ -160,7 +162,7 @@ fun SignupScreen(
                     RoundedCornerShape(8.dp)
                 )
                 .noRippleClickable {
-                    vm.handleGoogleSignIn(context)
+                    vm.handleGoogleSignIn(activity, context)
                 }
         ) {
             Row(
