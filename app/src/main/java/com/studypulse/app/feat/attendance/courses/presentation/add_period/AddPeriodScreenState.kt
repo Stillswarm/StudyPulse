@@ -14,4 +14,5 @@ data class AddPeriodScreenState(
     val showConfirmationPopup: Boolean = false,
     val granted: Boolean = false,    // set when user wants to submit even after the popup warning
     val timeRange: String = "",
+    val loading: Boolean = false,
 )

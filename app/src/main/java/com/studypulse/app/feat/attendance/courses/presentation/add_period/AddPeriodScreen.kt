@@ -126,11 +126,12 @@ fun AddPeriodScreen(
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Day.entries.forEachIndexed { idx, y ->
                                         Text(
-                                            y.toString(),
+                                            text = y.name.convertToSentenceCase(),
+                                            fontSize = 14.sp,
                                             color = Color.Black,
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(vertical = 8.dp)
+                                                .padding(vertical = 4.dp)
                                                 .noRippleClickable {
                                                     vm.onDayChange(y)
                                                     expanded = false
@@ -203,6 +204,7 @@ fun AddPeriodScreen(
                     onClick = {
                         vm.onSubmit(onNavigateBack)
                     },
+                    enabled = !state.loading,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = GreenSecondary)

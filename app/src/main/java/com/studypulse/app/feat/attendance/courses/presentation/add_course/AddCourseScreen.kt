@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,7 @@ import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.ui.theme.GreenLight
+import com.studypulse.app.ui.theme.GreenNormal
 import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import kotlinx.coroutines.launch
@@ -56,7 +58,7 @@ fun AddCourseScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddSemester: () -> Unit,
     modifier: Modifier = Modifier,
-    vm: AddCourseScreenViewModel = koinViewModel()
+    vm: AddCourseScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val semSheetState = rememberModalBottomSheetState()
@@ -90,137 +92,144 @@ fun AddCourseScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            if (state.isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                ) {
-                    state.activeSemester?.let { sem ->
-                        TextField(
-                            value = state.courseName,
-                            onValueChange = { vm.onCourseNameChange(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
-                                focusedContainerColor = LightGray
-                            ),
-                            shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                            placeholder = { Text("Course Name") }
-                        )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                state.activeSemester?.let { sem ->
+                    TextField(
+                        value = state.courseName,
+                        onValueChange = { vm.onCourseNameChange(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
+                            focusedContainerColor = LightGray
+                        ),
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        placeholder = { Text("Course Name") }
+                    )
 
-                        TextField(
-                            value = state.courseCode,
-                            onValueChange = { vm.onCourseCodeChange(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
-                                focusedContainerColor = LightGray
-                            ),
-                            shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                            placeholder = { Text("Course Code") }
-                        )
+                    TextField(
+                        value = state.courseCode,
+                        onValueChange = { vm.onCourseCodeChange(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
+                            focusedContainerColor = LightGray
+                        ),
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        placeholder = { Text("Course Code") }
+                    )
 
-                        TextField(
-                            value = state.instructor,
-                            onValueChange = { vm.onInstructorChange(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
-                                focusedContainerColor = LightGray
-                            ),
-                            shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                            placeholder = { Text("Course Instructor") }
-                        )
+                    TextField(
+                        value = state.instructor,
+                        onValueChange = { vm.onInstructorChange(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
+                            focusedContainerColor = LightGray
+                        ),
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        placeholder = { Text("Course Instructor") }
+                    )
 
-                        // min required attendance
-                        TextField(
-                            value = state.minAttendance?.toString() ?: "",
-                            onValueChange = { vm.updateMinAttendance(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray,
-                                focusedContainerColor = LightGray
-                            )
+                    // min required attendance
+                    TextField(
+                        value = state.minAttendance,
+                        onValueChange = { vm.updateMinAttendance(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedContainerColor = LightGray,
+                            focusedContainerColor = LightGray
                         )
+                    )
 
-                        Box(
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(GreenLight)
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                append("This course will be added to the current semester: ${sem.name}, year ${sem.year}\n")
+
+                                withStyle(
+                                    SpanStyle(
+                                        color = GreenSecondary,
+                                        fontWeight = FontWeight.Medium,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                ) {
+                                    append("Click here to change semester")
+                                }
+                            },
+                            fontSize = 16.sp,
+                            color = Color.Black,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(GreenLight)
-                        ) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    append("This course will be added to the current semester: ${sem.name}, year ${sem.year}\n")
-
-                                    withStyle(
-                                        SpanStyle(
-                                            color = GreenSecondary,
-                                            fontWeight = FontWeight.Medium,
-                                            textDecoration = TextDecoration.Underline
-                                        )
-                                    ) {
-                                        append("Click here to change semester")
-                                    }
-                                },
-                                fontSize = 16.sp,
-                                color = Color.Black,
-                                modifier = Modifier.padding(16.dp).noRippleClickable {
+                                .padding(16.dp)
+                                .noRippleClickable {
                                     scope.launch { semSheetState.show() }
                                 },
-                                textAlign = TextAlign.Center
-                            )
+                            textAlign = TextAlign.Center
+                        )
 
-                            AllSemestersBottomSheet(
-                                sheetState = semSheetState,
-                                semesterList = state.allSemesters,
-                                onDismiss = { scope.launch { semSheetState.hide() }},
-                                onSemesterClick = {
-                                    vm.updateCurrentSemester(it)
-                                },
-                                selectedSemesterId = state.activeSemester?.id ?: "",
-                                buttonColor = GreenSecondary,
-                                onAddSemester = {
-                                    scope.launch { semSheetState.hide() }
-                                    onNavigateToAddSemester()
-                                }
-                            )
-                        }
-
-                        Button(
-                            onClick = { vm.onSubmit(onNavigateBack) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = GreenSecondary,
-                            ),
-                            shape = RoundedCornerShape(8.dp, 0.dp, 8.dp, 0.dp),
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(16.dp)
-                        ) {
-                            Text("Submit", color = Color.White, fontSize = 18.sp)
-                        }
-                    }
-
-                    state.errorMsg?.let {
-                        Text(
-                            text = it,
-                            color = Color.Red,
-                            fontSize = 16.sp
+                        AllSemestersBottomSheet(
+                            sheetState = semSheetState,
+                            semesterList = state.allSemesters,
+                            onDismiss = { scope.launch { semSheetState.hide() } },
+                            onSemesterClick = {
+                                vm.updateCurrentSemester(it)
+                            },
+                            selectedSemesterId = state.activeSemester?.id ?: "",
+                            buttonColor = GreenSecondary,
+                            onAddSemester = {
+                                scope.launch { semSheetState.hide() }
+                                onNavigateToAddSemester()
+                            }
                         )
                     }
+
+                    Button(
+                        onClick = { vm.onSubmit(onNavigateBack) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GreenSecondary,
+                        ),
+                        enabled = !state.isLoading,
+                        shape = RoundedCornerShape(8.dp, 0.dp, 8.dp, 0.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        Text("Submit", color = Color.White, fontSize = 18.sp)
+                    }
                 }
+
+                state.errorMsg?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+
+        if (state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = GreenNormal)
             }
         }
     }

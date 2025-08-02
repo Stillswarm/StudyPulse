@@ -99,6 +99,7 @@ class AddCourseScreenViewModel(
 
     fun onSubmit(onNavigateBack: () -> Unit) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             if (state.value.courseName.isBlank() || state.value.courseCode.isBlank() || state.value.minAttendance.isBlank())
                 SnackbarController.sendEvent(
                     SnackbarEvent(message = "Fields cannot be empty")
@@ -116,6 +117,7 @@ class AddCourseScreenViewModel(
                 )
                 onNavigateBack()
             }
+            _state.update { it.copy(isLoading = false) }
         }
     }
 

@@ -67,6 +67,7 @@ class AddSemesterScreenViewModel(
                 }
             }
             viewModelScope.launch {
+                _state.update { it.copy(isLoading = true) }
                 semesterRepository.addActiveSemester(
                     Semester(
                         id = "",
@@ -84,6 +85,7 @@ class AddSemesterScreenViewModel(
                         showConfirmationPopup = false,
                         granted = false,
                         dateRange = "",
+                        isLoading = false,
                     )
                 }
                 navigateUp()

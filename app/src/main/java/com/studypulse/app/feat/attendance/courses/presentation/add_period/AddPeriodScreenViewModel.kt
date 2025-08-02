@@ -112,33 +112,34 @@ class AddPeriodScreenViewModel(
             return
         }
 
-        // check for abnormal date range
-        val s = _state.value
-        val startTime = LocalTime.of(s.startTimeHour, s.startTimeMinute)
-        val endTime = LocalTime.of(s.endTimeHour, s.endTimeMinute)
-        val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes()
-        if (!s.granted) {
-            if (durationMinutes < 30) {
-                _state.update {
-                    it.copy(
-                        showConfirmationPopup = true,
-                        timeRange = "$durationMinutes minutes"
-                    )
-                }
-                return
-            } else if (durationMinutes > 180) {
-                _state.update {
-                    it.copy(
-                        showConfirmationPopup = true,
-                        timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes"
-                    )
-                }
-                return
-            }
-        }
-
-        // check if any collision
         viewModelScope.launch {
+            _state.update { it.copy(loading = true) }
+            // check for abnormal date range
+            val s = _state.value
+            val startTime = LocalTime.of(s.startTimeHour, s.startTimeMinute)
+            val endTime = LocalTime.of(s.endTimeHour, s.endTimeMinute)
+            val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes()
+            if (!s.granted) {
+                if (durationMinutes < 30) {
+                    _state.update {
+                        it.copy(
+                            showConfirmationPopup = true,
+                            timeRange = "$durationMinutes minutes"
+                        )
+                    }
+                    return@launch
+                } else if (durationMinutes > 180) {
+                    _state.update {
+                        it.copy(
+                            showConfirmationPopup = true,
+                            timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes"
+                        )
+                    }
+                    return@launch
+                }
+            }
+
+            // check if any collision
             val periodToAdd = Period(
                 id = _state.value.periodId, // if new period -> periodId = some valid id, else periodId = "", rest of the logic is in addNewPeriod()
                 courseId = courseId,
@@ -167,6 +168,7 @@ class AddPeriodScreenViewModel(
                     showConfirmationPopup = false,
                     granted = false,
                     timeRange = "",
+                    loading = false
                 )
             }
             navigateBack()

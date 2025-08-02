@@ -306,7 +306,7 @@ fun AddSemesterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .noRippleClickable {
+                            .noRippleClickable(enabled = !state.isLoading) {
                                 vm.submit(onNavigateBack)
                             },
                         color = Color.White,
