@@ -58,6 +58,30 @@ class AttendanceScreenViewModel(
                 val semDataDef = async { semesterRepository.getAllSemesters() }
                 val activeSemDef = async { semesterRepository.getActiveSemester() }
 
+                val semData = semDataDef.await().getOrElse { e ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch semester list: ${e.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+
+                val activeSem = activeSemDef.await().getOrElse { e ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch active semester: ${e.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+
+                val semSummaryData = semSummaryDataDef.await().getOrElse { error ->
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to fetch semester summary: ${error.message ?: "Unknown error"}")
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    return@supervisorScope
+                }
+
                 val courseData = courseDataDef.await().getOrElse { error ->
                     Log.d("tag", error.message ?: "unknown error in course")
                     SnackbarController.sendEvent(
@@ -66,27 +90,7 @@ class AttendanceScreenViewModel(
                     _state.update { it.copy(isLoading = false) }
                     return@supervisorScope
                 }
-                val semSummaryData = semSummaryDataDef.await().getOrElse { error ->
-                    SnackbarController.sendEvent(
-                        SnackbarEvent("Failed to fetch semester summary: ${error.message ?: "Unknown error"}")
-                    )
-                    _state.update { it.copy(isLoading = false) }
-                    return@supervisorScope
-                }
-                val semData = semDataDef.await().getOrElse { e ->
-                    SnackbarController.sendEvent(
-                        SnackbarEvent("Failed to fetch semester list: ${e.message ?: "Unknown error"}")
-                    )
-                    _state.update { it.copy(isLoading = false) }
-                    return@supervisorScope
-                }
-                val activeSem = activeSemDef.await().getOrElse { e ->
-                    SnackbarController.sendEvent(
-                        SnackbarEvent("Failed to fetch active semester: ${e.message ?: "Unknown error"}")
-                    )
-                    _state.update { it.copy(isLoading = false) }
-                    return@supervisorScope
-                }
+
                 _state.update {
                     it.copy(
                         unmarkedCount = semSummaryData.unmarkedRecords,

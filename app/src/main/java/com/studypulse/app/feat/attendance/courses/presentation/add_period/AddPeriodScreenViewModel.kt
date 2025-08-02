@@ -105,7 +105,7 @@ class AddPeriodScreenViewModel(
 
     fun onSubmit(navigateBack: () -> Unit) {
         // sanity check
-        if (_state.value.startTimeHour > _state.value.endTimeHour) {
+        if (_state.value.startTimeHour > _state.value.endTimeHour || (_state.value.startTimeHour == _state.value.endTimeHour && _state.value.startTimeMinute >= _state.value.endTimeMinute)) {
             viewModelScope.launch {
                 SnackbarController.sendEvent(SnackbarEvent("start time cannot be after end time"))
             }
@@ -127,6 +127,7 @@ class AddPeriodScreenViewModel(
                             timeRange = "$durationMinutes minutes"
                         )
                     }
+                    _state.update { it.copy(loading = false) }
                     return@launch
                 } else if (durationMinutes > 180) {
                     _state.update {
@@ -135,6 +136,7 @@ class AddPeriodScreenViewModel(
                             timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes"
                         )
                     }
+                    _state.update { it.copy(loading = false) }
                     return@launch
                 }
             }
@@ -157,6 +159,7 @@ class AddPeriodScreenViewModel(
 
             if (collision != null) {
                 SnackbarController.sendEvent(SnackbarEvent("Failed to add period. Period timings collide with another ${collision.courseName} period."))
+                _state.update { it.copy(loading = false) }
                 return@launch
             }
 

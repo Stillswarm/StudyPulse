@@ -43,6 +43,10 @@ class AddSemesterScreenViewModel(
         _state.update { it.copy(granted = new) }
     }
 
+    fun updateMinAttendance(new: Int?) {
+        _state.update { it.copy(minAttendance = new, errorMsg = null) }
+    }
+
     fun submit(navigateUp: () -> Unit) {
         if (validateData()) {
 
@@ -91,10 +95,6 @@ class AddSemesterScreenViewModel(
                 navigateUp()
             }
         }
-    }
-
-    fun updateMinAttendance(new: Int) {
-        _state.update { it.copy(minAttendance = new, errorMsg = null) }
     }
 
     private fun validateData(): Boolean {

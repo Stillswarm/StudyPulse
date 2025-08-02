@@ -1,7 +1,6 @@
 package com.studypulse.app.feat.semester.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,61 +101,65 @@ fun AddSemesterScreen(
             ) {
 
                 // select semester year
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
-                        .background(LightGray)
-                        .animateContentSize()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Year",
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    var expanded by remember { mutableStateOf(false) }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
+                            .noRippleClickable { expanded = !expanded }
+                            .background(Color.Transparent)
+                            .padding(0.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .noRippleClickable { yearMenuExpanded = !yearMenuExpanded },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = if (state.year == null) "Select Year"
-                                else "Year: ${state.year}",
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(16.dp)
-                            )
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = state.year?.toString() ?: "Select",
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
 
-                            Icon(
-                                painter = painterResource(if (yearMenuExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
-                                contentDescription = "Expand",
+                                Icon(
+                                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Drop Down"
+                                )
+                            }
+
+                            AnimatedVisibility(
+                                visible = expanded,
                                 modifier = Modifier
-                                    .padding(8.dp)
-                            )
-                        }
-
-                        AnimatedVisibility(
-                            visible = yearMenuExpanded,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(LightGray)
-                                .clip(RoundedCornerShape(0, 0, 0, 8))
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                (1..5).forEach { y ->
-                                    Text(
-                                        y.toString(),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp)
-                                            .noRippleClickable {
-                                                vm.updateYear(y)
-                                                yearMenuExpanded = false
-                                            },
-                                        textAlign = TextAlign.Center
-                                    )
-                                    if (y < 5) HorizontalDivider()
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(0, 0, 0, 8))
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    (1..5).forEach { idx ->
+                                        Text(
+                                            text = idx.toString(),
+                                            fontSize = 14.sp,
+                                            color = Color.Black,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                                .noRippleClickable {
+                                                    vm.updateYear(idx)
+                                                    expanded = false
+                                                },
+                                            textAlign = TextAlign.Center
+                                        )
+                                        if (idx < 5) HorizontalDivider()
+                                    }
                                 }
                             }
                         }
@@ -161,111 +167,131 @@ fun AddSemesterScreen(
                 }
 
                 // select semester name
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
-                        .background(LightGray)
-                        .animateContentSize()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Semester",
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    var expanded by remember { mutableStateOf(false) }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
+                            .noRippleClickable { expanded = !expanded }
+                            .background(Color.Transparent)
+                            .padding(0.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .noRippleClickable { semNameMenuExpanded = !semNameMenuExpanded },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = if (state.name == null) "Select Semester"
-                                else "Semester: ${state.name?.name?.convertToSentenceCase()}",
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(16.dp)
-                            )
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = state.name?.name?.convertToSentenceCase() ?: "Select",
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
 
-                            Icon(
-                                painter = painterResource(if (semNameMenuExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
-                                contentDescription = "Expand",
+                                Icon(
+                                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Drop Down"
+                                )
+                            }
+
+                            AnimatedVisibility(
+                                visible = expanded,
                                 modifier = Modifier
-                                    .padding(8.dp)
-                            )
-                        }
-
-                        AnimatedVisibility(
-                            visible = semNameMenuExpanded,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(LightGray)
-                                .clip(RoundedCornerShape(0, 0, 0, 8))
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                SemesterName.entries.forEach { e ->
-                                    Text(
-                                        e.name.convertToSentenceCase(),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp)
-                                            .noRippleClickable {
-                                                vm.updateName(e)
-                                                semNameMenuExpanded = false
-                                            },
-                                        textAlign = TextAlign.Center
-                                    )
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(0, 0, 0, 8))
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    SemesterName.entries.forEachIndexed { idx, y ->
+                                        Text(
+                                            text = y.name.convertToSentenceCase(),
+                                            fontSize = 14.sp,
+                                            color = Color.Black,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                                .noRippleClickable {
+                                                    vm.updateName(y)
+                                                    expanded = false
+                                                },
+                                            textAlign = TextAlign.Center
+                                        )
+                                        if (idx < 2) HorizontalDivider()
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // min required attendance
-                TextField(
-                    value = state.minAttendance?.toString() ?: "",
-                    onValueChange = { vm.updateMinAttendance(it.toInt()) },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
-                    colors = TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedContainerColor = LightGray.copy(alpha = 0.75f),
-                        focusedContainerColor = LightGray
-                    )
-                )
-
                 // select semester start - end range
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
-                        .background(LightGray)
-                        .noRippleClickable { showDatePicker = !showDatePicker },
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Semester Range",
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp))
+                            .noRippleClickable { showDatePicker = !showDatePicker },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (state.startDate == null) "Select Semester Range"
-                            else "${state.startDate?.toFullString()} - ${state.endDate?.toFullString()}",
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(16.dp)
-                        )
 
-                        Icon(
-                            painter = painterResource(R.drawable.ic_calendar),
-                            contentDescription = "Expand",
-                            modifier = Modifier
-                                .padding(8.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (state.startDate == null) "Select "
+                                else "${state.startDate?.toFullString()} - ${state.endDate?.toFullString()}",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(16.dp)
+                            )
+
+                            Icon(
+                                painter = painterResource(R.drawable.ic_calendar),
+                                contentDescription = "Expand",
+                                modifier = Modifier
+                                    .padding(8.dp)
+                            )
+                        }
                     }
+                }
+
+                // min required attendance
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Min. Required Attendance",
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    TextField(
+                        value = state.minAttendance?.toString() ?: "",
+                        onValueChange = { vm.updateMinAttendance(if (it.isEmpty()) null else it.toInt()) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("75", fontSize = 14.sp) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedContainerColor = LightGray.copy(alpha = 0.25f),
+                            focusedContainerColor = LightGray.copy(0.75f)
+                        )
+                    )
                 }
 
                 // info box
