@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -285,13 +284,13 @@ fun ScheduleItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier
-                        .noRippleClickable { onEdit() }
-                )
+//                Icon(
+//                    imageVector = Icons.Outlined.Edit,
+//                    contentDescription = null,
+//                    tint = Color.Gray,
+//                    modifier = Modifier
+//                        .noRippleClickable { onEdit() }
+//                )
 
                 Icon(
                     imageVector = Icons.Outlined.Delete,
