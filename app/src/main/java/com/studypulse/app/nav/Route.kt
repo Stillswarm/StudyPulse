@@ -1,7 +1,9 @@
 package com.studypulse.app.nav
 
+import androidx.navigation.NavBackStackEntry
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import kotlinx.serialization.Serializable
+import kotlin.reflect.KClass
 
 interface NavigableRoute
 
@@ -58,4 +60,8 @@ object Route {
     @Serializable
     data object FeedbackRoute : NavigableRoute
 
+}
+
+fun NavBackStackEntry.isRoute(routeClass: KClass<out NavigableRoute>): Boolean {
+    return this.destination.route?.contains(routeClass.simpleName ?: "") == true
 }

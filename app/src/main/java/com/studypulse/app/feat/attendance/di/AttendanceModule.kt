@@ -41,7 +41,7 @@ val attendanceModule = module {
 
     // firebase repository
     single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get(), get(),get(),get()) }
-    single<CourseSummaryRepository> { FirebaseCourseSummaryRepositoryImpl(get(), get(), get(), get()) }
+    single<CourseSummaryRepository> { FirebaseCourseSummaryRepositoryImpl( get(), get(), get(), get()) }
     single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get(), get(), get(), get(), get(), get()) }
     single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get(), get(), get()) }
 

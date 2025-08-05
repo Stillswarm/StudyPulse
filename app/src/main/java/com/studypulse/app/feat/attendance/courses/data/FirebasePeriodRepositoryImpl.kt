@@ -21,8 +21,10 @@ import com.studypulse.app.feat.attendance.notification.AlarmScheduler
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -145,6 +147,10 @@ class FirebasePeriodRepositoryImpl(
                 batch.commit().await()
             }
 
+            // cancel already existing alarm for previous instance of this period, and schedule a new one
+            AlarmScheduler.cancelAlarm(context, period.id)
+            AlarmScheduler.scheduleAlarmForPeriod(context, period, userId)
+
             periodRef.set(period.toDto()).await()
             Unit
         }
@@ -257,28 +263,35 @@ class FirebasePeriodRepositoryImpl(
             var courseId: String? = null
             for (doc in attendanceQuery.documents) {
                 val status = doc.getString("status")
-                when (status) {
-                    "PRESENT" -> presentCount++
-                    "ABSENT" -> absentCount++
-                    "CANCELLED" -> cancelledCount++
-                    "UNMARKED" -> unmarkedCount++
+                val processed = doc.getBoolean("processed")
+                if (processed ?: false) {
+                    when (status) {
+                        "PRESENT" -> presentCount++
+                        "ABSENT" -> absentCount++
+                        "CANCELLED" -> cancelledCount++
+                        "UNMARKED" -> unmarkedCount++
+                    }
                 }
                 if (courseId == null) {
                     courseId = doc.getString("courseId")
                 }
             }
 
+            Log.d("tag", "presentCount: $presentCount, absentCount: $absentCount, cancelledCount: $cancelledCount, unmarkedCount: $unmarkedCount")
+
             // Decrement summary values for this course and semester
-            courseId?.let {
-                courseSummaryRepository.decPresent(it, presentCount)
-                courseSummaryRepository.decAbsent(it, absentCount)
-                courseSummaryRepository.decCancelled(it, cancelledCount)
-                courseSummaryRepository.decUnmarked(it, unmarkedCount)
+            coroutineScope {
+                courseId?.let {
+                    launch { courseSummaryRepository.decPresent(it, presentCount) }
+                    launch { courseSummaryRepository.decAbsent(it, absentCount) }
+                    launch { courseSummaryRepository.decCancelled(it, cancelledCount) }
+                    launch { courseSummaryRepository.decUnmarked(it, unmarkedCount) }
+                }
+                launch { semesterSummaryRepository.decPresent(presentCount) }
+                launch { semesterSummaryRepository.decAbsent(absentCount) }
+                launch { semesterSummaryRepository.decCancelled(cancelledCount) }
+                launch { semesterSummaryRepository.decUnmarked(unmarkedCount) }
             }
-            semesterSummaryRepository.decPresent(presentCount)
-            semesterSummaryRepository.decAbsent(absentCount)
-            semesterSummaryRepository.decCancelled(cancelledCount)
-            semesterSummaryRepository.decUnmarked(unmarkedCount)
 
             val batch = db.batch()
             for (doc in attendanceQuery.documents) {

@@ -10,6 +10,7 @@ import com.studypulse.app.common.util.toCalendarDay
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
+import kotlin.math.absoluteValue
 
 object AlarmScheduler {
     fun scheduleAlarmForPeriod(context: Context, period: Period, userId: String) {
@@ -35,7 +36,7 @@ object AlarmScheduler {
             putExtra("dayOfWeek", period.day.ordinal)
             putExtra("startHour", period.startTime.hour)
             putExtra("startMinute", period.endTime.minute)
-            putExtra("notifId", period.id.hashCode())
+            putExtra("notifId", period.id.hashCode().absoluteValue)
         }
 
         val pi = PendingIntent.getBroadcast(

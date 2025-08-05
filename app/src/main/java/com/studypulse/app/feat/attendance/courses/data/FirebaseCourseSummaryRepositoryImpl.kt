@@ -37,6 +37,7 @@ class FirebaseCourseSummaryRepositoryImpl(
     ): Result<Unit> =
         runCatching {
             val doc = summaryDocument(courseId)
+            val existingRecord = doc.get().await().toObject(CourseSummaryDto::class.java)
             doc.set(
                 CourseSummaryDto(
                     id = doc.id,
@@ -45,6 +46,10 @@ class FirebaseCourseSummaryRepositoryImpl(
                     courseName = courseName,
                     userId = getUserId(),
                     semesterId = getSemesterId(),
+                    presentRecords = existingRecord?.presentRecords ?: 0,
+                    absentRecords = existingRecord?.absentRecords ?: 0,
+                    unmarkedRecords = existingRecord?.unmarkedRecords ?: 0,
+                    cancelledRecords = existingRecord?.cancelledRecords ?: 0,
                 )
             ).await()
         }
@@ -62,22 +67,19 @@ class FirebaseCourseSummaryRepositoryImpl(
             val present = docRef.get("presentRecords")
             val unmarked = docRef.get("unmarkedRecords")
             val cancelled = docRef.get("cancelledRecords")
-            Log.d("tag", "absent: $absent, present: $present, unmarked: $unmarked, cancelled: $cancelled")
 
-            // reset this course summary's data in the semester summary
             coroutineScope {
+                // reset this course summary's data in the semester summary
                 launch { semesterSummaryRepository.decPresent(present as Long) }
                 launch { semesterSummaryRepository.decAbsent(absent as Long) }
                 launch { semesterSummaryRepository.decCancelled(cancelled as Long) }
                 launch { semesterSummaryRepository.decUnmarked(unmarked as Long) }
+
+                // now delete the document itself
+                launch { summaryDocument(courseId).delete().await() }
+                Log.d("tag", "should be deleted now")
+                Unit
             }
-
-            Log.d("tag", "sem sum updated")
-
-            // now delete the document itself
-            summaryDocument(courseId).delete().await()
-            Log.d("tag", "should be deleted now")
-            Unit
         }.onFailure { Log.d("tag", "error: $it") }
 
     override suspend fun incPresent(courseId: String, by: Long): Result<Unit> =

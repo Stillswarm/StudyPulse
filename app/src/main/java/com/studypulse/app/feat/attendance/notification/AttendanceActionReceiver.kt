@@ -21,42 +21,58 @@ class AttendanceActionReceiver : BroadcastReceiver(), KoinComponent {
     private val attendanceRepository: AttendanceRepository by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
-        val periodId = intent.getStringExtra("periodId") ?: return
-        val courseId   = intent.getStringExtra("courseId") ?: return
-        val semesterId = intent.getStringExtra("semesterId") ?: return
-        val dateStr    = intent.getStringExtra("date")    ?: return
-        val mark       = intent.getStringExtra("mark")    ?: return
-        val notifId    = intent.getIntExtra("notifId", -1)
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        if (notifId < 0) return
+        try {
+            val periodId = intent.getStringExtra("periodId")
+                ?: throw IllegalStateException("Missing periodId in intent")
+            val courseId = intent.getStringExtra("courseId")
+                ?: throw IllegalStateException("Missing courseId in intent")
+            val semesterId = intent.getStringExtra("semesterId")
+                ?: throw IllegalStateException("Missing semesterId in intent")
+            val dateStr = intent.getStringExtra("date")
+                ?: throw IllegalStateException("Missing date in intent")
+            val mark = intent.getStringExtra("mark")
+                ?: throw IllegalStateException("Missing mark in intent")
+            val notifId = intent.getIntExtra("notifId", -1)
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: throw IllegalStateException(
+                "User not authenticated"
+            )
+            if (notifId < 0) throw IllegalStateException("Invalid notification id")
 
-        val status = when (mark) {
-            "P" -> AttendanceStatus.PRESENT
-            "A" -> AttendanceStatus.ABSENT
-            "C" -> AttendanceStatus.CANCELLED
-            else -> AttendanceStatus.UNMARKED
-        }
-        Log.d("AttendanceActionReceiver", "Received action: $mark, $periodId, $courseId, $dateStr, $notifId, $status, $semesterId")
-
-        val date = LocalDate.parse(dateStr)
-        val record = AttendanceRecord(
-            userId = userId,
-            courseId = courseId,
-            semesterId = semesterId,
-            periodId = periodId,
-            date = date,
-            status = status
-        )
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                Log.d("AttendanceActionReceiver", "Updating attendance...")
-                attendanceRepository.upsertAttendance(record)
-                Log.d("AttendanceActionReceiver", "Updated, cancelling notif...")
-                NotificationManagerCompat.from(context).cancel(notifId)
-            } catch (e: Exception) {
-                Log.d("AttendanceActionReceiver", "Error updating attendance: ${e.message}")
+            val status = when (mark) {
+                "P" -> AttendanceStatus.PRESENT
+                "A" -> AttendanceStatus.ABSENT
+                "C" -> AttendanceStatus.CANCELLED
+                else -> AttendanceStatus.UNMARKED
             }
+            Log.d(
+                "AttendanceActionReceiver",
+                "Received action: $mark, $periodId, $courseId, $dateStr, $notifId, $status, $semesterId"
+            )
+
+            val date = LocalDate.parse(dateStr)
+            val record = AttendanceRecord(
+                userId = userId,
+                courseId = courseId,
+                semesterId = semesterId,
+                periodId = periodId,
+                date = date,
+                status = status
+            )
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    Log.d("AttendanceActionReceiver", "Updating attendance...")
+                    attendanceRepository.upsertAttendance(record)
+                    Log.d("AttendanceActionReceiver", "Updated, cancelling notif...")
+                    NotificationManagerCompat.from(context).cancel(notifId)
+                } catch (e: Exception) {
+                    Log.d("AttendanceActionReceiver", "Error updating attendance: ${e.message}")
+                }
+            }
+        } catch (ise: IllegalStateException) {
+            Log.e("AttendanceActionReceiver", "Missing/malformed intent extra: ${ise.message}")
+        } catch (e: Exception) {
+            Log.e("AttendanceActionReceiver", "Error processing intent: ${e.message}")
         }
     }
 }

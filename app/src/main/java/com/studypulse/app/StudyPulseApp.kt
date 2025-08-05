@@ -10,12 +10,14 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.studypulse.app.common.ui.screen.NavigationDrawerContent
 import com.studypulse.app.nav.AppNavGraph
@@ -31,6 +33,13 @@ fun StudyPulseApp(
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val navController: NavHostController = rememberNavController()
+
+    // Get the current route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // Define routes where the drawer should NOT be shown
+    val authRoutes = setOf(Route.SignInRoute, Route.SignUpRoute)
 
     // Main content including navigation and drawers
     Box(

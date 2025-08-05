@@ -17,6 +17,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseCourseRepositoryImpl(
@@ -184,19 +185,21 @@ class FirebaseCourseRepositoryImpl(
                     }
                 }
                 deleteJobs.awaitAll()
+
+                // delete the course summary
+                launch { courseSummaryRepository.delete(id) }
+
+                // Finally, delete this course document
+                launch {
+                    db.collection("users")
+                        .document(userId)
+                        .collection("semesters")
+                        .document(semesterId)
+                        .collection("courses")
+                        .document(id)
+                        .delete()
+                        .await()
+                }
             }
-
-            // delete the course summary
-            courseSummaryRepository.delete(id)
-
-            // Finally, delete this course document
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
-                .document(semesterId)
-                .collection("courses")
-                .document(id)
-                .delete()
-                .await()
         }
 }
