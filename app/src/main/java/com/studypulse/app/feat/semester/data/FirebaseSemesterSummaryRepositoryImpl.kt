@@ -81,18 +81,18 @@ class FirebaseSemesterSummaryRepositoryImpl(
 
     override suspend fun decAbsent(by: Long): Result<Unit> =
         runCatching {
-            Log.d("tag", "decrementing absent")
+            Log.d("tag", "x decrementing absent")
             val doc = summaryDocument()
                 .update(
                     "absentRecords",
                     FieldValue.increment(-by)
                 )
 
-            Log.d("tag", "obtained doc ref")
+            Log.d("tag", "x obtained doc ref")
             doc.await()
-            Log.d("tag", "decremented absent")
+            Log.d("tag", "x decremented absent")
             Unit
-        }.onFailure { Log.d("tag", "error: $it") }
+        }.onFailure { Log.d("tag", "error decrementing sem absent: $it") }
 
     override suspend fun incUnmarked(by: Long): Result<Unit> =
         runCatching {

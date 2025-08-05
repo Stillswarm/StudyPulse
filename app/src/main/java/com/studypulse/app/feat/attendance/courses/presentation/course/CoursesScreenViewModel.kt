@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.courses.presentation.course
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
@@ -47,7 +48,8 @@ class CoursesScreenViewModel(
         viewModelScope.launch {
             courseRepository.deleteCourse(courseId)
                 .onFailure {
-                    SnackbarController.sendEvent(SnackbarEvent("Error occurred while deleting"))
+                    Log.d("tag", "cannot delete course: ${it.message}")
+                    SnackbarController.sendEvent(SnackbarEvent("Error occurred while deleting: ${it.localizedMessage}"))
                 }
                 .onSuccess {
                     SnackbarController.sendEvent(SnackbarEvent("Course deleted"))

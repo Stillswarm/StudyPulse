@@ -68,7 +68,8 @@ class ScheduleScreenViewModel(
                     loadSchedule()
                 }
                 .onFailure {
-                    SnackbarController.sendEvent(SnackbarEvent(message = "Failed to delete period ${it.localizedMessage}"))
+                    Log.d("tag", "${it.message}")
+                    SnackbarController.sendEvent(SnackbarEvent(message = "Failed to delete period ${it.message}"))
                 }
         }
     }

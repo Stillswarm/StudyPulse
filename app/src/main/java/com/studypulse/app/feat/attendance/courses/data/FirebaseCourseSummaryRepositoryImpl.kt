@@ -60,27 +60,44 @@ class FirebaseCourseSummaryRepositoryImpl(
                 .toObject(CourseSummaryDto::class.java)!!.toDomain()
         }
 
-    override suspend fun delete(courseId: String) =
-        runCatching {
-            val docRef = summaryDocument(courseId).get().await()
-            val absent = docRef.get("absentRecords")
-            val present = docRef.get("presentRecords")
-            val unmarked = docRef.get("unmarkedRecords")
-            val cancelled = docRef.get("cancelledRecords")
+    override suspend fun delete(courseId: String): Result<Unit> = runCatching {
+        val docSnapshot = summaryDocument(courseId).get().await()
 
-            coroutineScope {
-                // reset this course summary's data in the semester summary
-                launch { semesterSummaryRepository.decPresent(present as Long) }
-                launch { semesterSummaryRepository.decAbsent(absent as Long) }
-                launch { semesterSummaryRepository.decCancelled(cancelled as Long) }
-                launch { semesterSummaryRepository.decUnmarked(unmarked as Long) }
+        if (!docSnapshot.exists()) {
+            Log.w(
+                "FirebaseCourseSummaryRepo",
+                "Course summary document $courseId does not exist. Nothing to delete or update from."
+            )
+            return@runCatching // Successfully did nothing
+        }
 
-                // now delete the document itself
-                launch { summaryDocument(courseId).delete().await() }
-                Log.d("tag", "should be deleted now")
-                Unit
-            }
-        }.onFailure { Log.d("tag", "error: $it") }
+        // Safely get values, defaulting to 0L. Consider if 0L is the correct default.
+        val absent = docSnapshot.getLong("absentRecords") ?: 0L
+        val present = docSnapshot.getLong("presentRecords") ?: 0L
+        val unmarked = docSnapshot.getLong("unmarkedRecords") ?: 0L
+        val cancelled = docSnapshot.getLong("cancelledRecords") ?: 0L
+
+        coroutineScope {
+            // reset this course summary's data in the semester summary
+            launch { semesterSummaryRepository.decPresent(present) }
+            launch { semesterSummaryRepository.decAbsent(absent) }
+            launch { semesterSummaryRepository.decCancelled(cancelled) }
+            launch { semesterSummaryRepository.decUnmarked(unmarked) }
+
+            // now delete the document itself
+            launch { summaryDocument(courseId).delete().await() }
+        }
+        Log.d(
+            "tag",
+            "Attempted deletion and semester summary update for $courseId."
+        )
+    }.onFailure { exception ->
+        Log.e(
+            "tag",
+            "Error during delete operation for course $courseId: ${exception.message}",
+            exception
+        )
+    }
 
     override suspend fun incPresent(courseId: String, by: Long): Result<Unit> =
         runCatching {
