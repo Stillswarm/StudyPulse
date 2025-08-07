@@ -25,8 +25,8 @@ class AttendanceCalendarScreenViewModel(
     private val attendanceRepository: AttendanceRepository,
     private val semesterRepository: SemesterRepository,
     private val periodRepository: PeriodRepository,
+    initialData: AttendanceCalendarScreenState = AttendanceCalendarScreenState()
 ) : ViewModel() {
-    private val initialData = AttendanceCalendarScreenState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
 

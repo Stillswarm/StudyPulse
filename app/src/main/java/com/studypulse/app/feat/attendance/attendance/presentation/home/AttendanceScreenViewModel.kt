@@ -28,9 +28,9 @@ class AttendanceScreenViewModel(
     private val courseSummaryRepository: CourseSummaryRepository,
     private val semesterRepository: SemesterRepository,
     ds: AppDatastore,
+    initialState: AttendanceScreenState = AttendanceScreenState(),
 ) : ViewModel() {
-    private val initialData = AttendanceScreenState()
-    private val _state = MutableStateFlow(initialData)
+    private val _state = MutableStateFlow(initialState)
     val state = _state.asStateFlow()
 
     val semesterIdFlow = ds.semesterIdFlow.distinctUntilChanged().stateIn(
@@ -116,7 +116,6 @@ class AttendanceScreenViewModel(
     fun getPercent(courseSummary: CourseSummary): Int {
         val total =
             courseSummary.presentRecords + courseSummary.absentRecords + courseSummary.unmarkedRecords
-        Log.d("tag", "total: $total, present: ${courseSummary.presentRecords}")
         return if (total == 0) 0 else (courseSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
     }
 

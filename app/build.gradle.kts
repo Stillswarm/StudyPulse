@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -143,5 +144,27 @@ dependencies {
     
     // Kotlin Parcel
 //    implementation("org.jetbrains.kotlinx:kotlinx-parcelize-runtime:1.9.0")
+
+    // ---- TESTING ----
+    // --- Unit testing essentials ---
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.5")                             // mocking
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2") // coroutine testing
+    testImplementation("app.cash.turbine:turbine:1.2.1")                     // Flow testing
+    testImplementation("com.google.truth:truth:1.4.4")
+
+
+    // --- Koin test support ---
+    testImplementation("io.insert-koin:koin-test:4.1.0")
+    testImplementation("io.insert-koin:koin-test-junit4:4.1.0")
+
+    // --- Android instrumentation / UI tests (optional if you need them) ---
+    androidTestImplementation("androidx.test:core:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Jetpack Compose UI testing
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
 
 }
