@@ -263,6 +263,7 @@ fun AttendanceScreen(
                                         scope.launch { semesterSheetState.show() }
                                     },
                                     buttonColor = Gold,
+                                    modifier = Modifier.testTag("AttendanceScreen_SemButton")
                                 )
                             }
                         }
@@ -275,6 +276,7 @@ fun AttendanceScreen(
                             title = "Attendance Overview",
                             desc = "View detailed statistics",
                             onClick = onNavigateToAttendanceOverview,
+                            modifier = Modifier.testTag("AttendanceScreen_AttendanceOverviewButton")
                         )
                     }
 
@@ -284,7 +286,8 @@ fun AttendanceScreen(
                             icon = R.drawable.ic_book,
                             title = "Courses Overview",
                             desc = "Manage your courses",
-                            onClick = onNavigateToCourseList
+                            onClick = onNavigateToCourseList,
+                            modifier = Modifier.testTag("AttendanceScreen_CoursesOverviewButton")
                         )
                     }
 
@@ -294,7 +297,8 @@ fun AttendanceScreen(
                             icon = R.drawable.ic_calender,
                             title = "Attendance Calendar",
                             desc = "Mark attendance by date",
-                            onClick = onNavigateToAttendanceCalendar
+                            onClick = onNavigateToAttendanceCalendar,
+                            modifier = Modifier.testTag("AttendanceScreen_AttendanceCalendarButton")
                         )
                     }
                 }

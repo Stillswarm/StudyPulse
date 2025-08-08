@@ -1,3 +1,4 @@
+
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -62,6 +63,12 @@ android {
             )
         }
     }
+    packaging {
+        resources {
+            pickFirsts += "META-INF/LICENSE.md"
+            pickFirsts += "META-INF/LICENSE-notice.md"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -88,6 +95,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.junit)
     testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -146,22 +154,40 @@ dependencies {
 //    implementation("org.jetbrains.kotlinx:kotlinx-parcelize-runtime:1.9.0")
 
     // ---- TESTING ----
-    // --- Unit testing essentials ---
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("io.mockk:mockk:1.13.5")                             // mocking
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2") // coroutine testing
-    testImplementation("app.cash.turbine:turbine:1.2.1")                     // Flow testing
-    testImplementation("com.google.truth:truth:1.4.4")
 
+    // JUnit4
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+
+    // MockK
+    testImplementation("io.mockk:mockk:1.14.5")                             // mocking
+    androidTestImplementation("io.mockk:mockk-android:1.14.5")
+
+    // Turbine
+    testImplementation("app.cash.turbine:turbine:1.2.1")                     // Flow testing
+    androidTestImplementation("app.cash.turbine:turbine:1.2.1")
+
+    // Google Truth
+    testImplementation("com.google.truth:truth:1.4.4")
+    androidTestImplementation("com.google.truth:truth:1.4.4")
+
+    // Coroutines
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2") // coroutine testing
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+
+    // Espresso
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // --- Koin test support ---
     testImplementation("io.insert-koin:koin-test:4.1.0")
     testImplementation("io.insert-koin:koin-test-junit4:4.1.0")
+    androidTestImplementation("io.insert-koin:koin-test:4.1.0")
+    androidTestImplementation("io.insert-koin:koin-test-junit4:4.1.0")
 
     // --- Android instrumentation / UI tests (optional if you need them) ---
     androidTestImplementation("androidx.test:core:1.7.0")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
 
     // Jetpack Compose UI testing
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
