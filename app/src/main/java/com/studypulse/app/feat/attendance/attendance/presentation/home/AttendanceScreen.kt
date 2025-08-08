@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -87,7 +88,9 @@ fun AttendanceScreen(
     }
 
     Box(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("AttendanceScreen_Root")
     ) {
         LargeAppTopBar(
             backgroundColor = Gold,
@@ -103,17 +106,27 @@ fun AttendanceScreen(
                 )
             ),
             imageRes = R.drawable.im_books_black,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .testTag("AttendanceScreen_TopBar")
         )
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(200.dp)) // because top bar takes up 250.dp
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("AttendanceScreen_MainColumn")) {
+            Spacer(
+                Modifier
+                    .height(200.dp)
+                    .testTag("AttendanceScreen_TopSpacer")) // because top bar takes up 250.dp
             if (state.isLoading) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("AttendanceScreen_LoadingContainer"),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Gold)
+                    CircularProgressIndicator(color = Gold, modifier = Modifier.testTag("AttendanceScreen_LoadingIndicator"))
                 }
             } else if (semId == "") {
                 Text(
@@ -135,12 +148,14 @@ fun AttendanceScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .padding(top = 50.dp)
-                        .noRippleClickable { scope.launch { semesterSheetState.show() } },
+                        .noRippleClickable { scope.launch { semesterSheetState.show() } }
+                        .testTag("AttendanceScreen_NoSemesterText"),
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .testTag("AttendanceScreen_LazyColumn"),
                     contentPadding = PaddingValues(20.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
@@ -154,12 +169,14 @@ fun AttendanceScreen(
                             elevation = CardDefaults.cardElevation(
                                 defaultElevation = 4.dp
                             ),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.testTag("AttendanceScreen_QuickStatsCard")
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
+                                    .padding(16.dp)
+                                    .testTag("AttendanceScreen_QuickStatsColumn"),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Text(
@@ -167,38 +184,47 @@ fun AttendanceScreen(
                                     fontSize = 18.sp,
                                     lineHeight = 28.sp,
                                     fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.testTag("AttendanceScreen_QuickStats_Title")
                                 )
 
                                 Column(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .testTag("AttendanceScreen_StatsInnerColumn")
                                 ) {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag("AttendanceScreen_StatsRow1"),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         StatBox(
                                             title = "Classes Unmarked",
                                             value = state.unmarkedCount,
-//                                        modifier = Modifier.weight(1f)
+                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Unmarked")
                                         )
                                         StatBox(
                                             title = "100% Attendance",
                                             value = state.fullAttendanceCount,
-//                                        modifier = Modifier.weight(1f)
+                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Full")
                                         )
                                     }
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag("AttendanceScreen_StatsRow2"),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         StatBox(
                                             title = "Low Attendance",
                                             value = state.lowAttendanceCount,
+                                            modifier = Modifier.testTag("AttendanceScreen_Stat_LowAttendance")
                                         )
                                         StatBox(
                                             title = "Overall Percentage",
                                             value = state.attendancePercentage,
+                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Percentage")
                                         )
                                     }
                                 }

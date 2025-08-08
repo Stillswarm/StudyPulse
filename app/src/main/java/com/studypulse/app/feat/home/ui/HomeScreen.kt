@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -122,6 +123,7 @@ fun HomeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .testTag("HomeScreen_Root")
     ) {
         AppTopBar(
             backgroundColor = DarkGray,
@@ -137,16 +139,21 @@ fun HomeScreen(
             actionIcon = R.drawable.ic_profile,
             onActionClick = { navigate(Route.ProfileRoute) },
             titleColor = WhiteSecondary,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier
+                .padding(bottom = 12.dp)
+                .testTag("HomeScreen_TopBar")
         )
 
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.testTag("HomeScreen_LazyColumn")
+        ) {
             itemsIndexed(homeScreenItems) { idx, item ->
                 HomeScreenBox(
                     item = item,
                     modifier = Modifier
                         .padding(12.dp)
-                        .noRippleClickable { if (item.route != null) navigate(item.route) },
+                        .noRippleClickable { if (item.route != null) navigate(item.route) }
+                        .testTag("HomeScreen_Item_${item.name.replace(' ', '_')}_Box"),
                     contentLeft = idx % 2 != 0
                 )
             }
@@ -170,6 +177,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                     )
                 )
             )
+            .testTag("HomeScreenBox_Root_${item.name.replace(' ', '_')}")
     ) {
         Icon(
             painter = painterResource(item.icon),
@@ -185,6 +193,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
             modifier = Modifier
                 .align(if (contentLeft) Alignment.TopStart else Alignment.TopEnd)
                 .padding(16.dp)
+                .testTag("HomeScreenBox_Column_${item.name.replace(' ', '_')}")
         ) {
             Text(
                 text = item.name,
@@ -192,6 +201,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                 fontSize = 16.sp,
                 lineHeight = 24.sp,
                 fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.testTag("HomeScreenBox_Name_${item.name.replace(' ', '_')}")
             )
 
             Text(
@@ -199,6 +209,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                 color = DarkGray,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
+                modifier = Modifier.testTag("HomeScreenBox_Desc_${item.name.replace(' ', '_')}")
             )
         }
 
@@ -207,6 +218,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                 modifier = Modifier
                     .matchParentSize()
                     .background(LightGray.copy(alpha = 0.5f))
+                    .testTag("HomeScreenBox_ComingSoonOverlay_${item.name.replace(' ', '_')}")
             )
 
             Box(
@@ -215,6 +227,7 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                     .clip(RectangleShape)
                     .background(DarkGray.copy(alpha = 0.60f))
                     .align(Alignment.BottomEnd)
+                    .testTag("HomeScreenBox_ComingSoonTag_${item.name.replace(' ', '_')}")
             ) {
                 Text(
                     text = "Coming Soon",
@@ -222,7 +235,9 @@ fun HomeScreenBox(item: HomeScreenItem, contentLeft: Boolean, modifier: Modifier
                     fontSize = 10.sp,
                     lineHeight = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .testTag("HomeScreenBox_ComingSoonText_${item.name.replace(' ', '_')}")
                 )
             }
         }

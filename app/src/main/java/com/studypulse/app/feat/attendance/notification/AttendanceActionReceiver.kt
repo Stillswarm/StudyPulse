@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
@@ -56,13 +57,23 @@ class AttendanceActionReceiver : BroadcastReceiver(), KoinComponent {
                 semesterId = semesterId,
                 periodId = periodId,
                 date = date,
-                status = status
+                status = status,
+                processed = true
             )
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     Log.d("AttendanceActionReceiver", "Updating attendance...")
-                    attendanceRepository.upsertAttendance(record)
+                    attendanceRepository.findExistingRecordId(record).onSuccess {
+                        attendanceRepository.upsertAttendance(record.copy(id = it))
+                    }.onFailure {
+                        Log.e("AttendanceActionReceiver", "Error finding existing record: ${it.message}")
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            Toast.makeText(context, "Couldn't perform action", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
                     Log.d("AttendanceActionReceiver", "Updated, cancelling notif...")
                     NotificationManagerCompat.from(context).cancel(notifId)
                 } catch (e: Exception) {

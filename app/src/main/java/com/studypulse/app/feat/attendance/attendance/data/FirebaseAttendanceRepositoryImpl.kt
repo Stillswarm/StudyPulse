@@ -89,6 +89,25 @@ class FirebaseAttendanceRepositoryImpl(
         collection.document(docId).set(updatedRecord.toDto()).await()
     }
 
+    override suspend fun findExistingRecordId(record: AttendanceRecord) =
+        runCatching {
+            // if id is not blank, it is returned. Otherwise, function is executed
+            record.id.ifBlank {
+                val collection = getAttendanceCollection()
+                val doc = collection
+                    .whereEqualTo("semesterId", record.semesterId)
+                    .whereEqualTo("courseId", record.courseId)
+                    .whereEqualTo("periodId", record.periodId)
+                    .whereEqualTo("date", record.date.toTimestamp())
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (doc.isEmpty) throw NoSuchElementException("No record found")
+                doc.documents.first().id
+            }
+        }
+
     override fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>> = callbackFlow {
         val listener = getAttendanceCollection()
             .whereEqualTo("date", date.toString())

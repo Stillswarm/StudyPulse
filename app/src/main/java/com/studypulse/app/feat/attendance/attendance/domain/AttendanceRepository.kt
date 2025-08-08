@@ -6,6 +6,7 @@ import java.time.LocalDate
 
 interface AttendanceRepository {
     suspend fun upsertAttendance(attendanceRecord: AttendanceRecord)
+    suspend fun findExistingRecordId(record: AttendanceRecord): Result<String>
     fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>>
     suspend fun getAttendanceForPeriodAndDate(periodId: String, date: LocalDate) : AttendanceRecord?
     fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>>

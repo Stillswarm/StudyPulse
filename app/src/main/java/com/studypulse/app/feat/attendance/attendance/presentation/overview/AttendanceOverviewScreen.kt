@@ -27,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,8 +58,12 @@ fun AttendanceOverviewScreen(
     val courseWiseSummary by vm.courseWiseSummaryFlow.collectAsStateWithLifecycle()
     val semesterSummary by vm.semesterSummaryFlow.collectAsStateWithLifecycle()
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier
+        .fillMaxSize()
+        .testTag("AttendanceOverviewScreen_Root")) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .testTag("AttendanceOverviewScreen_MainColumn")) {
             val scope = rememberCoroutineScope()
             AppTopBar(
                 backgroundColor = Gold,
@@ -74,16 +78,21 @@ fun AttendanceOverviewScreen(
                         Pair(59f, Color.Black)
                     )
                 ),
+                modifier = Modifier.testTag("AttendanceOverviewScreen_AppTopBar")
             )
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .testTag("AttendanceOverviewScreen_LazyColumn")
             ) {
                 semesterSummary?.let { s ->
                     item {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("AttendanceOverviewScreen_SummaryRow"),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
@@ -94,12 +103,13 @@ fun AttendanceOverviewScreen(
                                     .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
                                     .padding(8.dp)
                                     .weight(1f)
+                                    .testTag("AttendanceOverviewScreen_MinAttendanceBox")
                             ) {
                                 Column {
                                     Text(
                                         text = "${s.minAttendance}%",
                                         fontSize = 36.sp,
-                                        fontWeight = Bold,
+                                        fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(16.dp),
                                         lineHeight = 40.sp,
                                     )
@@ -121,6 +131,7 @@ fun AttendanceOverviewScreen(
                                     .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
                                     .padding(8.dp)
                                     .weight(1f)
+                                    .testTag("AttendanceOverviewScreen_CurrentAttendanceBox")
                             ) {
                                 Column {
                                     Text(
@@ -129,7 +140,7 @@ fun AttendanceOverviewScreen(
                                             s.totalClasses
                                         )}%",
                                         fontSize = 36.sp,
-                                        fontWeight = Bold,
+                                        fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(16.dp),
                                         lineHeight = 40.sp,
                                     )
@@ -149,16 +160,16 @@ fun AttendanceOverviewScreen(
                     items(courseWiseSummary.entries.toList()) { mp ->
                         val c = mp.key
                         val cs = mp.value
-                        AttendanceOverviewItem(c, cs, onDetails)
+                        AttendanceOverviewItem(c, cs, onDetails, modifier = Modifier.testTag("AttendanceOverviewScreen_Item_${c.courseCode}"))
                     }
                 }
-
-
             }
         }
 
         if (state.loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = DarkGray)
+            CircularProgressIndicator(modifier = Modifier
+                .align(Alignment.Center)
+                .testTag("AttendanceOverviewScreen_LoadingIndicator"), color = DarkGray)
         }
     }
 }
@@ -183,16 +194,20 @@ fun AttendanceOverviewItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
+            .testTag("AttendanceOverviewScreen_ItemBox_${course.courseCode}")
 //            .noRippleClickable { onDetails(course.id) },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .testTag("AttendanceOverviewScreen_ItemColumn_${course.courseCode}"),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("AttendanceOverviewScreen_ItemRow_${course.courseCode}"),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -214,16 +229,19 @@ fun AttendanceOverviewItem(
 
                 Box(
                     contentAlignment = Alignment.Center,
+                    modifier = Modifier.testTag("AttendanceOverviewScreen_PercentageContainer_${course.courseCode}")
                 ) {
                     Text(
                         text = percentage.toString(),
                         fontSize = 18.sp,
-                        fontWeight = Bold,
+                        fontWeight = FontWeight.Bold,
                         lineHeight = 28.sp,
                     )
 
                     CircularProgressIndicator(
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier
+                            .size(64.dp)
+                            .testTag("AttendanceOverviewScreen_PercentageBar_${course.courseCode}"),
                         color = if (percentage < summary.minAttendance) Red
                         else if (percentage <= 10 + summary.minAttendance) Gold
                         else GreenNormal,

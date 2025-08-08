@@ -56,4 +56,8 @@ class RoomAttendanceRepositoryImpl(
     override suspend fun deleteAttendance(attendanceRecordId: String): Result<Unit> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun findExistingRecordId(record: AttendanceRecord): Result<String> {
+        TODO("Not yet implemented")
+    }
 }

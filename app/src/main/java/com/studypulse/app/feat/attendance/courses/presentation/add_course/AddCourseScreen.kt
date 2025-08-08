@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +78,10 @@ fun AddCourseScreen(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("AddCourseScreen_Root")) {
         Column {
             AppTopBar(
                 backgroundColor = GreenSecondary,
@@ -87,22 +91,28 @@ fun AddCourseScreen(
                 navigationIcon = R.drawable.ic_arrow_left,
                 onNavigationClick = onNavigateBack,
                 actionIcon = null,
-                onActionClick = null
+                onActionClick = null,
+                modifier = Modifier.testTag("AddCourseScreen_TopBar")
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier
+                .height(24.dp)
+                .testTag("AddCourseScreen_TopSpacer"))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .testTag("AddCourseScreen_FormColumn"),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 state.activeSemester?.let { sem ->
                     TextField(
                         value = state.courseName,
                         onValueChange = { vm.onCourseNameChange(it) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("AddCourseScreen_Input_CourseName"),
                         colors = TextFieldDefaults.colors(
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
@@ -116,7 +126,9 @@ fun AddCourseScreen(
                     TextField(
                         value = state.courseCode,
                         onValueChange = { vm.onCourseCodeChange(it) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("AddCourseScreen_Input_CourseCode"),
                         colors = TextFieldDefaults.colors(
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
@@ -130,7 +142,9 @@ fun AddCourseScreen(
                     TextField(
                         value = state.instructor,
                         onValueChange = { vm.onInstructorChange(it) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("AddCourseScreen_Input_Instructor"),
                         colors = TextFieldDefaults.colors(
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
@@ -145,7 +159,9 @@ fun AddCourseScreen(
                     TextField(
                         value = state.minAttendance,
                         onValueChange = { vm.updateMinAttendance(it) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("AddCourseScreen_Input_MinAttendance"),
                         placeholder = { Text("Min Required Attendance", fontSize = 16.sp) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
@@ -162,6 +178,7 @@ fun AddCourseScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(GreenLight)
+                            .testTag("AddCourseScreen_InfoBox")
                     ) {
                         Text(
                             text = buildAnnotatedString {
@@ -183,7 +200,8 @@ fun AddCourseScreen(
                                 .padding(16.dp)
                                 .noRippleClickable {
                                     scope.launch { semSheetState.show() }
-                                },
+                                }
+                                .testTag("AddCourseScreen_InfoText"),
                             textAlign = TextAlign.Center
                         )
 
@@ -210,7 +228,9 @@ fun AddCourseScreen(
                         ),
                         enabled = !state.isLoading,
                         shape = RoundedCornerShape(8.dp, 0.dp, 8.dp, 0.dp),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("AddCourseScreen_SubmitButton"),
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         Text("Submit", color = Color.White, fontSize = 18.sp)
@@ -221,15 +241,24 @@ fun AddCourseScreen(
                     Text(
                         text = it,
                         color = Color.Red,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        modifier = Modifier.testTag("AddCourseScreen_ErrorText")
                     )
                 }
             }
         }
 
         if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = GreenNormal)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("AddCourseScreen_LoadingContainer"),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = GreenNormal,
+                    modifier = Modifier.testTag("AddCourseScreen_LoadingIndicator")
+                )
             }
         }
     }

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,20 +71,26 @@ fun AttendanceDetailsScreen(
     Box(
         modifier = modifier
             .background(Color.LightGray)
+            .testTag("AttendanceDetailsScreen_Root")
     ) {
-        Column {
+        Column(modifier = Modifier.testTag("AttendanceDetailsScreen_MainColumn")) {
             DefaultHeader(
                 title = "${course.courseCode} Attendance",
                 navigationButton = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
                         contentDescription = "Back",
-                        modifier = Modifier.clickable { onBack() }
+                        modifier = Modifier
+                            .clickable { onBack() }
+                            .testTag("AttendanceDetailsScreen_BackIcon")
                     )
-                }
+                },
+                modifier = Modifier.testTag("AttendanceDetailsScreen_Header")
             )
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("AttendanceDetailsScreen_LazyColumn"),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // course header
@@ -92,21 +99,26 @@ fun AttendanceDetailsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
+                            .testTag("AttendanceDetailsScreen_HeaderColumn")
                     ) {
                         Column(
-                            modifier = modifier.padding(horizontal = 16.dp)
+                            modifier = modifier
+                                .padding(horizontal = 16.dp)
+                                .testTag("AttendanceDetailsScreen_HeaderInnerColumn")
 
                         ) {
                             Text(
                                 text = course.courseName,
                                 fontSize = 24.sp,
                                 lineHeight = 32.sp,
+                                modifier = Modifier.testTag("AttendanceDetailsScreen_CourseName")
                             )
 
                             Text(
                                 text = course.courseCode,
                                 fontSize = 14.sp,
                                 lineHeight = 24.sp,
+                                modifier = Modifier.testTag("AttendanceDetailsScreen_CourseCode")
                             )
                         }
                     }
@@ -120,35 +132,58 @@ fun AttendanceDetailsScreen(
                             .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.White)
+                            .testTag("AttendanceDetailsScreen_StatsBox")
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(20.dp),
+                                .padding(20.dp)
+                                .testTag("AttendanceDetailsScreen_StatsColumn"),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("AttendanceDetailsScreen_StatsRow1"),
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                StatWithSubtitle(stat = totalClasses, subtitle = "Classes")
-                                StatWithSubtitle(stat = present, subtitle = "Present")
+                                StatWithSubtitle(
+                                    stat = totalClasses,
+                                    subtitle = "Classes",
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Stat_Classes")
+                                )
+                                StatWithSubtitle(
+                                    stat = present,
+                                    subtitle = "Present",
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Stat_Present")
+                                )
                             }
 
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("AttendanceDetailsScreen_StatsRow2"),
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 StatWithSubtitle(
                                     stat = totalClasses - present - cancelled,
-                                    subtitle = "Absent"
+                                    subtitle = "Absent",
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Stat_Absent")
                                 )
-                                StatWithSubtitle(stat = cancelled, subtitle = "Cancelled")
+                                StatWithSubtitle(
+                                    stat = cancelled,
+                                    subtitle = "Cancelled",
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Stat_Cancelled")
+                                )
                             }
 
-                            Spacer(Modifier.height(48.dp))
+                            Spacer(
+                                Modifier
+                                    .height(48.dp)
+                                    .testTag("AttendanceDetailsScreen_SpacerBeforePieChart")
+                            )
 
                             BrandPieChart(
                                 values = listOf(
@@ -156,13 +191,21 @@ fun AttendanceDetailsScreen(
                                     1 - percentPresentWithCancelled - percentCancelled,
                                     percentCancelled
                                 ),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .testTag("AttendanceDetailsScreen_PieChart")
                             )
 
-                            Spacer(Modifier.height(48.dp))
+                            Spacer(
+                                Modifier
+                                    .height(48.dp)
+                                    .testTag("AttendanceDetailsScreen_SpacerAfterPieChart")
+                            )
 
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("AttendanceDetailsScreen_LegendRow"),
                                 horizontalArrangement = Arrangement.spacedBy(
                                     24.dp,
                                     alignment = Alignment.CenterHorizontally
@@ -170,15 +213,18 @@ fun AttendanceDetailsScreen(
                             ) {
                                 AttendanceLegendTag(
                                     tag = "Present",
-                                    indicatorColor = Color.Green
+                                    indicatorColor = Color.Green,
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Legend_Present")
                                 )
                                 AttendanceLegendTag(
                                     tag = "Absent",
-                                    indicatorColor = Color.Red
+                                    indicatorColor = Color.Red,
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Legend_Absent")
                                 )
                                 AttendanceLegendTag(
                                     tag = "Cancelled",
-                                    indicatorColor = Color.Gray
+                                    indicatorColor = Color.Gray,
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_Legend_Cancelled")
                                 )
                             }
                         }
@@ -192,26 +238,33 @@ fun AttendanceDetailsScreen(
                             .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.White)
+                            .testTag("AttendanceDetailsScreen_CurrentBox")
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(20.dp),
+                                .padding(20.dp)
+                                .testTag("AttendanceDetailsScreen_CurrentColumn"),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.testTag("AttendanceDetailsScreen_CurrentInnerColumn")
+                            ) {
                                 Text(
                                     text = "${percentPresent * 100}%",
                                     fontSize = 30.sp,
-                                    lineHeight = 36.sp
+                                    lineHeight = 36.sp,
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_CurrentPercent")
                                 )
 
                                 Text(
                                     text = "Current Attendance",
                                     lineHeight = 24.sp,
                                     fontSize = 16.sp,
-                                    color = Color(0xFF4B5563)
+                                    color = Color(0xFF4B5563),
+                                    modifier = Modifier.testTag("AttendanceDetailsScreen_CurrentLabel")
                                 )
                             }
 
@@ -222,6 +275,7 @@ fun AttendanceDetailsScreen(
                                     in 0.4..0.7 -> Color(0xFFFBBF24)
                                     else -> Color(0xFF34D399)
                                 },
+                                modifier = Modifier.testTag("AttendanceDetailsScreen_ProgressBar")
                             )
                         }
                     }
@@ -269,9 +323,10 @@ fun AttendanceDetailsScreen(
 @Composable
 fun StatWithSubtitle(
     stat: Int,
-    subtitle: String
+    subtitle: String,
+    modifier: Modifier = Modifier,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Text(
             text = stat.toString(),
             fontSize = 24.sp,
@@ -291,10 +346,12 @@ fun StatWithSubtitle(
 fun AttendanceLegendTag(
     tag: String,
     indicatorColor: Color,
+    modifier: Modifier = Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_filled_circle),
