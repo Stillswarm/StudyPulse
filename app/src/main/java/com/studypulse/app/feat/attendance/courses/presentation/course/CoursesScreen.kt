@@ -61,7 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CoursesScreen(
     onAddNewCourse: (String?) -> Unit,
-    onCourseTimetable: (String) -> Unit,
+    onCourseTimetable: (String, String) -> Unit,
     modifier: Modifier = Modifier,
     vm: CoursesScreenViewModel = koinViewModel(),
 ) {
@@ -184,7 +184,7 @@ fun CoursesScreen(
 
 @Composable
 fun CourseItem(
-    onCourseDetails: (String) -> Unit,
+    onCourseDetails: (String, String) -> Unit,
     onDelete: (String) -> Unit,
     onEdit: (String) -> Unit,
     course: Course,
@@ -197,7 +197,7 @@ fun CourseItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, GreenSecondary, RoundedCornerShape(8.dp))
-            .noRippleClickable { expanded = true }
+            .noRippleClickable { expanded = !expanded }
     ) {
         Column {
             Row(
@@ -223,7 +223,7 @@ fun CourseItem(
                 }
 
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_down),
+                    painter = painterResource(if (!expanded) R.drawable.ic_arrow_down else R.drawable.ic_arrow_up),
                     contentDescription = "Expand",
                     tint = Color.DarkGray
                 )
@@ -242,7 +242,7 @@ fun CourseItem(
                                 contentColor = GreenDark
                             ),
                             border = BorderStroke(1.dp, GreenSecondary),
-                            onClick = { onCourseDetails(course.id) },
+                            onClick = { onCourseDetails(course.id, course.courseCode) },
                             modifier = Modifier
                                 .padding(8.dp)
                                 .weight(1f)

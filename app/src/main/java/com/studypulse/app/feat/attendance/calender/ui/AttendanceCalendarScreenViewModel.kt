@@ -62,7 +62,7 @@ class AttendanceCalendarScreenViewModel(
         } else {
             viewModelScope.launch {
                 try {
-                    periodRepository.getAllPeriodsFilteredByDayOfWeek(
+                    periodRepository.getAllPeriodsByDayInStartTimeOrder(
                         Day.valueOf(newDate.dayOfWeek.name.uppercase())
                     )
                         .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }

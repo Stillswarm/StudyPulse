@@ -1,6 +1,5 @@
 package com.studypulse.app.common.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,8 +21,11 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.convertToSentenceCase
 import com.studypulse.app.feat.semester.domain.model.Semester
+import com.studypulse.app.ui.theme.WhiteSecondary
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +43,7 @@ fun AllSemestersBottomSheet(
             onDismissRequest = { onDismiss() },
             dragHandle = {},
             shape = RectangleShape,
+            containerColor = WhiteSecondary
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -90,7 +93,7 @@ fun SemesterBottomSheetItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clickable { onSemesterClick(semester) },
+            .noRippleClickable { onSemesterClick(semester) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -105,7 +108,7 @@ fun SemesterBottomSheetItem(
             )
 
             Text(
-                text = "${semester.startDate} - ${semester.endDate}",
+                text = "${semester.startDate.format(DateTimeFormatter.ofPattern("dd MMM yy"))} to ${semester.endDate.format(DateTimeFormatter.ofPattern("dd MMM yy"))}",
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
             )

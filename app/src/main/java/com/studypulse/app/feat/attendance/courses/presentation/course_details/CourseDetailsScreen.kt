@@ -30,7 +30,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CourseDetailsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToSchedule: (String) -> Unit,
+    onNavigateToSchedule: (String, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CourseDetailsScreenViewModel = koinViewModel()
 ) {
@@ -87,7 +87,7 @@ fun CourseDetailsScreen(
                                     fontSize = 18.sp,
                                     letterSpacing = 0.75.sp,
                                     modifier = Modifier.noRippleClickable {
-                                        onNavigateToSchedule(course.id)
+                                        onNavigateToSchedule(course.id, course.courseCode)
                                     }
                                 )
                             }

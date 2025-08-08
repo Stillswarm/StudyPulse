@@ -46,7 +46,12 @@ class SignInScreenViewModel(
         .build()
 
 
-    private val RESET_COOLDOWN = 30
+    companion object {
+        const val RESET_COOLDOWN = 30
+        const val EMPTY_EMAIL_ERROR = "Email cannot be empty"
+        const val EMPTY_PASSWORD_ERROR = "Password cannot be empty"
+        const val INVALID_EMAIL_ERROR = "Please enter a valid email"
+    }
 
     fun updateEmail(new: String) {
         _state.update {
@@ -89,18 +94,18 @@ class SignInScreenViewModel(
     private fun credentialsOk(): Boolean {
 
         if (_state.value.email.isEmpty()) {
-            _state.update { it.copy(error = "Email cannot be empty") }
+            _state.update { it.copy(error = EMPTY_EMAIL_ERROR) }
             return false
         }
 
         if (incorrectEmail(_state.value.email)) {
-            _state.update { it.copy(error = "Please enter a valid email") }
+            _state.update { it.copy(error = INVALID_EMAIL_ERROR) }
             return false
         }
 
 
         if (_state.value.password.isEmpty()) {
-            _state.update { it.copy(error = "Password cannot be empty") }
+            _state.update { it.copy(error = EMPTY_PASSWORD_ERROR) }
             return false
         }
 
@@ -111,7 +116,7 @@ class SignInScreenViewModel(
 
     fun sendPasswordResetEmail() {
         if (incorrectEmail(_state.value.bottomSheetEmail)) {
-            _state.update { it.copy(error = "Please enter a valid email") }
+            _state.update { it.copy(error = INVALID_EMAIL_ERROR) }
             return
         }
         auth.sendPasswordResetEmail(_state.value.bottomSheetEmail.trim())

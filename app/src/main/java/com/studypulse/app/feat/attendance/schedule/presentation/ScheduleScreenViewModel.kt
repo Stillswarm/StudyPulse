@@ -22,21 +22,23 @@ class ScheduleScreenViewModel(
         currentDay = Day.MONDAY,
         schedule = emptyList(),
         courseId = null,
+        courseCode = null,
         showDeleteDialog = false,
         periodIdToDelete = null
     )
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
     private val courseId: String? = savedStateHandle["courseId"]
+    private val courseCode: String? = savedStateHandle["courseCode"]
 
     init {
-        updateCourseId(courseId)
+        updateCourseIdAndCode(courseId)
         loadSchedule()
     }
 
-    private fun updateCourseId(courseId: String?) {
+    private fun updateCourseIdAndCode(courseId: String?) {
         _state.update {
-            it.copy(courseId = courseId)
+            it.copy(courseId = courseId, courseCode = courseCode)
         }
     }
 
@@ -77,7 +79,7 @@ class ScheduleScreenViewModel(
     private fun loadSchedule() {
         viewModelScope.launch {
             if (courseId != null) {
-                periodRepository.getAllPeriodsForCourseFilteredByDayOfWeek(
+                periodRepository.getAllPeriodsForCourseByDayInStartTimeOrder(
                     courseId,
                     _state.value.currentDay
                 )
@@ -91,7 +93,7 @@ class ScheduleScreenViewModel(
                         }
                     }
             } else {
-                periodRepository.getAllPeriodsFilteredByDayOfWeek(_state.value.currentDay)
+                periodRepository.getAllPeriodsByDayInStartTimeOrder(_state.value.currentDay)
                     .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "Failed to load schedule")) }
                     .onSuccess { periodsFlow ->
                         periodsFlow.collect { periods ->

@@ -20,12 +20,19 @@ class RoomPeriodRepositoryImpl(
         periodDao.addNewPeriod(period.toPeriodEntity())
     }
 
-    override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(courseId: String, day: Day): Result<Flow<List<Period>>> {
+    override suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(courseId: String, day: Day): Result<Flow<List<Period>>> {
         return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId.toLong(), day).map { it.map { it.toPeriod() } })
     }
 
-    override suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day): Result<Flow<List<Period>>> {
+    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: Day): Result<Flow<List<Period>>> {
         return Result.success(periodDao.getAllPeriodsFilteredByDayOfWeek(day))
+    }
+
+    override suspend fun updateCourseName(
+        periodId: String,
+        newName: String,
+    ): Result<Unit> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun deletePeriod(periodId: String): Result<Unit> {

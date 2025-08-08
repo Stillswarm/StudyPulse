@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.WriteBatch
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.common.util.toTimestamp
@@ -106,6 +107,24 @@ class FirebasePeriodRepositoryImpl(
         }
     }
 
+    override suspend fun updateCourseName(
+        periodId: String,
+        newName: String,
+    ) = runCatching { 
+        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+        val semester = semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching Unit
+
+        val periodRef = db.collection("users")
+            .document(userId)
+            .collection("semesters")
+            .document(semester.id)
+            .collection("periods")
+            .document(periodId)
+        
+        periodRef.update("courseName", newName).await()
+        Unit
+    }
+
     override suspend fun updatePeriod(period: Period) =
         runCatching {
             val userId =
@@ -184,7 +203,7 @@ class FirebasePeriodRepositoryImpl(
                 .map { it.toDomain() }
         }
 
-    override suspend fun getAllPeriodsForCourseFilteredByDayOfWeek(
+    override suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(
         courseId: String,
         day: Day,
     ) =
@@ -199,6 +218,7 @@ class FirebasePeriodRepositoryImpl(
                     .collection("periods")
                     .whereEqualTo("courseId", courseId)
                     .whereEqualTo("day", day.name)
+                    .orderBy("startTime", Query.Direction.ASCENDING)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
                             close(error)
@@ -216,7 +236,7 @@ class FirebasePeriodRepositoryImpl(
             }
         }
 
-    override suspend fun getAllPeriodsFilteredByDayOfWeek(day: Day) =
+    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: Day) =
         runCatching {
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
@@ -227,6 +247,7 @@ class FirebasePeriodRepositoryImpl(
                     .document(getActiveSemId())
                     .collection("periods")
                     .whereEqualTo("day", day.name)
+                    .orderBy("startTime", Query.Direction.ASCENDING)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) return@addSnapshotListener
 

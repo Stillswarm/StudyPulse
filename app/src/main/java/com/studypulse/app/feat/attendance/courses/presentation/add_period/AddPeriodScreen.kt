@@ -235,6 +235,10 @@ fun AddPeriodScreen(
                 },
                 modifier = Modifier.align(Alignment.Center),
                 containerColor = LightGray,
+//                onMinuteChange = {
+//                    vm.hideStartTimePicker()
+//                    vm.showEndTimePicker()
+//                }
             )
         }
 

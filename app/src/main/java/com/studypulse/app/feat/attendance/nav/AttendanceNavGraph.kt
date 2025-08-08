@@ -31,8 +31,8 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
             onAddNewCourse = {
                 navController.navigate(Route.AddCourseRoute(it))
             },
-            onCourseTimetable = {
-                navController.navigate(Route.ScheduleRoute(it))
+            onCourseTimetable = { cId, cCode ->
+                navController.navigate(Route.ScheduleRoute(cId, cCode))
             }
         )
     }
@@ -47,9 +47,9 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     composable<Route.CourseDetailRoute> {
         CourseDetailsScreen(
             onNavigateBack = { navController.navigateUp() },
-            onNavigateToSchedule = {
+            onNavigateToSchedule = { cId, cCode ->
                 navController.navigate(
-                    Route.ScheduleRoute(it)
+                    Route.ScheduleRoute(cId, cCode)
                 )
             }
         )
@@ -57,7 +57,7 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
 
     composable<Route.ScheduleRoute> {
         ScheduleScreen(
-            onNavigateToFullSchedule = { navController.navigate(Route.ScheduleRoute(null)) },
+            onNavigateToFullSchedule = { navController.navigate(Route.ScheduleRoute(null, null)) },
             navigateToAddPeriod = { courseId, periodId, day ->
                 navController.navigate(Route.AddPeriodRoute(courseId, periodId, day)) },
             onNavigateBack = { navController.navigateUp() }

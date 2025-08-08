@@ -123,9 +123,9 @@ class ProfileScreenViewModel(
     fun signOut(navigateToLogin: () -> Unit) {
         viewModelScope.launch {
             // This clears the FirebaseAuth session
+            navigateToLogin()
             auth.signOut()
             ds.clearSemesterId()
-            navigateToLogin()
             SnackbarController.sendEvent(SnackbarEvent("Signed out successfully. See you soon!"))
             // If you're using Google One‑Tap or similar, also clear that here:
             // credentialManager.cancel()  // or your own clear logic todo

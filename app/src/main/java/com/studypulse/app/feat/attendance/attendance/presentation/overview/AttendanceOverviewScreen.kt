@@ -54,104 +54,111 @@ fun AttendanceOverviewScreen(
     modifier: Modifier = Modifier,
     vm: AttendanceOverviewScreenViewModel = koinViewModel(),
 ) {
+    val state by vm.state.collectAsStateWithLifecycle()
     val courseWiseSummary by vm.courseWiseSummaryFlow.collectAsStateWithLifecycle()
     val semesterSummary by vm.semesterSummaryFlow.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier.fillMaxSize()) {
-        val scope = rememberCoroutineScope()
-        AppTopBar(
-            backgroundColor = Gold,
-            title = "Attendance Overview",
-            navigationIcon = R.drawable.logo_pulse,
-            onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
-            actionIcon = R.drawable.ic_profile,
-            onActionClick = onNavigateToProfile,
-            foregroundGradient = Brush.linearGradient(
-                colorStops = arrayOf(
-                    Pair(0f, Purple),
-                    Pair(59f, Color.Black)
-                )
-            ),
-        )
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            val scope = rememberCoroutineScope()
+            AppTopBar(
+                backgroundColor = Gold,
+                title = "Attendance Overview",
+                navigationIcon = R.drawable.logo_pulse,
+                onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
+                actionIcon = R.drawable.ic_profile,
+                onActionClick = onNavigateToProfile,
+                foregroundGradient = Brush.linearGradient(
+                    colorStops = arrayOf(
+                        Pair(0f, Purple),
+                        Pair(59f, Color.Black)
+                    )
+                ),
+            )
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp)
-        ) {
-            semesterSummary?.let { s ->
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
-                                .padding(8.dp)
-                                .weight(1f)
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                semesterSummary?.let { s ->
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Column {
-                                Text(
-                                    text = "${s.minAttendance}%",
-                                    fontSize = 36.sp,
-                                    fontWeight = Bold,
-                                    modifier = Modifier.padding(16.dp),
-                                    lineHeight = 40.sp,
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
+                                    .padding(8.dp)
+                                    .weight(1f)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "${s.minAttendance}%",
+                                        fontSize = 36.sp,
+                                        fontWeight = Bold,
+                                        modifier = Modifier.padding(16.dp),
+                                        lineHeight = 40.sp,
+                                    )
 
-                                Text(
-                                    text = "Required Attendance",
-                                    lineHeight = 20.sp,
-                                    fontSize = 14.sp,
-                                    color = DarkGray,
-                                    minLines = 2,
-                                )
+                                    Text(
+                                        text = "Required Attendance",
+                                        lineHeight = 20.sp,
+                                        fontSize = 14.sp,
+                                        color = DarkGray,
+                                        minLines = 2,
+                                    )
+                                }
                             }
-                        }
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
-                                .padding(8.dp)
-                                .weight(1f)
-                        ) {
-                            Column {
-                                Text(
-                                    text = "${MathUtils.calculatePercentage(
-                                        s.presentRecords,
-                                        s.totalClasses
-                                    )}%",
-                                    fontSize = 36.sp,
-                                    fontWeight = Bold,
-                                    modifier = Modifier.padding(16.dp),
-                                    lineHeight = 40.sp,
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Gold.copy(0.5f), RoundedCornerShape(12.dp))
+                                    .padding(8.dp)
+                                    .weight(1f)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "${MathUtils.calculatePercentage(
+                                            s.presentRecords,
+                                            s.totalClasses
+                                        )}%",
+                                        fontSize = 36.sp,
+                                        fontWeight = Bold,
+                                        modifier = Modifier.padding(16.dp),
+                                        lineHeight = 40.sp,
+                                    )
 
-                                Text(
-                                    text = "Current Attendance", lineHeight = 20.sp,
-                                    fontSize = 14.sp,
-                                    color = DarkGray,
-                                    minLines = 2,
-                                )
+                                    Text(
+                                        text = "Current Attendance", lineHeight = 20.sp,
+                                        fontSize = 14.sp,
+                                        color = DarkGray,
+                                        minLines = 2,
+                                    )
+                                }
                             }
-                        }
 
+                        }
+                    }
+
+                    items(courseWiseSummary.entries.toList()) { mp ->
+                        val c = mp.key
+                        val cs = mp.value
+                        AttendanceOverviewItem(c, cs, onDetails)
                     }
                 }
 
-                items(courseWiseSummary.entries.toList()) { mp ->
-                    val c = mp.key
-                    val cs = mp.value
-                    AttendanceOverviewItem(c, cs, onDetails)
-                }
+
             }
+        }
 
-
+        if (state.loading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = DarkGray)
         }
     }
 }

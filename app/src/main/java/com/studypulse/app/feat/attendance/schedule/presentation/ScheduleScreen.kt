@@ -74,7 +74,7 @@ fun ScheduleScreen(
             AppTopBar(
                 backgroundColor = GreenSecondary,
                 foregroundGradient = null,
-                title = "Class Timetable",
+                title = if (state.courseCode == null) "Class Timetable" else state.courseCode!!,
                 navigationIcon = R.drawable.ic_arrow_left,
                 onNavigationClick = { onNavigateBack },
                 actionIcon = null,

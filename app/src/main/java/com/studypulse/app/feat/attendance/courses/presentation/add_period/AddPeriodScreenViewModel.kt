@@ -154,7 +154,7 @@ class AddPeriodScreenViewModel(
                 semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
             )
             val collision = periodRepository
-                .getAllPeriodsFilteredByDayOfWeek(_state.value.selectedDay)
+                .getAllPeriodsByDayInStartTimeOrder(_state.value.selectedDay)
                 .getOrNull()?.first()?.firstOrNull { period -> period.overlapsWith(periodToAdd) }
 
             if (collision != null) {

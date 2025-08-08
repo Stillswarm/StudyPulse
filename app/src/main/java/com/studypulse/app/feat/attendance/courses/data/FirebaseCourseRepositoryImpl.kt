@@ -117,6 +117,9 @@ class FirebaseCourseRepositoryImpl(
 
     override suspend fun upsertCourse(course: Course): Result<Unit> =
         runCatching {
+            if (course.id.isNotEmpty()) {
+                updateCourse(course)
+            }
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val courseData = course.copy(
@@ -152,14 +155,44 @@ class FirebaseCourseRepositoryImpl(
             val courseId = course.id
             val semesterId = ds.semesterIdFlow.first()
 
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
-                .document(semesterId)
-                .collection("courses")
-                .document(courseId)
-                .set(course.toDto())
-                .await()
+            // if course name has changed, update course name in course summary document AND
+            // in all periods belonging to this course
+            coroutineScope {
+                val putCourseSummaryJob = launch {
+                    courseSummaryRepository.put(courseId, course.minAttendance, course.courseName).getOrThrow()
+                }
+                val periodsDeferred = async {
+                    val periodQuery = db.collection("users")
+                        .document(userId)
+                        .collection("semesters")
+                        .document(semesterId)
+                        .collection("periods")
+                        .whereEqualTo("courseId", courseId)
+                        .get()
+                        .await()
+                    periodQuery.documents
+                }
+                val updatePeriodsJob = launch {
+                    val periods = periodsDeferred.await()
+                    for (periodDoc in periods) {
+                        periodRepository.updateCourseName(periodDoc.id, course.courseName).getOrThrow()
+                    }
+                }
+                val updateCourseJob = launch {
+                    db.collection("users")
+                        .document(userId)
+                        .collection("semesters")
+                        .document(semesterId)
+                        .collection("courses")
+                        .document(courseId)
+                        .set(course.toDto())
+                        .await()
+                }
+                // await all
+                putCourseSummaryJob.join()
+                updatePeriodsJob.join()
+                updateCourseJob.join()
+            }
         }
 
     override suspend fun deleteCourse(id: String): Result<Unit> =
