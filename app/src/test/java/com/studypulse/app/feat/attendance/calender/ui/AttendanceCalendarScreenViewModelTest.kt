@@ -50,7 +50,7 @@ class AttendanceCalendarScreenViewModelTest {
     fun initVm(
         periodRepository: PeriodRepository = mockk() {
             coEvery {
-                getAllPeriodsFilteredByDayOfWeek(any())
+                getAllPeriodsByDayInStartTimeOrder(any())
             } returns Result.success(flow { emit(listOf(mockPeriod)) })
         }
     ) {
@@ -120,7 +120,7 @@ class AttendanceCalendarScreenViewModelTest {
 
             initVm(
                 periodRepository = mockk {
-                    coEvery { getAllPeriodsFilteredByDayOfWeek(any()) } returns
+                    coEvery { getAllPeriodsByDayInStartTimeOrder(any()) } returns
                             Result.failure(Exception())
                 }
             )
