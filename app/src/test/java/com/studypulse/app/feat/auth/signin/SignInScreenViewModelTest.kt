@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.auth.signin
 
-import android.app.Application
 import app.cash.turbine.test
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
@@ -27,7 +26,10 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class SignInScreenViewModelTest {
 
@@ -37,11 +39,11 @@ class SignInScreenViewModelTest {
 
     // dependencies and VM
     private lateinit var userRepository: UserRepository
-    private lateinit var application: Application
+    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var resourceProvider: ResourceProvider
     private lateinit var vm: SignInScreenViewModel
 
     // other required dependencies in method bodies
-    private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var snackbarController: SnackbarController
 
     // required mock data
@@ -56,10 +58,15 @@ class SignInScreenViewModelTest {
         Dispatchers.setMain(testDispatcher)
 
         userRepository = mockk(relaxed = true)
-        application = mockk()
-        vm = SignInScreenViewModel(userRepository, application)
-
         firebaseAuth = mockk()
+        resourceProvider = mockk {
+            every { getString(any()) } returns "123"
+        }
+        mockkStatic(Firebase::class)
+        mockkStatic("com.google.firebase.auth.ktx.AuthKt")
+        every { Firebase.auth } returns firebaseAuth
+        vm = SignInScreenViewModel(userRepository, firebaseAuth, resourceProvider)
+
         snackbarController = mockk()
     }
 
@@ -189,7 +196,7 @@ class SignInScreenViewModelTest {
             }
 
             mockkStatic("com.google.firebase.auth.AuthKt")
-            every { com.google.firebase.ktx.Firebase.auth } returns firebaseAuth
+            every { Firebase.auth } returns firebaseAuth
             every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns authTask
 
             vm.updateEmail(validEmail)

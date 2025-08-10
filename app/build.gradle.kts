@@ -32,7 +32,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -48,9 +50,11 @@ android {
                 "ALGOLIA_SEARCH_KEY",
                 "\"${secrets.getProperty("algolia.searchKey")}\""
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
 
         debug {
+            isDebuggable = true
             buildConfigField(
                 "String",
                 "ALGOLIA_APP_ID",
@@ -159,6 +163,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
+
+    // Roboelectric (for android-style unit test)
+    testImplementation("org.robolectric:robolectric:4.15.1")
 
     // MockK
     testImplementation("io.mockk:mockk:1.14.5")                             // mocking

@@ -1,8 +1,8 @@
 package com.studypulse.app.feat.auth.signin
 
-import android.app.Application
 import android.content.Context
 import android.util.Patterns
+import androidx.annotation.StringRes
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -11,12 +11,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.studypulse.app.R
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
@@ -26,12 +24,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+interface ResourceProvider {
+    fun getString(@StringRes resId: Int): String
+}
+
+// Implementation
+class AndroidResourceProvider @Inject constructor(
+    private val context: Context
+) : ResourceProvider {
+    override fun getString(resId: Int): String = context.getString(resId)
+}
 
 class SignInScreenViewModel(
     private val userRepository: UserRepository,
-    app: Application,
+    private val auth: FirebaseAuth,
+    resourceProvider: ResourceProvider,  // easier to mockk than the earlier application
 ) : ViewModel() {
-    private val auth = Firebase.auth
     private val initialData = SignInScreenState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
@@ -39,7 +49,7 @@ class SignInScreenViewModel(
     val credentialRequest = GetCredentialRequest.Builder()
         .addCredentialOption(
             GetGoogleIdOption.Builder()
-                .setServerClientId(app.getString(R.string.default_web_client_id))
+                .setServerClientId(resourceProvider.getString(R.string.default_web_client_id))
                 .setFilterByAuthorizedAccounts(false)
                 .build()
         )
@@ -190,13 +200,12 @@ class SignInScreenViewModel(
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _state.update { it.copy(error = "success ${auth.currentUser?.displayName}") }
                     auth.currentUser?.let { user ->
                         viewModelScope.launch {
                             userRepository.addUser(
                                 User(
                                     email = user.email ?: "",
-                                    id = com.google.firebase.Firebase.auth.currentUser!!.uid,
+                                    id = auth.currentUser!!.uid,
                                     name = user.displayName ?: "",
                                 )
                             )
