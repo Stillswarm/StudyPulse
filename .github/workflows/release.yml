@@ -86,18 +86,6 @@ jobs:
       - name: List downloaded files (debug)
         run: ls -la artifact || true
 
-      - name: Find AAB file
-        id: find_aab
-        run: |
-          set -e
-          aab=$(ls artifact/*.aab 2>/dev/null | head -n1 || true)
-          if [ -z "$aab" ]; then
-            echo "No AAB found in artifact/ — failing."
-            exit 1
-          fi
-          echo "Found AAB: $aab"
-          echo "aab_file=$aab" >> "$GITHUB_OUTPUT"
-
       - name: Sign Release
         uses: r0adkll/sign-android-release@v1
         with:
@@ -110,10 +98,9 @@ jobs:
       - name: Deploy bundle to Google Play
         uses: r0adkll/upload-google-play@v1.1.3
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_AUTH_JSON }}
+          serviceAccountJson: ${{ secrets.PLAY_AUTH_JSON }} # <-- Base64-encoded secret
           packageName: com.studypulse.app
-          # point to the actual located file
-          releaseFiles: ${{ steps.find_aab.outputs.aab_file }}
+          releaseFiles: artifact/app-release.aab
           track: internal
           status: 'completed'
-#          whatsNewDirectory: whatsnew/
+          whatsNewDirectory: whatsNew/
