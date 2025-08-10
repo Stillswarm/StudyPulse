@@ -16,16 +16,6 @@ data class Period(
     val createdAt: Long = System.currentTimeMillis()
 ) : Parcelable
 
-enum class Day {
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    SUNDAY
-}
-
 fun Period.overlapsWith(other: Period): Boolean {
     // only compare periods on the same day
     if (this.day != other.day) return false
