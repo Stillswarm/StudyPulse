@@ -1,7 +1,9 @@
 package com.studypulse.app.feat.attendance.courses.domain.model
 
+import androidx.annotation.Keep
 import java.time.LocalTime
 
+@Keep
 data class PeriodDto(
     val id: String? = null,
     val courseId: String? = null,

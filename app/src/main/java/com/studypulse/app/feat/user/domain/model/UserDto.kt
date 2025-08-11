@@ -1,5 +1,8 @@
 package com.studypulse.app.feat.user.domain.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class UserDto(
     val id: String? = null,
     val email: String? = null,
@@ -7,6 +10,7 @@ data class UserDto(
     val institution: String? = null,
 )
 
+@Keep
 fun UserDto.toDomain() =
     User(
         id = id ?: "",
@@ -15,6 +19,7 @@ fun UserDto.toDomain() =
         institution = institution
     )
 
+@Keep
 fun User.toDto() =
     UserDto(
         id = id,

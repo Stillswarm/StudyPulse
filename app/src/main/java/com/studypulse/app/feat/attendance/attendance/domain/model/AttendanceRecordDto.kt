@@ -1,10 +1,12 @@
 package com.studypulse.app.feat.attendance.attendance.domain.model
 
+import androidx.annotation.Keep
 import com.google.firebase.Timestamp
 import com.studypulse.app.common.util.toLocalDate
 import com.studypulse.app.common.util.toTimestamp
 import java.time.LocalDate
 
+@Keep
 data class AttendanceRecordDto(
     val id: String = "",
     val userId: String? = null,

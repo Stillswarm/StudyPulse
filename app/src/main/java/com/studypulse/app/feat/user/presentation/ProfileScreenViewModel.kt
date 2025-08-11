@@ -85,8 +85,8 @@ class ProfileScreenViewModel(
                 it.copy(editingName = false, isLoading = true)
             }
             userRepository.updateName(newName = _state.value.currentName!!)
-            fetchUser()
-            _state.update { it.copy(isLoading = false) }
+            val user = fetchUser()
+            _state.update { it.copy(user = user, isLoading = false) }
         }
     }
 
@@ -106,8 +106,8 @@ class ProfileScreenViewModel(
                 it.copy(editingInstitution = false, isLoading = true)
             }
             userRepository.updateInstitution(newInstitution = _state.value.currentInstitution!!)
-            fetchInitialData()
-            _state.update { it.copy(isLoading = false) }
+            val user = fetchUser()
+            _state.update { it.copy(user = user, isLoading = false) }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.user.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -26,6 +27,8 @@ class FirebaseUserRepositoryImpl(
                 .await()
                 .toObject<UserDto>()
                 ?.toDomain()
+        }.onFailure {
+            Log.d("tag", "fetchCurrentUser: ${it.message}")
         }
 
     override suspend fun addUser(user: User) = try {

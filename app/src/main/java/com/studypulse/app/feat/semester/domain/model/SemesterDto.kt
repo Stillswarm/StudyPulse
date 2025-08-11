@@ -1,10 +1,12 @@
 package com.studypulse.app.feat.semester.domain.model
 
+import androidx.annotation.Keep
 import com.google.firebase.Timestamp
 import com.studypulse.app.common.util.toLocalDate
 import com.studypulse.app.common.util.toTimestamp
 import java.time.LocalDate
 
+@Keep
 data class SemesterDto(
     val id: String? = null,
     val name: String? = null,

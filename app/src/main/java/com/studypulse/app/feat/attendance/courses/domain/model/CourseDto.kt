@@ -1,5 +1,8 @@
 package com.studypulse.app.feat.attendance.courses.domain.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class CourseDto(
     val id: String? = null,
     val courseName: String? = null,

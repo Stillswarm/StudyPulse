@@ -85,7 +85,9 @@ fun ProfileScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
-        if (!state.isLoading && state.user == null) {
+        if (state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (state.user == null) {
             Text(
                 text = "Unable to fetch profile data. Please try again later.",
                 fontSize = 16.sp,
@@ -318,10 +320,6 @@ fun ProfileScreen(
                             }
                         }
                     }
-                }
-
-                if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
             }
         }

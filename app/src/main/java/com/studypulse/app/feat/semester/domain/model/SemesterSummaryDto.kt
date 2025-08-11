@@ -1,5 +1,8 @@
 package com.studypulse.app.feat.semester.domain.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class SemesterSummaryDto(
     val id: String = "",
     val semesterId: String = "",
