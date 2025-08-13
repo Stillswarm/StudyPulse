@@ -1,12 +1,19 @@
 package com.studypulse.app.feat.auth.signin
 
+import android.Manifest.permission.POST_NOTIFICATIONS
+import android.app.Activity
+import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import android.util.Patterns
 import androidx.annotation.StringRes
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -24,14 +31,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 interface ResourceProvider {
     fun getString(@StringRes resId: Int): String
 }
 
 // Implementation
-class AndroidResourceProvider @Inject constructor(
+class AndroidResourceProvider(
     private val context: Context
 ) : ResourceProvider {
     override fun getString(resId: Int): String = context.getString(resId)
@@ -40,6 +46,7 @@ class AndroidResourceProvider @Inject constructor(
 class SignInScreenViewModel(
     private val userRepository: UserRepository,
     private val auth: FirebaseAuth,
+    private  val app: Application,
     resourceProvider: ResourceProvider,  // easier to mockk than the earlier application
 ) : ViewModel() {
     private val initialData = SignInScreenState()
@@ -49,7 +56,7 @@ class SignInScreenViewModel(
     val credentialRequest = GetCredentialRequest.Builder()
         .addCredentialOption(
             GetGoogleIdOption.Builder()
-                .setServerClientId(resourceProvider.getString(R.string.default_web_client_id))
+                .setServerClientId(resourceProvider.getString(R.string.oauth_web_client_id))
                 .setFilterByAuthorizedAccounts(false)
                 .build()
         )
@@ -61,6 +68,7 @@ class SignInScreenViewModel(
         const val EMPTY_EMAIL_ERROR = "Email cannot be empty"
         const val EMPTY_PASSWORD_ERROR = "Password cannot be empty"
         const val INVALID_EMAIL_ERROR = "Please enter a valid email"
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
     }
 
     fun updateEmail(new: String) {
@@ -86,7 +94,7 @@ class SignInScreenViewModel(
         }
     }
 
-    fun signIn() {
+    fun signIn(activityContext: Activity?) {
         if (!credentialsOk()) return
         viewModelScope.launch {
             auth.signInWithEmailAndPassword(_state.value.email.trim(), _state.value.password)
@@ -95,6 +103,20 @@ class SignInScreenViewModel(
                         val exception = task.exception
                         _state.update {
                             it.copy(error = exception?.message)
+                        }
+                    } else {
+                        // check for notification permission
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(
+                                app,
+                                POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            ActivityCompat.requestPermissions(
+                                activityContext!!,
+                                arrayOf(POST_NOTIFICATIONS),
+                                REQUEST_CODE_POST_NOTIFICATIONS
+                            )
                         }
                     }
                 }
@@ -177,7 +199,7 @@ class SignInScreenViewModel(
         }
     }
 
-    fun handleGoogleSignIn(context: Context) {
+    fun handleGoogleSignIn(activityContext: Activity?, context: Context) {
         viewModelScope.launch {
             try {
                 val response =
@@ -187,7 +209,22 @@ class SignInScreenViewModel(
                 val googleToken = GoogleIdTokenCredential.createFrom(custom.data).idToken
                 // ➋ Now hand the token off to Firebase
                 signUpWithGoogle(googleToken)
-            } catch (e: GetCredentialException) {
+
+                // check for notification permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ContextCompat.checkSelfPermission(
+                        app,
+                        POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        activityContext!!,
+                        arrayOf(POST_NOTIFICATIONS),
+                        REQUEST_CODE_POST_NOTIFICATIONS
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("tag", "Error: ${e.message}")
                 _state.update { it.copy(error = e.localizedMessage ?: "Unknown error") }
             }
         }

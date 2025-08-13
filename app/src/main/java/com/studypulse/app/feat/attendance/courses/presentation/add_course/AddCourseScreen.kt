@@ -210,6 +210,7 @@ fun AddCourseScreen(
                             semesterList = state.allSemesters,
                             onDismiss = { scope.launch { semSheetState.hide() } },
                             onSemesterClick = {
+                                scope.launch { semSheetState.hide() }
                                 vm.updateCurrentSemester(it)
                             },
                             selectedSemesterId = state.activeSemester?.id ?: "",

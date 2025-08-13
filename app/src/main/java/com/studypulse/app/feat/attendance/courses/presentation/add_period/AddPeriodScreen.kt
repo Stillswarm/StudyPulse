@@ -48,6 +48,7 @@ import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.GreenDark
 import com.studypulse.app.ui.theme.GreenLight
+import com.studypulse.app.ui.theme.GreenNormal
 import com.studypulse.app.ui.theme.GreenSecondary
 import com.studypulse.app.ui.theme.LightGray
 import org.koin.androidx.compose.koinViewModel
@@ -148,7 +149,7 @@ fun AddPeriodScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Start Time (24-hr Clock)",
+                        text = "Start Time (24-hr format)",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -175,7 +176,7 @@ fun AddPeriodScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "End Time (24-hr Clock)",
+                        text = "End Time (24-hr format)",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -224,7 +225,7 @@ fun AddPeriodScreen(
         val startTimePickerState = rememberTimePickerState(
             initialHour = state.startTimeHour,
             initialMinute = state.startTimeMinute,
-            is24Hour = true
+            is24Hour = false
         )
         if (state.showStartTimePicker) {
             TimeInputDialog(
@@ -235,6 +236,7 @@ fun AddPeriodScreen(
                 },
                 modifier = Modifier.align(Alignment.Center),
                 containerColor = LightGray,
+                primaryColor = GreenLight
 //                onMinuteChange = {
 //                    vm.hideStartTimePicker()
 //                    vm.showEndTimePicker()
@@ -245,7 +247,7 @@ fun AddPeriodScreen(
         val endTimePickerState = rememberTimePickerState(
             initialHour = state.endTimeHour,
             initialMinute = state.endTimeMinute,
-            is24Hour = true
+            is24Hour = false
         )
         if (state.showEndTimePicker) {
             TimeInputDialog(
@@ -255,7 +257,8 @@ fun AddPeriodScreen(
                     vm.onEndTimeChange(h, m)
                 },
                 modifier = Modifier.align(Alignment.Center),
-                containerColor = LightGray
+                containerColor = LightGray,
+                primaryColor = GreenLight
             )
         }
         if (state.showConfirmationPopup) {

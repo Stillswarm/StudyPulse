@@ -1,4 +1,6 @@
 
+import org.gradle.kotlin.dsl.androidTest
+import org.gradle.kotlin.dsl.test
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -24,8 +26,8 @@ android {
         applicationId = "com.studypulse.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -184,7 +186,13 @@ dependencies {
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 
     // Espresso
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.7.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+
+    // UI Automator
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+
 
     // --- Koin test support ---
     testImplementation("io.insert-koin:koin-test:4.1.0")

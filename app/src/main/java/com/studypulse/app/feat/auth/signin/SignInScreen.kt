@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.auth.signin
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -71,6 +72,7 @@ fun SignInScreen(
         skipPartiallyExpanded = true,
     )
     val scope = rememberCoroutineScope()
+    val activity = LocalActivity.current
 
     LaunchedEffect(state.emailSent) {
         if (state.emailSent) {
@@ -173,7 +175,7 @@ fun SignInScreen(
         }
 
         Button(
-            onClick = { vm.signIn() },
+            onClick = { vm.signIn(activity) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
@@ -201,7 +203,7 @@ fun SignInScreen(
                     RoundedCornerShape(8.dp)
                 )
                 .noRippleClickable {
-                    vm.handleGoogleSignIn(context)
+                    vm.handleGoogleSignIn(activity, context)
                 }
         ) {
             Row(

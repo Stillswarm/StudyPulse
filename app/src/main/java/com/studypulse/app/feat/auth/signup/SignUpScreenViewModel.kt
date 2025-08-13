@@ -47,7 +47,7 @@ class SignUpScreenViewModel(
     val credentialRequest = GetCredentialRequest.Builder()
         .addCredentialOption(
             GetGoogleIdOption.Builder()
-                .setServerClientId(app.getString(R.string.default_web_client_id))
+                .setServerClientId(app.getString(R.string.oauth_web_client_id))
                 .setFilterByAuthorizedAccounts(false)
                 .build()
         )

@@ -309,10 +309,13 @@ fun AttendanceScreen(
             sheetState = semesterSheetState,
             semesterList = state.semesterList,
             selectedSemesterId = state.activeSemester?.id ?: "",
-            onSemesterClick = vm::onChangeActiveSemester,
+            onSemesterClick = {
+                vm.onChangeActiveSemester(it)
+                scope.launch { semesterSheetState.hide() }
+            },
             onAddSemester = onNavigateToAddSemester,
             onDismiss = { scope.launch { semesterSheetState.hide() } },
-            buttonColor = Gold
+            buttonColor = Gold,
         )
     }
 }

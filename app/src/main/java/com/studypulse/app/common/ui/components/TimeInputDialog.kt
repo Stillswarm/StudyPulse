@@ -19,6 +19,7 @@ fun TimeInputDialog(
     timePickerState: TimePickerState,
     onTimeChange: (Int, Int) -> Unit,
     containerColor: Color,
+    primaryColor: Color,
     modifier: Modifier = Modifier
 ) {
 
@@ -32,6 +33,9 @@ fun TimeInputDialog(
             colors = TimePickerDefaults.colors(
                 clockDialColor = containerColor,
                 selectorColor = containerColor,
+                periodSelectorSelectedContainerColor = primaryColor,
+                timeSelectorSelectedContainerColor = primaryColor,
+                timeSelectorUnselectedContainerColor = containerColor,
             ),
         )
     }

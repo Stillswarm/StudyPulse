@@ -282,7 +282,6 @@ fun AddSemesterScreen(
                         value = state.minAttendance?.toString() ?: "",
                         onValueChange = { vm.updateMinAttendance(if (it.isEmpty()) null else it.toInt()) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("75", fontSize = 14.sp) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         shape = RoundedCornerShape(0.dp, 8.dp, 0.dp, 8.dp),
                         colors = TextFieldDefaults.colors(
