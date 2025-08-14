@@ -24,13 +24,6 @@ jobs:
           java-version: 21
           cache: 'gradle'
 
-      - name: Verify Java
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME"
-          ls -la "$JAVA_HOME" || true
-          java -version
-          which java
-
       - name: Install prerequisites
         run: sudo apt-get update && sudo apt-get install -y wget unzip
 
@@ -54,6 +47,10 @@ jobs:
       - name: Run unit tests
         run: ./gradlew clean testDebug
 
+      - name: Setup Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > keystore.jks
+
       - name: Version Bump
         uses: chkfung/android-version-actions@v1.2.3
         with:
@@ -62,6 +59,10 @@ jobs:
 
       - name: Assemble Release Bundle
         run: ./gradlew bundleRelease
+        env:
+          SIGNING_KEY_ALIAS: ${{ secrets.STUDY_PULSE_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.STUDY_PULSE_ALIAS_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
@@ -70,7 +71,7 @@ jobs:
           path: app/build/outputs/bundle/release/*.aab
 
   distribute:
-    name: Sign & Distribute to Google Play
+    name: Distribute to Google Play
     needs: test
     runs-on: ubuntu-latest
 
@@ -82,18 +83,6 @@ jobs:
         with:
           name: app-bundle
           path: artifact
-
-      - name: List downloaded files (debug)
-        run: ls -la artifact || true
-
-      - name: Sign Release
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: artifact
-          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          alias: ${{ secrets.STUDY_PULSE_ALIAS }}
-          keyPassword: ${{ secrets.STUDY_PULSE_ALIAS_PASSWORD }}
 
       - name: Deploy bundle to Google Play
         uses: r0adkll/upload-google-play@v1.1.3
