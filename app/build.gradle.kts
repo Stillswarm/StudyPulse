@@ -1,6 +1,4 @@
 
-import org.gradle.kotlin.dsl.androidTest
-import org.gradle.kotlin.dsl.test
 import java.io.FileInputStream
 import java.util.Properties
 
