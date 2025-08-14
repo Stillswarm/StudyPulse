@@ -70,7 +70,7 @@ jobs:
           path: app/build/outputs/bundle/release/*.aab
 
   distribute:
-    name: Distribute to Google Play
+    name: Sign & Distribute to Google Play
     needs: test
     runs-on: ubuntu-latest
 
@@ -85,6 +85,15 @@ jobs:
 
       - name: List downloaded files (debug)
         run: ls -la artifact || true
+
+      - name: Sign Release
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: artifact
+          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          alias: ${{ secrets.STUDY_PULSE_ALIAS }}
+          keyPassword: ${{ secrets.STUDY_PULSE_ALIAS_PASSWORD }}
 
       - name: Deploy bundle to Google Play
         uses: r0adkll/upload-google-play@v1.1.3
