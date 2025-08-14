@@ -90,6 +90,6 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_AUTH_JSON }}
           packageName: com.studypulse.app
           releaseFiles: artifact/app-release.aab
-          track: closed
+          track: alpha
           status: 'completed'
           whatsNewDirectory: whatsNew/
