@@ -38,9 +38,7 @@ class AttendanceOverviewScreenViewModel(
     init {
         viewModelScope.launch {
             combine(courseWiseSummaryFlow, semesterSummaryFlow) { c, s ->
-                if (c.isNotEmpty() && s != null) {
                     _state.update { it.copy(loading = false) }
-                }
             }.collect()
         }
     }

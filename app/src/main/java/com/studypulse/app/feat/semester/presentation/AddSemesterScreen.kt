@@ -3,6 +3,8 @@ package com.studypulse.app.feat.semester.presentation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -77,7 +80,17 @@ fun AddSemesterScreen(
     }
 
 
-    Box(modifier = modifier.fillMaxSize()) {
+    val focusManager = LocalFocusManager.current
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    focusManager.clearFocus()
+                }
+            )) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -280,6 +293,7 @@ fun AddSemesterScreen(
                     )
                     TextField(
                         value = state.minAttendance?.toString() ?: "",
+                        maxLines = 1,
                         onValueChange = { vm.updateMinAttendance(if (it.isEmpty()) null else it.toInt()) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

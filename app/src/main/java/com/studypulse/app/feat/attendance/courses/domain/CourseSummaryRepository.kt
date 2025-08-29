@@ -1,8 +1,11 @@
 package com.studypulse.app.feat.attendance.courses.domain
 
+import kotlinx.coroutines.flow.Flow
+
 interface CourseSummaryRepository {
     suspend fun put(courseId: String, minAttendance: Int, courseName: String): Result<Unit>
     suspend fun get(courseId: String): Result<CourseSummary>
+    suspend fun getFlow(courseId: String): Flow<CourseSummary?>
     suspend fun delete(courseId: String): Result<Unit>
     suspend fun incPresent(courseId: String, by: Long): Result<Unit>
     suspend fun decPresent(courseId: String, by: Long): Result<Unit>

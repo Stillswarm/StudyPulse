@@ -5,7 +5,7 @@ const functions = require('firebase-functions');
 initializeApp();
 
 exports.unmarkCron = onSchedule({
-  schedule: "5 18 * * *",
+  schedule: "0 0 * * *",
   timeZone: "Asia/Kolkata",
 }, async (event) => {
   const db = getFirestore();
@@ -82,13 +82,26 @@ exports.notifyFeedback = functions
   .firestore
   .document('feedback/{docId}')
   .onCreate(async (snap, ctx) => {
+    console.log('🔥 notifyFeedback triggered — docId =', ctx.params.docId);
+    const data = snap.data() || {};
+    console.log(' 🔍 Payload:', data);
 
-      console.log('🔥 notifyFeedback triggered — docId =', ctx.params.docId);
-      const data = snap.data();
-      console.log(' 🔍 Payload:', data);
-
-      const { userId, message, createdAt } = data;
+    const { userId, message, createdAt } = data;
     const timestamp = createdAt?.toDate?.().toISOString() || new Date().toISOString();
+
+    // Try to get an email from the document first
+    let userEmail = data.email || null;
+
+    // If we don't have an email in the document but do have a userId, try to resolve via Firebase Auth
+    if (!userEmail && userId) {
+      try {
+        const userRecord = await admin.auth().getUser(userId);
+        userEmail = userRecord.email || null;
+        console.log(`Resolved email for uid=${userId}:`, userEmail);
+      } catch (err) {
+        console.warn(`Could not fetch auth user for uid=${userId}:`, err?.message || err);
+      }
+    }
 
     // Access secrets via environment variables
     const smtpUser = process.env.SMTP_USER;
@@ -100,11 +113,12 @@ exports.notifyFeedback = functions
       auth: { user: smtpUser, pass: smtpPass }
     });
 
+    const identity = userEmail || userId || 'Unknown user';
     const mailOptions = {
       from: `"My App Feedback" <${smtpUser}>`,
       to: teamEmail,
-      subject: `📝 Feedback from ${userId}`,
-      text: `At ${timestamp}, user ${userId} wrote:\n\n${message}`
+      subject: `Feedback from ${identity}`,
+      text: `At ${timestamp}, ${identity} wrote:\n\n${message}`
     };
 
     try {

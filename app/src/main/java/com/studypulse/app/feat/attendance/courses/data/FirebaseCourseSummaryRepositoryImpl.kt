@@ -11,6 +11,8 @@ import com.studypulse.app.feat.attendance.courses.domain.model.CourseSummaryDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -54,10 +56,23 @@ class FirebaseCourseSummaryRepositoryImpl(
             ).await()
         }
 
+
+
     override suspend fun get(courseId: String): Result<CourseSummary> =
         runCatching {
             summaryDocument(courseId).get().await()
                 .toObject(CourseSummaryDto::class.java)!!.toDomain()
+        }
+
+    override suspend fun getFlow(courseId: String): Flow<CourseSummary?> =
+        callbackFlow {
+            summaryDocument(courseId).addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(null)
+                }
+                val summary = snapshot?.toObject(CourseSummaryDto::class.java)?.toDomain()
+                trySend(summary)
+            }
         }
 
     override suspend fun delete(courseId: String): Result<Unit> = runCatching {

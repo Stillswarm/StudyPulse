@@ -13,10 +13,12 @@ class FeedbackRepositoryImpl(
     override suspend fun send(message: String) =
         runCatching {
             val uid = auth.currentUser?.uid ?: "anonymous"
+            val email = db.collection("users").document(uid).get().await().get("email")?.toString()
             val payload = mapOf(
                 "userId" to uid,
                 "message" to message,
                 "createdAt" to FieldValue.serverTimestamp(),
+                "email" to email
             )
             db.collection("feedback")
                 .add(payload)
@@ -24,7 +26,6 @@ class FeedbackRepositoryImpl(
                     Result.failure<Unit>(e)
                 }
                 .await()
-
             Unit
         }
 }

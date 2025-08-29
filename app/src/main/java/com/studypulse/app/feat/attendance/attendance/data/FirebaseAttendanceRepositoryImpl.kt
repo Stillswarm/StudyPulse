@@ -64,7 +64,7 @@ class FirebaseAttendanceRepositoryImpl(
             }
         }
 
-        val updatedRecord = attendanceRecord.copy(id = docId)
+        val updatedRecord = attendanceRecord.copy(id = docId, processed = true)
         when (updatedRecord.status) {
             AttendanceStatus.PRESENT -> {
                 semesterSummaryRepository.incPresent(1)
@@ -109,6 +109,7 @@ class FirebaseAttendanceRepositoryImpl(
         }
 
     override fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>> = callbackFlow {
+        TODO()  // incorrect, can't depend on createdAt, all records inserted together
         val listener = getAttendanceCollection()
             .whereEqualTo("date", date.toString())
             .orderBy("createdAt", Query.Direction.DESCENDING)

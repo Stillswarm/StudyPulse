@@ -109,6 +109,7 @@ fun LargeAppTopBar(
                 ) {
                     imageRes?.let {
                         Image(
+                            modifier = Modifier.size(140.dp),
                             painter = painterResource(id = imageRes),
                             contentDescription = null,
                         )

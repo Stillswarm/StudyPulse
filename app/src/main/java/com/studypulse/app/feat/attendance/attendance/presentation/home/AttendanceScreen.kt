@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -114,11 +115,13 @@ fun AttendanceScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .testTag("AttendanceScreen_MainColumn")) {
+                .testTag("AttendanceScreen_MainColumn")
+        ) {
             Spacer(
                 Modifier
                     .height(200.dp)
-                    .testTag("AttendanceScreen_TopSpacer")) // because top bar takes up 250.dp
+                    .testTag("AttendanceScreen_TopSpacer")
+            ) // because top bar takes up 250.dp
             if (state.isLoading) {
                 Box(
                     modifier = Modifier
@@ -126,7 +129,10 @@ fun AttendanceScreen(
                         .testTag("AttendanceScreen_LoadingContainer"),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Gold, modifier = Modifier.testTag("AttendanceScreen_LoadingIndicator"))
+                    CircularProgressIndicator(
+                        color = Gold,
+                        modifier = Modifier.testTag("AttendanceScreen_LoadingIndicator")
+                    )
                 }
             } else if (semId == "") {
                 Text(
@@ -190,7 +196,6 @@ fun AttendanceScreen(
                                 Column(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     modifier = Modifier
-                                        .padding(16.dp)
                                         .testTag("AttendanceScreen_StatsInnerColumn")
                                 ) {
                                     Row(
@@ -202,12 +207,17 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Classes Unmarked",
                                             value = state.unmarkedCount,
-                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Unmarked")
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .testTag("AttendanceScreen_Stat_Unmarked")
                                         )
+                                        Spacer(Modifier.width(12.dp))
                                         StatBox(
                                             title = "100% Attendance",
                                             value = state.fullAttendanceCount,
-                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Full")
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .testTag("AttendanceScreen_Stat_Full")
                                         )
                                     }
                                     Row(
@@ -219,12 +229,17 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Low Attendance",
                                             value = state.lowAttendanceCount,
-                                            modifier = Modifier.testTag("AttendanceScreen_Stat_LowAttendance")
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .testTag("AttendanceScreen_Stat_LowAttendance")
                                         )
+                                        Spacer(Modifier.width(12.dp))
                                         StatBox(
                                             title = "Overall Percentage",
                                             value = state.attendancePercentage,
-                                            modifier = Modifier.testTag("AttendanceScreen_Stat_Percentage")
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .testTag("AttendanceScreen_Stat_Percentage")
                                         )
                                     }
                                 }
@@ -301,6 +316,10 @@ fun AttendanceScreen(
                             modifier = Modifier.testTag("AttendanceScreen_AttendanceCalendarButton")
                         )
                     }
+
+                    item {
+                        Spacer(Modifier.height(24.dp))
+                    }
                 }
             }
         }
@@ -328,8 +347,6 @@ fun StatBox(
 ) {
     Box(
         modifier = modifier
-            .width(150.dp)
-            .height(80.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(WarmWhite)
             .border(2.dp, Gold, RoundedCornerShape(8.dp))

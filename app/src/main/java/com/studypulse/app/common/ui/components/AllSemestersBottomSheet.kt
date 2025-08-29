@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +66,7 @@ fun AllSemestersBottomSheet(
                 ) {
                     Text(
                         text = "+ Add New",
+                        color = if (buttonColor.luminance() < 0.5) Color.White else Color.Black,
                         fontSize = 14.sp,
                     )
                 }
