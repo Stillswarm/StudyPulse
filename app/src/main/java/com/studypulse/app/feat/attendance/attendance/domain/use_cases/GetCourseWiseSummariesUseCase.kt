@@ -1,5 +1,6 @@
 package com.studypulse.app.feat.attendance.attendance.domain.use_cases
 
+import android.util.Log
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
@@ -9,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -25,25 +27,26 @@ class GetCourseWiseSummariesUseCaseImpl(
     override fun invoke(): Flow<Map<Course, CourseSummary>> {
         return courseRepository.getAllCoursesFlow()
             .flatMapLatest { courses ->
-                if (courses.isEmpty()) {
-                    flowOf(emptyMap())
-                } else {
-                    val summaryFlows = courses.map { course ->
-                        courseSummaryRepository.getFlow(course.id)
-                            .map { summary -> course to summary }
-                    }
-
-                    combine(summaryFlows) { summaries ->
-                        val resultMap = mutableMapOf<Course, CourseSummary>()
-                        summaries.forEach { (course, summary) ->
-                            summary?.let {
-                                resultMap[course] = it
+                flow {
+                    if (courses.isEmpty()) {
+                        emit(emptyMap())
+                    } else {
+                        val map = mutableMapOf<Course, CourseSummary>()
+                        for (course in courses) {
+                            try {
+                                val result = courseSummaryRepository.get(course.id)
+                                result.getOrNull()?.let { summary ->
+                                    map[course] = summary
+                                }
+                            } catch (e: Exception) {
+                                Log.e("CourseSummaryFlow", "error fetching summary: ${e.message}")
                             }
                         }
-                        resultMap
+                        // Emit once after all fetches are done
+                        emit(map)
                     }
                 }
+                    .flowOn(Dispatchers.IO)
             }
-            .flowOn(Dispatchers.IO)
     }
 }

@@ -28,6 +28,7 @@ import org.koin.androidx.compose.koinViewModel
 fun NavGraphBuilder.attendanceGraph(navController: NavController) {
     composable<Route.CourseRoute> {
         CoursesScreen(
+            navigateBack = { navController.navigateUp() },
             onAddNewCourse = {
                 navController.navigate(Route.AddCourseRoute(it))
             },
@@ -81,22 +82,22 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
             onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
             onNavigateToCourseList = { navController.navigate(Route.CourseRoute) },
             onNavigateToAttendanceCalendar = { navController.navigate(Route.AttendanceCalendarRoute) },
-            onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceStatsSharedRoute) },
+            onNavigateToAttendanceOverview = { navController.navigate(Route.AttendanceOverviewRoute(it)) },
             onNavigateToAddSemester = { navController.navigate(Route.AddSemesterRoute) }
         )
     }
 
-    navigation<Route.AttendanceStatsSharedRoute>(
-        startDestination = Route.AttendanceOverviewRoute
-    ) {
+//    navigation<Route.AttendanceStatsSharedRoute>(
+//        startDestination = Route.AttendanceOverviewRoute()
+//    ) {
         composable<Route.AttendanceOverviewRoute> { backStackEntry ->
 
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry<Route.AttendanceStatsSharedRoute>()
-            }
-            val sharedViewModel: AttendanceStatsSharedViewModel =
-                koinViewModel(viewModelStoreOwner = parentEntry)
-            val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
+//            val parentEntry = remember(backStackEntry) {
+//                navController.getBackStackEntry<Route.AttendanceStatsSharedRoute>()
+//            }
+//            val sharedViewModel: AttendanceStatsSharedViewModel =
+//                koinViewModel(viewModelStoreOwner = parentEntry)
+//            val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
             AttendanceOverviewScreen(
                 onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
                 onDetails = { navController.navigate(Route.AttendanceDetailsRoute(it)) },
@@ -132,5 +133,5 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
                 )
             }
         }
-    }
+//    }
 }

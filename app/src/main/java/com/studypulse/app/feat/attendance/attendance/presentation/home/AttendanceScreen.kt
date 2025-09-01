@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +58,7 @@ import com.studypulse.app.common.ui.components.SemesterBottomSheetItem
 import com.studypulse.app.common.ui.modifier.gradientFill
 import com.studypulse.app.common.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
+import com.studypulse.app.nav.OverviewType
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.GreenSecondary
@@ -74,7 +74,7 @@ fun AttendanceScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToCourseList: () -> Unit,
     onNavigateToAttendanceCalendar: () -> Unit,
-    onNavigateToAttendanceOverview: () -> Unit,
+    onNavigateToAttendanceOverview: (String) -> Unit,
     modifier: Modifier = Modifier,
     vm: AttendanceScreenViewModel = koinViewModel(),
 ) {
@@ -207,6 +207,7 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Classes Unmarked",
                                             value = state.unmarkedCount,
+                                            onClick = { onNavigateToAttendanceCalendar() },
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .testTag("AttendanceScreen_Stat_Unmarked")
@@ -215,6 +216,7 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "100% Attendance",
                                             value = state.fullAttendanceCount,
+                                            onClick = { onNavigateToAttendanceOverview(OverviewType.FULL.name) },
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .testTag("AttendanceScreen_Stat_Full")
@@ -229,6 +231,7 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Low Attendance",
                                             value = state.lowAttendanceCount,
+                                            onClick = { onNavigateToAttendanceOverview(OverviewType.LOW.name) },
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .testTag("AttendanceScreen_Stat_LowAttendance")
@@ -237,6 +240,7 @@ fun AttendanceScreen(
                                         StatBox(
                                             title = "Overall Percentage",
                                             value = state.attendancePercentage,
+                                            onClick = { onNavigateToAttendanceOverview(OverviewType.ALL.name) },
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .testTag("AttendanceScreen_Stat_Percentage")
@@ -290,7 +294,7 @@ fun AttendanceScreen(
                             icon = R.drawable.ic_stats,
                             title = "Attendance Overview",
                             desc = "View detailed statistics",
-                            onClick = onNavigateToAttendanceOverview,
+                            onClick = { onNavigateToAttendanceOverview(OverviewType.ALL.name) },
                             modifier = Modifier.testTag("AttendanceScreen_AttendanceOverviewButton")
                         )
                     }
@@ -344,12 +348,14 @@ fun StatBox(
     title: String,
     value: Int,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(WarmWhite)
             .border(2.dp, Gold, RoundedCornerShape(8.dp))
+            .noRippleClickable { onClick() }
     ) {
         Text(
             text = value.toString(),

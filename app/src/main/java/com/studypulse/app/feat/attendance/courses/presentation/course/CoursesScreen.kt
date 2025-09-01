@@ -61,6 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoursesScreen(
+    navigateBack: () -> Unit,
     onAddNewCourse: (String?) -> Unit,
     onCourseTimetable: (String, String) -> Unit,
     modifier: Modifier = Modifier,
@@ -72,14 +73,12 @@ fun CoursesScreen(
     }
 
     val state = vm.state.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .testTag("CoursesScreen_Root"),
     ) {
-
         if (state.value.isLoading) {
             Box(
                 modifier = Modifier
@@ -161,14 +160,9 @@ fun CoursesScreen(
             backgroundColor = GreenSecondary,
             title = "Your Courses",
             titleColor = Color.White,
-            navigationIcon = R.drawable.logo_pulse,
-            onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
-            foregroundGradient = Brush.linearGradient(
-                colorStops = arrayOf(
-                    Pair(0f, Gold),
-                    Pair(25f, Color.White)
-                )
-            ),
+            navigationIcon = R.drawable.ic_arrow_left,
+            onNavigationClick = { navigateBack() },
+            foregroundGradient = null,
             actionIcon = null,
             onActionClick = null,
             modifier = Modifier

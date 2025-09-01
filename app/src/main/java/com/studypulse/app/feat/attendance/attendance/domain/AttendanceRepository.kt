@@ -18,5 +18,6 @@ interface AttendanceRepository {
         monthStartDate: LocalDate,
         endDate: LocalDate
     ): Result<Set<LocalDate>>
+    fun getUnmarkedRecordsFlow(upto: LocalDate): Flow<List<AttendanceRecord>>
     suspend fun deleteAttendance(attendanceRecordId: String): Result<Unit>
 }

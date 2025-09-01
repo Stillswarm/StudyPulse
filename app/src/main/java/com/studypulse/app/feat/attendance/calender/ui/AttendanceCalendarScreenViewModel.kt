@@ -9,15 +9,19 @@ import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecordDto
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDomain
+import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetAllUnmarkedPeriodsUseCase
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.KoinApplication.Companion.init
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -25,10 +29,19 @@ class AttendanceCalendarScreenViewModel(
     private val attendanceRepository: AttendanceRepository,
     private val semesterRepository: SemesterRepository,
     private val periodRepository: PeriodRepository,
+    getAllUnmarkedPeriodsUseCase: GetAllUnmarkedPeriodsUseCase,
     initialData: AttendanceCalendarScreenState = AttendanceCalendarScreenState()
 ) : ViewModel() {
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
+
+    // unmarked attendance that should be marked
+    val recordsToMark = getAllUnmarkedPeriodsUseCase.invoke()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         viewModelScope.launch {
@@ -106,7 +119,6 @@ class AttendanceCalendarScreenViewModel(
                     ).getOrNull() ?: emptySet()
                 )
             }
-
         }
     }
 
@@ -164,13 +176,12 @@ class AttendanceCalendarScreenViewModel(
         }
     }
 
-
     fun updateShowBottomSheet(show: Boolean) {
         _state.update { it.copy(showBottomSheet = show) }
     }
 
     fun markAttendance(periodWithAttendance: PeriodWithAttendance, status: AttendanceStatus) {
-        if (_state.value.selectedDate == null || _state.value.selectedDate!!.isAfter(LocalDate.now())) {
+        if (_state.value.selectedDate != null && _state.value.selectedDate!!.isAfter(LocalDate.now())) {
             _state.update { it.copy(showBottomSheet = false) }
             viewModelScope.launch {
                 SnackbarController.sendEvent(SnackbarEvent(message = "Can't mark attendance for future dates"))

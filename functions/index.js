@@ -5,7 +5,7 @@ const functions = require('firebase-functions');
 initializeApp();
 
 exports.unmarkCron = onSchedule({
-  schedule: "0 0 * * *",
+  schedule: "30 5 * * *",
   timeZone: "Asia/Kolkata",
 }, async (event) => {
   const db = getFirestore();
@@ -26,48 +26,70 @@ exports.unmarkCron = onSchedule({
     return null;
   }
 
-  // 2) Batch update: increment summary and mark each processed
-  const batch = db.batch();
+  // 2) Cache counts for each summary document
+  const semSummaryCounts = new Map(); // key: userId/semesterId, value: count
+  const courseSummaryCounts = new Map(); // key: userId/semesterId/courseId, value: count
 
+  // Count occurrences for each summary document
   for (const doc of snapshot.docs) {
     const data = doc.data();
     console.log(`Processing attendance for user: ${data.userId}, semester: ${data.semesterId}, course: ${data.courseId}`);
 
-    // a) Update semester summary - use set with merge to create if doesn't exist
+    // Count for semester summary
+    const semKey = `${data.userId}/${data.semesterId}`;
+    semSummaryCounts.set(semKey, (semSummaryCounts.get(semKey) || 0) + 1);
+
+    // Count for course summary
+    const courseKey = `${data.userId}/${data.semesterId}/${data.courseId}`;
+    courseSummaryCounts.set(courseKey, (courseSummaryCounts.get(courseKey) || 0) + 1);
+  }
+
+  // 3) Batch update: increment summaries once per unique document
+  const batch = db.batch();
+
+  // Update semester summaries
+  for (const [semKey, count] of semSummaryCounts) {
+    const [userId, semesterId] = semKey.split('/');
     const semSummaryRef = db
         .collection("users")
-        .doc(data.userId)
+        .doc(userId)
         .collection("semesters")
-        .doc(data.semesterId)
+        .doc(semesterId)
         .collection("sem_summaries")
         .doc("sem_summary");
 
     batch.set(semSummaryRef, {
-      unmarkedRecords: FieldValue.increment(1),
+      unmarkedRecords: FieldValue.increment(count),
     }, {merge: true});
+  }
 
-    // b) Update course summary - use set with merge to create if doesn't exist
+  // Update course summaries
+  for (const [courseKey, count] of courseSummaryCounts) {
+    const [userId, semesterId, courseId] = courseKey.split('/');
     const courseSummaryRef = db
         .collection("users")
-        .doc(data.userId)
+        .doc(userId)
         .collection("semesters")
-        .doc(data.semesterId)
+        .doc(semesterId)
         .collection("courses")
-        .doc(data.courseId)
+        .doc(courseId)
         .collection("course_summaries")
         .doc("course_summary");
 
     batch.set(courseSummaryRef, {
-      unmarkedRecords: FieldValue.increment(1),
+      unmarkedRecords: FieldValue.increment(count),
     }, {merge: true});
+  }
 
-    // c) Mark attendance doc processed
+  // Mark all attendance docs as processed
+  for (const doc of snapshot.docs) {
     batch.update(doc.ref, {processed: true});
   }
 
-  // 3) Commit the batch
+  // 4) Commit the batch
   await batch.commit();
   console.log(`Processed ${snapshot.size} attendance docs.`);
+  console.log(`Updated ${semSummaryCounts.size} semester summaries and ${courseSummaryCounts.size} course summaries.`);
   return null;
 });
 

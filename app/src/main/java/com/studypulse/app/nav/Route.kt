@@ -33,7 +33,7 @@ object Route {
     data object AttendanceRoute : NavigableRoute
 
     @Serializable
-    data object AttendanceOverviewRoute : NavigableRoute
+    data class AttendanceOverviewRoute(val overviewType: String = OverviewType.ALL.name) : NavigableRoute
 
     @Serializable
     data class AttendanceDetailsRoute(val courseId: String) : NavigableRoute
@@ -64,4 +64,10 @@ object Route {
 
 fun NavBackStackEntry.isRoute(routeClass: KClass<out NavigableRoute>): Boolean {
     return this.destination.route?.contains(routeClass.simpleName ?: "") == true
+}
+
+enum class OverviewType {
+    ALL,
+    LOW,
+    FULL
 }

@@ -88,7 +88,7 @@ fun ProfileScreen(
             .fillMaxSize()
     ) {
         if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = DarkGray)
         } else if (state.user == null) {
             Text(
                 text = "Unable to fetch profile data. Please try again later.",
@@ -98,9 +98,7 @@ fun ProfileScreen(
             )
         } else {
             state.user?.let { user ->
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
-                ) {
+                Column {
                     AppTopBar(
                         backgroundColor = DarkGray,
                         foregroundGradient = null,
@@ -112,215 +110,219 @@ fun ProfileScreen(
                         titleColor = WarmWhite
                     )
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp)
+                    Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState())
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(150.dp)
-                                .background(Color.White),
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .height(220.dp)
-                                .fillMaxWidth()
-                                .padding(start = 16.dp)
-                                .align(Alignment.BottomCenter),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
+                                .height(250.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(160.dp)
-                                    .clip(CircleShape)
-                                    .background(DarkGray),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = user.name?.substring(0..<1)?.uppercase()
-                                        ?: user.email.substring(0..<1).uppercase(),
-                                    fontSize = 96.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .gradientFill(
-                                            gradient = Brush.linearGradient(
-                                                colorStops = arrayOf(
-                                                    Pair(0f, Gold),
-                                                    Pair(100f, Color(0xFF716005))
-                                                )
-                                            )
-                                        )
-                                )
-                            }
-
-                            Image(
-                                painter = painterResource(R.drawable.logo_pulse),
-                                modifier = Modifier
-                                    .weight(1f),
-                                contentDescription = "logo",
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = user.email,
-                            fontSize = 16.sp,
-                            lineHeight = 24.sp,
-                            letterSpacing = 1.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Name",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            Icon(
-                                painter = painterResource(if (state.editingName) R.drawable.ic_check else R.drawable.ic_edit),
-                                contentDescription = "Edit",
-                                modifier = Modifier.noRippleClickable {
-                                    if (state.editingName) vm.saveName()
-                                    else vm.editName()
-                                },
-                            )
-                        }
-
-                        TextField(
-                            value = if (state.editingName) state.currentName!! else (user.name
-                                ?: ""),
-                            onValueChange = { vm.updateName(it) },
-                            enabled = state.editingName,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray,
-                                focusedContainerColor = Color.White,
-                                disabledContainerColor = LightGray
-                            )
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Institution",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            Icon(
-                                painter = painterResource(if (state.editingInstitution) R.drawable.ic_check else R.drawable.ic_edit),
-                                contentDescription = "Edit",
-                                modifier = Modifier.noRippleClickable {
-                                    if (state.editingInstitution) vm.saveInstitution()
-                                    else vm.editInstitution()
-                                },
-                            )
-                        }
-
-                        TextField(
-                            value = if (state.editingInstitution) state.currentInstitution!! else (user.institution
-                                ?: "--"),
-                            onValueChange = { vm.updateInstitution(it) },
-                            enabled = state.editingInstitution,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = LightGray,
-                                disabledContainerColor = LightGray,
-                                focusedContainerColor = Color.White
-                            )
-                        )
-
-                        // active semester info and bottom sheet
-                        state.currentSemester?.let { sem ->
-                            Text(
-                                text = "Current Semester",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            val semSheetState = rememberModalBottomSheetState()
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(4.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(LightGray)
+                                    .height(150.dp)
+                                    .background(Color.White),
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .height(220.dp)
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp)
+                                    .align(Alignment.BottomCenter),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End
                             ) {
-                                SemesterBottomSheetItem(
-                                    selectedSemester = sem.id,
-                                    semester = sem,
-                                    onSemesterClick = {
-                                        scope.launch { semSheetState.show() }
+                                Box(
+                                    modifier = Modifier
+                                        .size(160.dp)
+                                        .clip(CircleShape)
+                                        .background(DarkGray),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = user.name?.substring(0..<1)?.uppercase()
+                                            ?: user.email.substring(0..<1).uppercase(),
+                                        fontSize = 96.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .gradientFill(
+                                                gradient = Brush.linearGradient(
+                                                    colorStops = arrayOf(
+                                                        Pair(0f, Gold),
+                                                        Pair(100f, Color(0xFF716005))
+                                                    )
+                                                )
+                                            )
+                                    )
+                                }
+
+                                Image(
+                                    painter = painterResource(R.drawable.logo_pulse),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    contentDescription = "logo",
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = user.email,
+                                fontSize = 16.sp,
+                                lineHeight = 24.sp,
+                                letterSpacing = 1.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Name",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                Icon(
+                                    painter = painterResource(if (state.editingName) R.drawable.ic_check else R.drawable.ic_edit),
+                                    contentDescription = "Edit",
+                                    modifier = Modifier.noRippleClickable {
+                                        if (state.editingName) vm.saveName()
+                                        else vm.editName()
                                     },
-                                    buttonColor = DarkGray,
                                 )
                             }
 
-                            AllSemestersBottomSheet(
-                                sheetState = semSheetState,
-                                semesterList = state.semesterList,
-                                onSemesterClick = {
-                                    scope.launch { semSheetState.hide() }
-                                    vm.updateCurrentSemester(it)
-                                },
-                                buttonColor = DarkGray,
-                                onDismiss = { scope.launch { semSheetState.hide() } },
-                                selectedSemesterId = sem.id,
-                                onAddSemester = onAddNewSemester
+                            TextField(
+                                value = if (state.editingName) state.currentName!! else (user.name
+                                    ?: ""),
+                                onValueChange = { vm.updateName(it) },
+                                enabled = state.editingName,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = TextFieldDefaults.colors(
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    unfocusedContainerColor = LightGray,
+                                    focusedContainerColor = Color.White,
+                                    disabledContainerColor = LightGray
+                                )
                             )
-                        }
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DarkGray)
-                                .noRippleClickable { vm.signOut(navigateToLogin) }
-                        ) {
                             Row(
-                                modifier = Modifier
-                                    .padding(16.dp),
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Settings,
-                                    contentDescription = null,
-                                    tint = WhiteSecondary,
+                                Text(
+                                    text = "Institution",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
 
-                                Text(
-                                    text = "Sign Out",
-                                    fontSize = 14.sp,
-                                    color = WhiteSecondary
+                                Icon(
+                                    painter = painterResource(if (state.editingInstitution) R.drawable.ic_check else R.drawable.ic_edit),
+                                    contentDescription = "Edit",
+                                    modifier = Modifier.noRippleClickable {
+                                        if (state.editingInstitution) vm.saveInstitution()
+                                        else vm.editInstitution()
+                                    },
                                 )
+                            }
+
+                            TextField(
+                                value = if (state.editingInstitution) state.currentInstitution!! else (user.institution
+                                    ?: "--"),
+                                onValueChange = { vm.updateInstitution(it) },
+                                enabled = state.editingInstitution,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = TextFieldDefaults.colors(
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    unfocusedContainerColor = LightGray,
+                                    disabledContainerColor = LightGray,
+                                    focusedContainerColor = Color.White
+                                )
+                            )
+
+                            // active semester info and bottom sheet
+                            state.currentSemester?.let { sem ->
+                                Text(
+                                    text = "Current Semester",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                val semSheetState = rememberModalBottomSheetState()
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(LightGray)
+                                ) {
+                                    SemesterBottomSheetItem(
+                                        selectedSemester = sem.id,
+                                        semester = sem,
+                                        onSemesterClick = {
+                                            scope.launch { semSheetState.show() }
+                                        },
+                                        buttonColor = DarkGray,
+                                    )
+                                }
+
+                                AllSemestersBottomSheet(
+                                    sheetState = semSheetState,
+                                    semesterList = state.semesterList,
+                                    onSemesterClick = {
+                                        scope.launch { semSheetState.hide() }
+                                        vm.updateCurrentSemester(it)
+                                    },
+                                    buttonColor = DarkGray,
+                                    onDismiss = { scope.launch { semSheetState.hide() } },
+                                    selectedSemesterId = sem.id,
+                                    onAddSemester = onAddNewSemester
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(DarkGray)
+                                    .noRippleClickable { vm.signOut(navigateToLogin) }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Settings,
+                                        contentDescription = null,
+                                        tint = WhiteSecondary,
+                                    )
+
+                                    Text(
+                                        text = "Sign Out",
+                                        fontSize = 14.sp,
+                                        color = WhiteSecondary
+                                    )
+                                }
                             }
                         }
                     }

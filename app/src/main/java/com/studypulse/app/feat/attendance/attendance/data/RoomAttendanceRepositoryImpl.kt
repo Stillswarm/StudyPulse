@@ -60,4 +60,8 @@ class RoomAttendanceRepositoryImpl(
     override suspend fun findExistingRecordId(record: AttendanceRecord): Result<String> {
         TODO("Not yet implemented")
     }
+
+    override fun getUnmarkedRecordsFlow(endDate: LocalDate): Flow<List<AttendanceRecord>> {
+        TODO("Not yet implemented")
+    }
 }

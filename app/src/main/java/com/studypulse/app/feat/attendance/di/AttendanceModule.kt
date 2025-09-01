@@ -4,6 +4,8 @@ import com.studypulse.app.StudyPulseDatabase
 import com.studypulse.app.feat.attendance.attendance.data.FirebaseAttendanceRepositoryImpl
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceDao
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
+import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetAllUnmarkedPeriodsUseCase
+import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetAllUnmarkedPeriodsUseCaseImpl
 import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetCourseWiseSummariesUseCase
 import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetCourseWiseSummariesUseCaseImpl
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
@@ -45,7 +47,7 @@ val attendanceModule = module {
     single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get(), get(),get(),get()) }
     single<CourseSummaryRepository> { FirebaseCourseSummaryRepositoryImpl( get(), get(), get(), get()) }
     single<PeriodRepository> { FirebasePeriodRepositoryImpl(get(), get(), get(), get(), get(), get(), get()) }
-    single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get(), get(), get()) }
+    single<AttendanceRepository> { FirebaseAttendanceRepositoryImpl(get(), get(), get(), get(), get()) }
 
     // state holding classes
     single { AttendanceScreenState() }
@@ -53,6 +55,7 @@ val attendanceModule = module {
 
     // use-cases
     factoryOf(::GetCourseWiseSummariesUseCaseImpl) bind GetCourseWiseSummariesUseCase::class
+    factoryOf(::GetAllUnmarkedPeriodsUseCaseImpl) bind GetAllUnmarkedPeriodsUseCase::class
 
     // VM
     viewModelOf(::CoursesScreenViewModel)

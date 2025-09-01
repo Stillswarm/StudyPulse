@@ -1,10 +1,12 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.overview
 
+import android.R.attr.lineHeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -37,11 +42,13 @@ import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AppTopBar
 import com.studypulse.app.common.util.MathUtils
+import com.studypulse.app.common.util.MathUtils.INF
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
 import com.studypulse.app.ui.theme.DarkGray
 import com.studypulse.app.ui.theme.Gold
 import com.studypulse.app.ui.theme.GreenNormal
+import com.studypulse.app.ui.theme.LightGray
 import com.studypulse.app.ui.theme.Purple
 import com.studypulse.app.ui.theme.Red
 import kotlinx.coroutines.launch
@@ -56,7 +63,6 @@ fun AttendanceOverviewScreen(
     vm: AttendanceOverviewScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
-    val courseWiseSummary by vm.courseWiseSummaryFlow.collectAsStateWithLifecycle()
     val semesterSummary by vm.semesterSummaryFlow.collectAsStateWithLifecycle()
 
     Box(
@@ -69,7 +75,7 @@ fun AttendanceOverviewScreen(
             val scope = rememberCoroutineScope()
             AppTopBar(
                 backgroundColor = Gold,
-                title = "Attendance Overview",
+                title = state.topBarTitle,
                 navigationIcon = R.drawable.logo_pulse,
                 onNavigationClick = { scope.launch { NavigationDrawerController.toggle() } },
                 actionIcon = R.drawable.ic_profile,
@@ -86,8 +92,8 @@ fun AttendanceOverviewScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
-                    .padding(16.dp)
-                    .testTag("AttendanceOverviewScreen_LazyColumn")
+                    .testTag("AttendanceOverviewScreen_LazyColumn"),
+                contentPadding = PaddingValues(16.dp)
             ) {
                 semesterSummary?.let { s ->
                     item {
@@ -155,13 +161,12 @@ fun AttendanceOverviewScreen(
                                     )
                                 }
                             }
-
                         }
                     }
 
-                    items(courseWiseSummary.entries.toList()) { mp ->
-                        val c = mp.key
-                        val cs = mp.value
+                    items(state.courseWiseSummaries.toList(), key = { it.component1().id }) { mp ->
+                        val c = mp.component1() // key = course
+                        val cs = mp.component2()    // value = courseSummary
                         AttendanceOverviewItem(c, cs, onDetails, modifier = Modifier.testTag("AttendanceOverviewScreen_Item_${c.courseCode}"))
                     }
                 }
@@ -234,7 +239,7 @@ fun AttendanceOverviewItem(
                     modifier = Modifier.testTag("AttendanceOverviewScreen_PercentageContainer_${course.courseCode}")
                 ) {
                     Text(
-                        text = percentage.toString(),
+                        text = if (percentage == INF) "--" else percentage.toString(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         lineHeight = 28.sp,
@@ -247,7 +252,7 @@ fun AttendanceOverviewItem(
                         color = if (percentage < summary.minAttendance) Red
                         else if (percentage <= 10 + summary.minAttendance) Gold
                         else GreenNormal,
-                        progress = { percentage.toFloat() / 100 },
+                        progress = { if (percentage == INF) 0f else percentage.toFloat() / 100 },
                         strokeWidth = 4.dp,
                         trackColor = Color.Transparent
                     )
@@ -263,17 +268,32 @@ fun AttendanceOverviewItem(
                 )
 
                 Text(
-                    text = if (percentage < summary.minAttendance) "Attendance below threshold" else "Safe to skip: ${
-                        MathUtils.maxSkipsAllowed(
-                            summary.presentRecords,
-                            summary.absentRecords,
-                            summary.unmarkedRecords,
-                            summary.minAttendance
-                        )
-                    } classes",
+                    text = if (percentage == INF)     // when no classes
+                            "No classes yet"
+                        else if (percentage < summary.minAttendance)
+                                if (summary.minAttendance == 100)
+                                    "Attend all classes"
+                                else
+                                    "Attend the next: ${
+                                    MathUtils.minClassesRequired(
+                                        summary.presentRecords,
+                                        summary.absentRecords,
+                                        summary.unmarkedRecords,
+                                        summary.minAttendance
+                                    )
+                                } classes"
+                        else
+                            "Safe to skip: ${
+                            MathUtils.maxSkipsAllowed(
+                                summary.presentRecords,
+                                summary.absentRecords,
+                                summary.unmarkedRecords,
+                                summary.minAttendance
+                            )
+                        } classes",
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
-                    color = if (percentage < summary.minAttendance) Red else GreenNormal
+                    color = if (percentage == INF) DarkGray.copy(0.6f) else if (percentage < summary.minAttendance) Red else GreenNormal
                 )
             }
         }

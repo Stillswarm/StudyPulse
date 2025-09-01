@@ -1,16 +1,23 @@
 package com.studypulse.app.common.util
 
 import com.google.firebase.Timestamp
+import com.google.type.DateTime
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 fun LocalTime.to12HourString() : String {
     val formatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a")
+    return this.format(formatter)
+}
+
+fun LocalDate.toStandardString(): String {
+    val formatter = DateTimeFormatter.ofPattern("dd-MM-yy")
     return this.format(formatter)
 }
 

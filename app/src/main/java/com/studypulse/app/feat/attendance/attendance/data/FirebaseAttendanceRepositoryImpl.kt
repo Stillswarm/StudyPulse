@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.common.util.toTimestamp
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
@@ -17,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -26,7 +28,10 @@ class FirebaseAttendanceRepositoryImpl(
     private val db: FirebaseFirestore,
     private val semesterSummaryRepository: SemesterSummaryRepository,
     private val courseSummaryRepository: CourseSummaryRepository,
+    private val ds: AppDatastore,
 ) : AttendanceRepository {
+
+    private suspend fun getSemesterId() = ds.semesterIdFlow.first()
 
     private fun getUserId(): String =
         auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
@@ -237,6 +242,28 @@ class FirebaseAttendanceRepositoryImpl(
             Log.e("AttendanceRepo", "Error fetching dates with pending attendance", e)
             Result.failure(e)
         }
+    }
+
+    override fun getUnmarkedRecordsFlow(
+        upto: LocalDate,
+    ) = callbackFlow {
+        val listener = getAttendanceCollection()
+            .whereEqualTo("semesterId", getSemesterId())
+            .whereEqualTo("status", AttendanceStatus.UNMARKED.name)
+            .whereLessThanOrEqualTo("date", upto.toTimestamp())
+            .whereEqualTo("processed", true)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) trySend(emptyList())
+                snapshot?.let { snap ->
+                    val records =
+                        snap.documents
+                            .mapNotNull { it.toObject(AttendanceRecordDto::class.java) }
+                            .map { it.toDomain() }
+                    trySend(records)
+                }
+            }
+
+        awaitClose { listener.remove() }
     }
 
     override suspend fun hasPendingAttendanceForDate(

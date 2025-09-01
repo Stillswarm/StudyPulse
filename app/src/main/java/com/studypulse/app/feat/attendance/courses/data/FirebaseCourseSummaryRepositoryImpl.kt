@@ -56,8 +56,6 @@ class FirebaseCourseSummaryRepositoryImpl(
             ).await()
         }
 
-
-
     override suspend fun get(courseId: String): Result<CourseSummary> =
         runCatching {
             summaryDocument(courseId).get().await()
