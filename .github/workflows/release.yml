@@ -42,7 +42,7 @@ jobs:
         run: echo "sdk.dir=$HOME/Android/Sdk" > local.properties
 
       - name: Grant execute permissions for gradlew
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
 
       - name: Run unit tests
         run: ./gradlew clean testDebug
@@ -98,8 +98,9 @@ jobs:
     name: Create GitHub Release & upload AAB
     needs: distribute
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout (for tag creation if needed)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: true
@@ -108,36 +109,3 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-bundle
-          path: artifact
-
-      - name: Find built AAB
-        id: find_aab
-        run: |
-          set -e
-          AAB=$(find artifact -type f -name "*.aab" | head -n 1 || true)
-          if [ -z "$AAB" ]; then
-            echo "No .aab found in artifact/ — failing."
-            exit 1
-          fi
-          echo "Found AAB: $AAB"
-          echo "aab_path=$AAB" >> $GITHUB_OUTPUT
-          echo "aab_name=$(basename "$AAB")" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
-          body: "Release generated from CI (run ${{ github.run_id }})."
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload AAB to Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.find_aab.outputs.aab_path }}
-          asset_name: ${{ steps.find_aab.outputs.aab_name }}
-          asset_content_type: application/octet-stream
