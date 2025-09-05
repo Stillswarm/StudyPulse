@@ -10,7 +10,14 @@ Study smarter, not harder. Study Pulse helps you track attendance, get timely cl
 </a>
 
 ## ✨ Screenshots
-
+<p align="center">
+  <img src="assets/Screenshot_Attendance_Screen.png" alt="Attendance" width="45%"/>
+  <img src="assets/Screenshot_Attendance_Overview_Screen.png" alt="Overview" width="45%"/>
+</p>
+<p align="center">
+  <img src="assets/Screenshot_Attendance_Calendar_Screen.png" alt="Calendar" width="45%"/>
+  <img src="assets/Screenshot_Class_Timetable_Screen.png" alt="Timetable" width="45%"/>
+</p>
 
 
 ## 🔥 Features
