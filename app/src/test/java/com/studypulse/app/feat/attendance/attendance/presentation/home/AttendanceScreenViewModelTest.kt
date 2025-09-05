@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.common.datastore.AppDatastore
+import com.studypulse.app.common.util.MathUtils.INF
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import com.studypulse.app.feat.semester.domain.model.SemesterSummary
@@ -96,7 +97,7 @@ class AttendanceScreenViewModelTest {
             every { unmarkedRecords } returns 0
             every { minAttendance } returns 75
         }
-        assertThat(vm.getPercent(zeroCourse)).isEqualTo(0)
+        assertThat(vm.getPercent(zeroCourse)).isEqualTo(INF)
     }
 
     @Test
