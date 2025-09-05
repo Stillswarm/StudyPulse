@@ -260,7 +260,6 @@ fun AttendanceScreen(
                                 fontSize = 14.sp,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .noRippleClickable { scope.launch { semesterSheetState.show() } },
                             )
                         }
                     }
@@ -390,59 +389,6 @@ fun StatBox(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
-    }
-}
-
-@Composable
-fun QuickAttendanceBox(
-    courseCode: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .width(160.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(WarmWhite)
-            .border(1.dp, Gold, RoundedCornerShape(8.dp))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "MA-2001",
-                fontSize = 14.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Text(
-                text = "Thu, June 26",
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Text(
-                text = "9:00 - 12:30",
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            AttendanceStatusButtonsRow(
-                attendanceRecord = null,
-                onPresent = { },
-                onAbsent = { },
-                onCancelled = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-        }
     }
 }
 

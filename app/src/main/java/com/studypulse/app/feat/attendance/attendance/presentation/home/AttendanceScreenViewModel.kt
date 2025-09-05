@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.common.datastore.AppDatastore
+import com.studypulse.app.common.util.MathUtils.INF
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.semester.domain.SemesterRepository
@@ -116,7 +117,7 @@ class AttendanceScreenViewModel(
     fun getPercent(courseSummary: CourseSummary): Int {
         val total =
             courseSummary.presentRecords + courseSummary.absentRecords + courseSummary.unmarkedRecords
-        return if (total == 0) 0 else (courseSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
+        return if (total == 0) INF else (courseSummary.presentRecords.toDouble() / total.toDouble() * 100).toInt()
     }
 
     fun getPercentForSem(semesterSummary: SemesterSummary): Int {

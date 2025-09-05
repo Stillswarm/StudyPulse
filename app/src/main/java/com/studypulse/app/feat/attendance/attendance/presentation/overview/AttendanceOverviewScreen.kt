@@ -132,6 +132,14 @@ fun AttendanceOverviewScreen(
                                 }
                             }
 
+                            var percentage by remember(s.presentRecords, s.absentRecords) {
+                                mutableIntStateOf(
+                                    MathUtils.calculatePercentage(
+                                        s.presentRecords,
+                                        s.totalClasses
+                                    )
+                                )
+                            }
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
@@ -143,10 +151,7 @@ fun AttendanceOverviewScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = "${MathUtils.calculatePercentage(
-                                            s.presentRecords,
-                                            s.totalClasses
-                                        )}%",
+                                        text = "${if (percentage == INF) "--" else percentage}%",
                                         fontSize = 36.sp,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(16.dp),

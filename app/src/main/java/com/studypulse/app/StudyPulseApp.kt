@@ -2,6 +2,7 @@ package com.studypulse.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.SnackbarHost
@@ -43,7 +44,7 @@ fun StudyPulseApp(
 
     // Main content including navigation and drawers
     Box(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize().navigationBarsPadding()
     ) {
         ModalNavigationDrawer(
             drawerState = drawerState,
