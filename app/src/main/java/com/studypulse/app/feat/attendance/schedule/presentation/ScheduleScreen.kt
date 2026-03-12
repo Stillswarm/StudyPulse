@@ -42,18 +42,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.common.utils.DateUtils.to12HourString
+import com.studypulse.common.utils.StringUtils.convertToSentenceCase
+import com.studypulse.common.utils.StringUtils.getAbbreviatedName
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.common.util.convertToSentenceCase
-import com.studypulse.app.common.util.getAbbreviatedName
-import com.studypulse.app.common.util.to12HourString
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.GreenDark
-import com.studypulse.app.ui.theme.GreenLight
-import com.studypulse.app.ui.theme.GreenSecondary
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.GreenDark
+import com.studypulse.ui.theme.GreenLight
+import com.studypulse.ui.theme.GreenSecondary
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -30,12 +30,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -44,18 +42,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.ui.modifier.noRippleClickable
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenDark
-import com.studypulse.app.ui.theme.GreenLight
-import com.studypulse.app.ui.theme.GreenSecondary
-import com.studypulse.app.ui.theme.Red
-import kotlinx.coroutines.launch
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.GreenDark
+import com.studypulse.ui.theme.GreenLight
+import com.studypulse.ui.theme.GreenSecondary
+import com.studypulse.ui.theme.Red
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,11 +1,12 @@
 package com.studypulse.app.feat.attendance.attendance.data
 
 import android.util.Log
+import com.studypulse.common.utils.DateUtils.toLocalDate
+import com.studypulse.common.utils.DateUtils.toTimestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.studypulse.app.common.datastore.AppDatastore
-import com.studypulse.app.common.util.toTimestamp
 import com.studypulse.app.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecordDto

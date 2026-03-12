@@ -48,12 +48,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.ui.theme.GreenLight
-import com.studypulse.app.ui.theme.GreenNormal
-import com.studypulse.app.ui.theme.GreenSecondary
-import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.theme.GreenLight
+import com.studypulse.ui.theme.GreenNormal
+import com.studypulse.ui.theme.GreenSecondary
+import com.studypulse.ui.theme.LightGray
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

@@ -28,9 +28,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.BrandPieChart
-import com.studypulse.app.common.ui.components.DefaultHeader
-import com.studypulse.app.common.ui.components.LinearProgressBar
+import com.studypulse.ui.components.BrandPieChart
+import com.studypulse.ui.components.DefaultHeader
+import com.studypulse.ui.components.LinearProgressBar
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel

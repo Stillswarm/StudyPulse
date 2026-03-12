@@ -53,17 +53,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
-import com.studypulse.app.common.ui.components.LargeAppTopBar
+import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.app.common.ui.components.SemesterBottomSheetItem
-import com.studypulse.app.common.ui.modifier.gradientFill
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
+import com.studypulse.ui.modifier.gradientFill
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.nav.OverviewType
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenSecondary
-import com.studypulse.app.ui.theme.Purple
-import com.studypulse.app.ui.theme.WarmWhite
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.GreenSecondary
+import com.studypulse.ui.theme.Purple
+import com.studypulse.ui.theme.WarmWhite
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

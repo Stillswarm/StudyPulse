@@ -1,6 +1,5 @@
 package com.studypulse.app.feat.attendance.attendance.presentation.overview
 
-import android.R.attr.lineHeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -14,14 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -38,19 +33,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.common.utils.MathUtils
+import com.studypulse.common.utils.MathUtils.INF
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.util.MathUtils
-import com.studypulse.app.common.util.MathUtils.INF
+import com.studypulse.ui.components.AppTopBar
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.model.Course
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenNormal
-import com.studypulse.app.ui.theme.LightGray
-import com.studypulse.app.ui.theme.Purple
-import com.studypulse.app.ui.theme.Red
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.GreenNormal
+import com.studypulse.ui.theme.Purple
+import com.studypulse.ui.theme.Red
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

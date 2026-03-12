@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.WhiteSecondary
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

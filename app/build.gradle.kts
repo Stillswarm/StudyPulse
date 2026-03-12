@@ -97,6 +97,11 @@ android {
 
 dependencies {
 
+    // project
+    implementation(project(":core:common"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:nav"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -127,10 +132,9 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
 
     // room
-    val roomVersion = "2.7.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // kotlinx.serialization
     implementation(libs.kotlinx.serialization.json)
@@ -139,29 +143,29 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     // firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.play.services.auth)
 
     // algolia
-    implementation("com.algolia:algoliasearch-client-kotlin:3.25.1")
+    implementation(libs.algoliasearch.client.kotlin)
 
 
     // Credential Manager libraries
-    implementation("androidx.credentials:credentials:1.5.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     // crashlytics
-    implementation("com.google.firebase:firebase-crashlytics-ndk")
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.crashlytics.ndk)
+    implementation(libs.google.firebase.analytics)
 
     // datastore
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation(libs.androidx.datastore.preferences)
 
     // google accompanist
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
+    implementation(libs.accompanist.systemuicontroller)
     
     // Kotlin Parcel
 //    implementation("org.jetbrains.kotlinx:kotlinx-parcelize-runtime:1.9.0")
@@ -169,50 +173,49 @@ dependencies {
     // ---- TESTING ----
 
     // JUnit4
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test:runner:1.7.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit.v130)
+    androidTestImplementation(libs.androidx.runner)
 
     // Roboelectric (for android-style unit test)
-    testImplementation("org.robolectric:robolectric:4.15.1")
+    testImplementation(libs.robolectric)
 
     // MockK
-    testImplementation("io.mockk:mockk:1.14.5")                             // mocking
-    androidTestImplementation("io.mockk:mockk-android:1.14.5")
+    testImplementation(libs.mockk)                             // mocking
+    androidTestImplementation(libs.mockk.android)
 
     // Turbine
-    testImplementation("app.cash.turbine:turbine:1.2.1")                     // Flow testing
-    androidTestImplementation("app.cash.turbine:turbine:1.2.1")
+    testImplementation(libs.turbine)                     // Flow testing
+    androidTestImplementation(libs.turbine)
 
     // Google Truth
-    testImplementation("com.google.truth:truth:1.4.4")
-    androidTestImplementation("com.google.truth:truth:1.4.4")
+    testImplementation(libs.truth)
+    androidTestImplementation(libs.truth)
 
     // Coroutines
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2") // coroutine testing
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test) // coroutine testing
+    androidTestImplementation(libs.jetbrains.kotlinx.coroutines.test)
 
     // Espresso
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.7.0")
-    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation(libs.androidx.espresso.core.v370)
+    androidTestImplementation(libs.androidx.espresso.contrib)
+    androidTestImplementation(libs.androidx.espresso.intents)
 
     // UI Automator
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
-
+    androidTestImplementation(libs.androidx.uiautomator)
 
     // --- Koin test support ---
-    testImplementation("io.insert-koin:koin-test:4.1.0")
-    testImplementation("io.insert-koin:koin-test-junit4:4.1.0")
-    androidTestImplementation("io.insert-koin:koin-test:4.1.0")
-    androidTestImplementation("io.insert-koin:koin-test-junit4:4.1.0")
+    testImplementation(libs.koin.test)
+    testImplementation(libs.koin.test.junit4)
+    androidTestImplementation(libs.koin.test)
+    androidTestImplementation(libs.koin.test.junit4)
 
     // --- Android instrumentation / UI tests (optional if you need them) ---
-    androidTestImplementation("androidx.test:core:1.7.0")
+    androidTestImplementation(libs.androidx.core)
 
 
     // Jetpack Compose UI testing
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.3")
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
 }

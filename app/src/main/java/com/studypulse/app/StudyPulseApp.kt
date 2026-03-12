@@ -23,7 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import com.studypulse.app.common.ui.screen.NavigationDrawerContent
 import com.studypulse.app.nav.AppNavGraph
 import com.studypulse.app.nav.Route
-import com.studypulse.app.ui.theme.WhiteSecondary
+import com.studypulse.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 
 @Composable

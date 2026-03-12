@@ -35,19 +35,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.common.util.toFullString
+import com.studypulse.common.utils.DateUtils.toFullString
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.PeriodWithAttendance
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.GreenNormal
-import com.studypulse.app.ui.theme.LightGray
-import com.studypulse.app.ui.theme.Red
-import com.studypulse.app.ui.theme.WarmWhite
-import com.studypulse.app.ui.theme.WhiteSecondary
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.GreenNormal
+import com.studypulse.ui.theme.LightGray
+import com.studypulse.ui.theme.Red
+import com.studypulse.ui.theme.WarmWhite
+import com.studypulse.ui.theme.WhiteSecondary
 import java.time.LocalDate
 
 @Composable

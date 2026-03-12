@@ -35,16 +35,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.common.utils.DateUtils.to12HourString
+import com.studypulse.common.utils.DateUtils.toStandardString
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.util.to12HourString
-import com.studypulse.app.common.util.toStandardString
+import com.studypulse.ui.components.AppTopBar
 import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceCalendar
 import com.studypulse.app.feat.attendance.calender.ui.components.AttendanceStatusButtonsRow
 import com.studypulse.app.feat.attendance.calender.ui.components.DayCoursesBottomSheetContent
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.WarmWhite
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.WarmWhite
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

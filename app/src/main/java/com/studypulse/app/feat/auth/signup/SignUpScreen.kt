@@ -43,11 +43,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.OrDivider
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.ui.components.OrDivider
+import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.LightGray
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

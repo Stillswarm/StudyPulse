@@ -22,10 +22,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.common.ui.modifier.noRippleClickable
-import com.studypulse.app.common.util.convertToSentenceCase
+import com.studypulse.common.utils.StringUtils.convertToSentenceCase
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.feat.semester.domain.model.Semester
-import com.studypulse.app.ui.theme.WhiteSecondary
+import com.studypulse.ui.theme.WhiteSecondary
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)

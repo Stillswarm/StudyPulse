@@ -29,8 +29,8 @@ import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.home.ui.homeScreenItems
 import com.studypulse.app.nav.NavigableRoute
 import com.studypulse.app.nav.Route
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.LightGray
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.LightGray
 import kotlinx.coroutines.launch
 
 @Composable

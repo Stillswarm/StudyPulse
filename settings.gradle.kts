@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "StudyPulse"
 include(":app")
+include(":core:common")
+include(":core:ui")
+include(":core:nav")

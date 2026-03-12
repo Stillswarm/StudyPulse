@@ -30,20 +30,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.common.ui.components.AppTopBar
-import com.studypulse.app.common.ui.modifier.noRippleClickable
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.nav.NavigableRoute
 import com.studypulse.app.nav.Route
-import com.studypulse.app.ui.theme.Blue
-import com.studypulse.app.ui.theme.Cyan
-import com.studypulse.app.ui.theme.DarkGray
-import com.studypulse.app.ui.theme.Gold
-import com.studypulse.app.ui.theme.LightGray
-import com.studypulse.app.ui.theme.Lime
-import com.studypulse.app.ui.theme.Orange
-import com.studypulse.app.ui.theme.Pink
-import com.studypulse.app.ui.theme.Purple
-import com.studypulse.app.ui.theme.WhiteSecondary
+import com.studypulse.ui.theme.Blue
+import com.studypulse.ui.theme.Cyan
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.LightGray
+import com.studypulse.ui.theme.Lime
+import com.studypulse.ui.theme.Orange
+import com.studypulse.ui.theme.Pink
+import com.studypulse.ui.theme.Purple
+import com.studypulse.ui.theme.WhiteSecondary
 import kotlinx.coroutines.launch
 
 data class HomeScreenItem(
