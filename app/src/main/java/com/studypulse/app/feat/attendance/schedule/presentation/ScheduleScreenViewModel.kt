@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
 import java.time.DayOfWeek
 import kotlinx.coroutines.flow.MutableStateFlow

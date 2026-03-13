@@ -1,4 +1,4 @@
-package com.studypulse.app
+package com.studypulse.common.event
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow

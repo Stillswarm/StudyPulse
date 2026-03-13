@@ -22,10 +22,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.studypulse.app.R
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
-import com.studypulse.app.feat.user.domain.UserRepository
-import com.studypulse.app.feat.user.domain.model.User
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.core.user.model.User
+import com.studypulse.core.user.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

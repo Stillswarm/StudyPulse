@@ -1,4 +1,4 @@
-package com.studypulse.app.feat.user.domain.model
+package com.studypulse.core.user.model
 
 data class User(
     val id: String,

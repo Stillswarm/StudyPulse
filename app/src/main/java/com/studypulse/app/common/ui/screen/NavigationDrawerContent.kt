@@ -22,10 +22,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.NavigationDrawerController
+import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.app.R
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.app.feat.home.ui.homeScreenItems
 import com.studypulse.nav.routes.NavigableRoute
 import com.studypulse.nav.routes.Route

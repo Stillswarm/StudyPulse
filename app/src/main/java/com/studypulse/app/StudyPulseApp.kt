@@ -22,8 +22,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.studypulse.app.common.ui.screen.NavigationDrawerContent
 import com.studypulse.app.nav.AppNavGraph
+import com.studypulse.common.event.NavigationDrawerController
+import com.studypulse.common.event.SnackbarController
 import com.studypulse.nav.routes.Route
 import com.studypulse.ui.theme.WhiteSecondary
+import com.studypulse.ui.utils.ObserveAsEvents
 import kotlinx.coroutines.launch
 
 @Composable

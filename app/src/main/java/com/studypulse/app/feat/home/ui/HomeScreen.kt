@@ -28,7 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.studypulse.app.NavigationDrawerController
+import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable

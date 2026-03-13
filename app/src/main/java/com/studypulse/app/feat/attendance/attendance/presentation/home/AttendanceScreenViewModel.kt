@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.common.utils.MathUtils
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository

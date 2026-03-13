@@ -1,6 +1,6 @@
-package com.studypulse.app.feat.user.domain
+package com.studypulse.core.user.repository
 
-import com.studypulse.app.feat.user.domain.model.User
+import com.studypulse.core.user.model.User
 
 interface UserRepository {
     suspend fun fetchCurrentUser(): Result<User?>

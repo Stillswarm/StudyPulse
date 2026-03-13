@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.utils.MathUtils
 import com.studypulse.common.utils.MathUtils.INF
-import com.studypulse.app.NavigationDrawerController
+import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary

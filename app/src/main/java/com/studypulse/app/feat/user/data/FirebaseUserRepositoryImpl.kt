@@ -5,11 +5,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
-import com.studypulse.app.feat.user.domain.UserRepository
-import com.studypulse.app.feat.user.domain.model.User
-import com.studypulse.app.feat.user.domain.model.UserDto
-import com.studypulse.app.feat.user.domain.model.toDomain
-import com.studypulse.app.feat.user.domain.model.toDto
+import com.studypulse.core.user.model.User
+import com.studypulse.core.user.model.UserDto
+import com.studypulse.core.user.model.toDomain
+import com.studypulse.core.user.model.toDto
+import com.studypulse.core.user.repository.UserRepository
 import kotlinx.coroutines.tasks.await
 
 class FirebaseUserRepositoryImpl(

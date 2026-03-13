@@ -44,7 +44,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.app.NavigationDrawerController
+import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.app.common.ui.components.AllSemestersBottomSheet
 import com.studypulse.ui.components.AppTopBar

@@ -8,8 +8,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.app.feat.attendance.attendance.presentation.AttendanceStatsSharedViewModel
 import com.studypulse.app.feat.attendance.attendance.presentation.details.AttendanceDetailsScreen
 import com.studypulse.app.feat.attendance.attendance.presentation.home.AttendanceScreen

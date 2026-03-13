@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.studypulse.common"
+    namespace = "com.studypulse.core.user"
     compileSdk = 35
 
     defaultConfig {
@@ -33,16 +33,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.jetbrains.kotlinx.coroutines.core)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
-
-    // firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.firestore)
+    androidTestImplementation(libs.androidx.junit.v130)
+    androidTestImplementation(libs.androidx.espresso.core.v370)
 }

@@ -1,4 +1,4 @@
-package com.studypulse.app
+package com.studypulse.ui.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

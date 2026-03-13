@@ -19,7 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.studypulse.app.NavigationDrawerController
+import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.theme.DarkGray

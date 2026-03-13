@@ -1,7 +1,7 @@
 package com.studypulse.app.feat.user.presentation
 
 import com.studypulse.app.feat.semester.domain.model.Semester
-import com.studypulse.app.feat.user.domain.model.User
+import com.studypulse.core.user.model.User
 
 data class ProfileScreenState(
     val user: User? = null,

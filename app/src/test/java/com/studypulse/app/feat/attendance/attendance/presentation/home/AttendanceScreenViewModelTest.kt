@@ -2,7 +2,7 @@ package com.studypulse.app.feat.attendance.attendance.presentation.home
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.studypulse.app.SnackbarController
+import com.studypulse.common.event.SnackbarController
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.common.utils.MathUtils.INF
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummary

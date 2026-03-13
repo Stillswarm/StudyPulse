@@ -3,13 +3,13 @@ package com.studypulse.app.feat.user.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.studypulse.app.SnackbarController
-import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import com.studypulse.app.feat.semester.domain.model.Semester
-import com.studypulse.app.feat.user.domain.UserRepository
-import com.studypulse.app.feat.user.domain.model.User
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.core.user.model.User
+import com.studypulse.core.user.repository.UserRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
