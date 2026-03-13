@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import java.time.DayOfWeek
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -19,7 +19,7 @@ class ScheduleScreenViewModel(
 ) : ViewModel() {
 
     private val initialData = ScheduleScreenState(
-        currentDay = Day.MONDAY,
+        currentDay = DayOfWeek.MONDAY,
         schedule = emptyList(),
         courseId = null,
         courseCode = null,
@@ -42,7 +42,7 @@ class ScheduleScreenViewModel(
         }
     }
 
-    fun toggleDay(newSelection: Day) {
+    fun toggleDay(newSelection: DayOfWeek) {
         _state.update {
             it.copy(currentDay = newSelection)
         }

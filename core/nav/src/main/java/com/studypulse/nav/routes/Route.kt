@@ -1,7 +1,6 @@
-package com.studypulse.app.nav
+package com.studypulse.nav.routes
 
 import androidx.navigation.NavBackStackEntry
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -20,8 +19,9 @@ object Route {
     @Serializable
     data class CourseDetailRoute(val courseId: String) : NavigableRoute
 
+    /** day: DayOfWeek.name for serialization; use DayOfWeek.valueOf(day) at destination */
     @Serializable
-    data class AddPeriodRoute(val courseId: String, val periodId: String? = null, val day: Day? = null) : NavigableRoute
+    data class AddPeriodRoute(val courseId: String, val periodId: String? = null, val day: String? = null) : NavigableRoute
 
     @Serializable
     data class ScheduleRoute(val courseId: String?, val courseCode: String?) : NavigableRoute

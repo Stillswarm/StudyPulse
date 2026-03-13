@@ -57,7 +57,7 @@ import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.app.common.ui.components.SemesterBottomSheetItem
 import com.studypulse.ui.modifier.gradientFill
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.app.nav.OverviewType
+import com.studypulse.nav.routes.OverviewType
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Gold
 import com.studypulse.ui.theme.GreenSecondary

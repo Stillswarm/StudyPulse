@@ -12,6 +12,7 @@ import com.studypulse.app.feat.attendance.courses.domain.CourseDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.model.CourseEntity
 import com.studypulse.app.feat.attendance.courses.domain.model.PeriodEntity
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -35,12 +36,18 @@ class Converters {
     fun toLocalDate(dateString: String?): LocalDate? {
         return dateString?.let { LocalDate.parse(it) }
     }
+
+    @TypeConverter
+    fun fromDayOfWeek(day: DayOfWeek?): Int? = day?.value
+
+    @TypeConverter
+    fun toDayOfWeek(value: Int?): DayOfWeek? = value?.let { DayOfWeek.of(it) }
 }
 
 /**
  * Initialize database, provide entities, and declare DAOs
  */
-@Database(entities = [CourseEntity::class, PeriodEntity::class, AttendanceRecordEntity::class], version = 9, exportSchema = false)
+@Database(entities = [CourseEntity::class, PeriodEntity::class, AttendanceRecordEntity::class], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class StudyPulseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao

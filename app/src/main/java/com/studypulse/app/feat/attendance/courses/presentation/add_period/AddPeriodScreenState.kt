@@ -1,10 +1,10 @@
 package com.studypulse.app.feat.attendance.courses.presentation.add_period
 
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import java.time.DayOfWeek
 
 data class AddPeriodScreenState(
     val periodId: String = "",
-    val selectedDay: Day,
+    val selectedDay: DayOfWeek,
     val startTimeHour: Int,
     val startTimeMinute: Int,
     val endTimeHour: Int,

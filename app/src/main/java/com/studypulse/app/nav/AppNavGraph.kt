@@ -13,6 +13,7 @@ import com.studypulse.app.feat.feedback.FeedbackScreen
 import com.studypulse.app.feat.home.nav.homeGraph
 import com.studypulse.app.feat.semester.semesterNavGraph
 import com.studypulse.app.feat.user.nav.userNavGraph
+import com.studypulse.nav.routes.Route
 
 @Composable
 fun AppNavGraph(

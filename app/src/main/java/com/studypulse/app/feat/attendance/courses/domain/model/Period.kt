@@ -2,6 +2,7 @@ package com.studypulse.app.feat.attendance.courses.domain.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 @Parcelize
@@ -10,7 +11,7 @@ data class Period(
     val semesterId: String,
     val courseId: String,
     val courseName: String,
-    val day: Day,
+    val day: DayOfWeek,
     val startTime: LocalTime,
     val endTime: LocalTime,
     val createdAt: Long = System.currentTimeMillis()

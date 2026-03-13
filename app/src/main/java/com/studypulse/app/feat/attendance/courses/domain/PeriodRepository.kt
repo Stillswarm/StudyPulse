@@ -1,7 +1,7 @@
 package com.studypulse.app.feat.attendance.courses.domain
 
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import java.time.DayOfWeek
 import kotlinx.coroutines.flow.Flow
 
 interface PeriodRepository {
@@ -14,7 +14,7 @@ interface PeriodRepository {
     /*
         returns the result sorted in ascending order of period start time
      */
-    suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(courseId: String, day: Day): Result<Flow<List<Period>>>
-    suspend fun getAllPeriodsByDayInStartTimeOrder(day: Day): Result<Flow<List<Period>>>
+    suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(courseId: String, day: DayOfWeek): Result<Flow<List<Period>>>
+    suspend fun getAllPeriodsByDayInStartTimeOrder(day: DayOfWeek): Result<Flow<List<Period>>>
     suspend fun deletePeriod(periodId: String): Result<Unit>
 }

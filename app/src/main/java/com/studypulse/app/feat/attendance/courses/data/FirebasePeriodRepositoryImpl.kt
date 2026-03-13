@@ -13,7 +13,6 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStat
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDto
 import com.studypulse.app.feat.attendance.courses.domain.CourseSummaryRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import com.studypulse.app.feat.attendance.courses.domain.model.PeriodDto
 import com.studypulse.app.feat.attendance.courses.domain.model.toDomain
@@ -56,7 +55,7 @@ class FirebasePeriodRepositoryImpl(
             val periodData = period.copy(
                 createdAt = System.currentTimeMillis()
             )
-            val semester = semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching Unit
+            val semester = semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching
 
             val ref = db.collection("users")
                 .document(userId)
@@ -112,7 +111,7 @@ class FirebasePeriodRepositoryImpl(
         newName: String,
     ) = runCatching { 
         val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
-        val semester = semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching Unit
+        val semester = semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching
 
         val periodRef = db.collection("users")
             .document(userId)
@@ -130,7 +129,7 @@ class FirebasePeriodRepositoryImpl(
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val semester =
-                semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching Unit
+                semesterRepository.getActiveSemester().getOrNull() ?: return@runCatching
 
             val periodRef = db.collection("users")
                 .document(userId)
@@ -205,7 +204,7 @@ class FirebasePeriodRepositoryImpl(
 
     override suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(
         courseId: String,
-        day: Day,
+        day: DayOfWeek,
     ) =
         runCatching {
             val userId =
@@ -236,7 +235,7 @@ class FirebasePeriodRepositoryImpl(
             }
         }
 
-    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: Day) =
+    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: DayOfWeek) =
         runCatching {
             val userId =
                 auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")

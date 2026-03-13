@@ -32,8 +32,8 @@ import com.studypulse.app.NavigationDrawerController
 import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.app.nav.NavigableRoute
-import com.studypulse.app.nav.Route
+import com.studypulse.nav.routes.NavigableRoute
+import com.studypulse.nav.routes.Route
 import com.studypulse.ui.theme.Blue
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray

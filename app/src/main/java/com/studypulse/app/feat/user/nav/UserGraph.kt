@@ -4,7 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.studypulse.app.feat.user.presentation.ProfileScreen
-import com.studypulse.app.nav.Route
+import com.studypulse.nav.routes.Route
 
 fun NavGraphBuilder.userNavGraph(navController: NavController) {
     composable<Route.ProfileRoute> {

@@ -44,7 +44,7 @@ import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.components.TimeInputDialog
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import java.time.DayOfWeek
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.GreenDark
 import com.studypulse.ui.theme.GreenLight
@@ -124,7 +124,7 @@ fun AddPeriodScreen(
                                     .padding(horizontal = 16.dp, vertical = 4.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Day.entries.forEachIndexed { idx, y ->
+                                    DayOfWeek.entries.forEachIndexed { idx, y ->
                                         Text(
                                             text = y.name.convertToSentenceCase(),
                                             fontSize = 14.sp,

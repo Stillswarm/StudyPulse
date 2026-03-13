@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.studypulse.app.feat.auth.signin.SignInScreen
 import com.studypulse.app.feat.auth.signup.SignupScreen
-import com.studypulse.app.nav.Route
+import com.studypulse.nav.routes.Route
 
 fun NavGraphBuilder.authNavGraph(navController: NavController) {
     composable<Route.SignUpRoute> {

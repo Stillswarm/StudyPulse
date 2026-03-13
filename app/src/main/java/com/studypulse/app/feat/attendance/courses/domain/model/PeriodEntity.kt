@@ -2,6 +2,7 @@ package com.studypulse.app.feat.attendance.courses.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 @Entity
@@ -10,7 +11,7 @@ data class PeriodEntity(
     val courseId: String,
     val courseName: String,
     val semesterId: String,
-    val day: Day,
+    val day: DayOfWeek,
     val startTime: LocalTime,
     val endTime: LocalTime,
     val createdAt: Long = System.currentTimeMillis()

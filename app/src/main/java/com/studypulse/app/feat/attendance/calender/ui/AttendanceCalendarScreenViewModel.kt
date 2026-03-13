@@ -11,7 +11,6 @@ import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStat
 import com.studypulse.app.feat.attendance.attendance.domain.model.toDomain
 import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetAllUnmarkedPeriodsUseCase
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.KoinApplication.Companion.init
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -76,7 +74,7 @@ class AttendanceCalendarScreenViewModel(
             viewModelScope.launch {
                 try {
                     periodRepository.getAllPeriodsByDayInStartTimeOrder(
-                        Day.valueOf(newDate.dayOfWeek.name.uppercase())
+                        newDate.dayOfWeek
                     )
                         .onFailure { SnackbarController.sendEvent(SnackbarEvent(message = "couldn't fetch schedule")) }
                         .onSuccess { periodFlow ->

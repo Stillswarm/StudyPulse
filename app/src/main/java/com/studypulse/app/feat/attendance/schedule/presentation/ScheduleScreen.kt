@@ -48,8 +48,8 @@ import com.studypulse.common.utils.StringUtils.getAbbreviatedName
 import com.studypulse.app.R
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import java.time.DayOfWeek
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.GreenDark
 import com.studypulse.ui.theme.GreenLight
@@ -61,7 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 fun ScheduleScreen(
     onNavigateBack: () -> Unit,
     onNavigateToFullSchedule: () -> Unit,
-    navigateToAddPeriod: (String, String?, Day) -> Unit,
+    navigateToAddPeriod: (String, String?, DayOfWeek) -> Unit,
     modifier: Modifier = Modifier,
     vm: ScheduleScreenViewModel = koinViewModel(),
 ) {
@@ -82,7 +82,7 @@ fun ScheduleScreen(
                 titleColor = Color.White,
             )
             LazyRow {
-                Day.entries.forEach { day ->
+                DayOfWeek.entries.forEach { day ->
                     val current = state.currentDay == day
                     item {
                         Box(

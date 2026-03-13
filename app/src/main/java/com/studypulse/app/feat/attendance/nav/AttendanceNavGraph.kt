@@ -1,13 +1,12 @@
 package com.studypulse.app.feat.attendance.nav
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
@@ -21,8 +20,7 @@ import com.studypulse.app.feat.attendance.courses.presentation.add_period.AddPer
 import com.studypulse.app.feat.attendance.courses.presentation.course.CoursesScreen
 import com.studypulse.app.feat.attendance.courses.presentation.course_details.CourseDetailsScreen
 import com.studypulse.app.feat.attendance.schedule.presentation.ScheduleScreen
-import com.studypulse.app.nav.Route
-import kotlinx.coroutines.launch
+import com.studypulse.nav.routes.Route
 import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.attendanceGraph(navController: NavController) {
@@ -60,7 +58,7 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
         ScheduleScreen(
             onNavigateToFullSchedule = { navController.navigate(Route.ScheduleRoute(null, null)) },
             navigateToAddPeriod = { courseId, periodId, day ->
-                navController.navigate(Route.AddPeriodRoute(courseId, periodId, day)) },
+                navController.navigate(Route.AddPeriodRoute(courseId, periodId, day?.name)) },
             onNavigateBack = { navController.navigateUp() }
         )
     }
@@ -106,7 +104,6 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
 
         composable<Route.AttendanceDetailsRoute> { backStackEntry ->
 
-            val scope = rememberCoroutineScope()
             val route = backStackEntry.toRoute<Route.AttendanceDetailsRoute>()
             val courseId = route.courseId
             val parentEntry = remember(backStackEntry) {
@@ -117,14 +114,16 @@ fun NavGraphBuilder.attendanceGraph(navController: NavController) {
             val attendanceByCourse by sharedViewModel.attendanceByCourse.collectAsStateWithLifecycle()
             val allCoursesMap by sharedViewModel.allCoursesMap.collectAsStateWithLifecycle()
 
-            if (allCoursesMap[courseId] == null) {
-                scope.launch {
+            LaunchedEffect(courseId, allCoursesMap) {
+                if (allCoursesMap.isNotEmpty() && allCoursesMap[courseId] == null) {
                     SnackbarController.sendEvent(
                         SnackbarEvent(message = "cannot fetch details")
                     )
                     navController.navigateUp()
                 }
-            } else {
+            }
+
+            if (allCoursesMap[courseId] != null) {
                 AttendanceDetailsScreen(
                     course = allCoursesMap[courseId]!!,
                     attendanceRecords = attendanceByCourse[courseId] ?: emptyList(),

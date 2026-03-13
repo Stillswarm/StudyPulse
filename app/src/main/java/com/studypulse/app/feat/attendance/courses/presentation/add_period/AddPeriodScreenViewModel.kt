@@ -7,8 +7,8 @@ import com.studypulse.app.SnackbarController
 import com.studypulse.app.SnackbarEvent
 import com.studypulse.app.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
+import java.time.DayOfWeek
 import com.studypulse.app.feat.attendance.courses.domain.model.overlapsWith
 import com.studypulse.app.feat.semester.domain.SemesterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ class AddPeriodScreenViewModel(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val initialData = AddPeriodScreenState(
-        selectedDay = savedStateHandle.get<Day>("day") ?: Day.MONDAY,
+        selectedDay = savedStateHandle.get<String>("day")?.let { DayOfWeek.valueOf(it) } ?: DayOfWeek.MONDAY,
         startTimeHour = 9,
         startTimeMinute = 0,
         endTimeMinute = 0,
@@ -83,7 +83,7 @@ class AddPeriodScreenViewModel(
     }
 
 
-    fun onDayChange(newVal: Day) {
+    fun onDayChange(newVal: DayOfWeek) {
         _state.update { it.copy(selectedDay = newVal) }
     }
 

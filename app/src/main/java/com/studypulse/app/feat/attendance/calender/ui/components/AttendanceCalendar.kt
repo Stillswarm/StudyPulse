@@ -37,8 +37,8 @@ import com.studypulse.common.utils.StringUtils.getAbbreviatedName
 import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.app.common.util.CalendarUtils.buildMonthGrid
 import com.studypulse.app.common.util.DayCellInfo
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
 import com.studypulse.ui.theme.Gold
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -91,7 +91,7 @@ fun AttendanceCalendar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
-            Day.entries.forEach { day ->
+            DayOfWeek.entries.forEach { day ->
                 Text(
                     text = day.name.convertToSentenceCase().getAbbreviatedName(),
                     fontSize = 14.sp,

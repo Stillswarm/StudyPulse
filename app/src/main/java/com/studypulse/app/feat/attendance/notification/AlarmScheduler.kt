@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import com.studypulse.app.common.util.toCalendarDay
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
@@ -16,7 +15,7 @@ object AlarmScheduler {
     fun scheduleAlarmForPeriod(context: Context, period: Period, userId: String) {
         val now = ZonedDateTime.now()
 
-        var nextDay = now.with(ChronoField.DAY_OF_WEEK, period.day.toCalendarDay())
+        var nextDay = now.with(ChronoField.DAY_OF_WEEK, period.day.value.toLong())
             .withHour(period.startTime.hour)
             .withMinute(period.startTime.minute)
             .withSecond(0)
@@ -33,7 +32,7 @@ object AlarmScheduler {
             putExtra("courseName", period.courseName)
             putExtra("semesterId", period.semesterId)
             putExtra("userId", userId)
-            putExtra("dayOfWeek", period.day.ordinal)
+            putExtra("dayOfWeek", period.day.value)
             putExtra("startHour", period.startTime.hour)
             putExtra("startMinute", period.endTime.minute)
             putExtra("notifId", period.id.hashCode().absoluteValue)

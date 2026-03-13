@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.common.utils.MathUtils
 import com.studypulse.app.feat.attendance.attendance.domain.use_cases.GetCourseWiseSummariesUseCase
 import com.studypulse.app.feat.semester.domain.SemesterSummaryRepository
-import com.studypulse.app.nav.OverviewType
+import com.studypulse.nav.routes.OverviewType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow

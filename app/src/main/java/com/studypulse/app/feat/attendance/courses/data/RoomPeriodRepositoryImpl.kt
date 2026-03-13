@@ -2,7 +2,7 @@ package com.studypulse.app.feat.attendance.courses.data
 
 import com.studypulse.app.feat.attendance.courses.domain.PeriodDao
 import com.studypulse.app.feat.attendance.courses.domain.PeriodRepository
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
+import java.time.DayOfWeek
 import com.studypulse.app.feat.attendance.courses.domain.model.Period
 import com.studypulse.app.feat.attendance.courses.domain.model.toPeriod
 import com.studypulse.app.feat.attendance.courses.domain.model.toPeriodEntity
@@ -20,11 +20,11 @@ class RoomPeriodRepositoryImpl(
         periodDao.addNewPeriod(period.toPeriodEntity())
     }
 
-    override suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(courseId: String, day: Day): Result<Flow<List<Period>>> {
+    override suspend fun getAllPeriodsForCourseByDayInStartTimeOrder(courseId: String, day: DayOfWeek): Result<Flow<List<Period>>> {
         return Result.success(periodDao.getAllPeriodsForCourseFilteredByDayOfWeek(courseId.toLong(), day).map { it.map { it.toPeriod() } })
     }
 
-    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: Day): Result<Flow<List<Period>>> {
+    override suspend fun getAllPeriodsByDayInStartTimeOrder(day: DayOfWeek): Result<Flow<List<Period>>> {
         return Result.success(periodDao.getAllPeriodsFilteredByDayOfWeek(day))
     }
 
