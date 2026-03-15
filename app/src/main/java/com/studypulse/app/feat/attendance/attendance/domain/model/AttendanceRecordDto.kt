@@ -1,8 +1,8 @@
 package com.studypulse.app.feat.attendance.attendance.domain.model
 
 import androidx.annotation.Keep
-import com.studypulse.common.utils.DateUtils.toLocalDate
-import com.studypulse.common.utils.DateUtils.toTimestamp
+import com.studypulse.app.common.util.FirebaseDateUtils.toLocalDate
+import com.studypulse.app.common.util.FirebaseDateUtils.toTimestamp
 import com.google.firebase.Timestamp
 import java.time.LocalDate
 

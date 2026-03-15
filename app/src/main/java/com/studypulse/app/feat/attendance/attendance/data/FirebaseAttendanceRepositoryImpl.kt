@@ -1,8 +1,8 @@
 package com.studypulse.app.feat.attendance.attendance.data
 
 import android.util.Log
-import com.studypulse.common.utils.DateUtils.toLocalDate
-import com.studypulse.common.utils.DateUtils.toTimestamp
+import com.studypulse.app.common.util.FirebaseDateUtils.toLocalDate
+import com.studypulse.app.common.util.FirebaseDateUtils.toTimestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -116,7 +116,7 @@ class FirebaseAttendanceRepositoryImpl(
 
     override fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>> = callbackFlow {
         TODO()  // incorrect, can't depend on createdAt, all records inserted together
-        val listener = getAttendanceCollection()
+        /*val listener = getAttendanceCollection()
             .whereEqualTo("date", date.toString())
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
@@ -136,7 +136,7 @@ class FirebaseAttendanceRepositoryImpl(
                 trySend(records)
             }
 
-        awaitClose { listener.remove() }
+        awaitClose { listener.remove() }*/
     }
 
     override suspend fun getAttendanceForPeriodAndDate(

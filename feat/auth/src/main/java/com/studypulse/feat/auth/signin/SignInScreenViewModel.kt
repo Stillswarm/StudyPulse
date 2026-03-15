@@ -1,16 +1,11 @@
 package com.studypulse.feat.auth.signin
 
-import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.util.Log
 import android.util.Patterns
 import androidx.annotation.StringRes
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -19,14 +14,10 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.feat.auth.R
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.GoogleAuthProvider
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
-import com.studypulse.core.user.model.User
-import com.studypulse.core.user.repository.UserRepository
+import com.studypulse.feat.auth.data.AuthRepository
+import com.studypulse.feat.auth.util.NotificationPermissionHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -36,7 +27,6 @@ interface ResourceProvider {
     fun getString(@StringRes resId: Int): String
 }
 
-// Implementation
 class AndroidResourceProvider(
     private val context: Context
 ) : ResourceProvider {
@@ -44,10 +34,9 @@ class AndroidResourceProvider(
 }
 
 class SignInScreenViewModel(
-    private val userRepository: UserRepository,
-    private val auth: FirebaseAuth,
-    private  val app: Application,
-    resourceProvider: ResourceProvider,  // easier to mockk than the earlier application
+    private val authRepository: AuthRepository,
+    private val app: Application,
+    resourceProvider: ResourceProvider,
 ) : ViewModel() {
     private val initialData = SignInScreenState()
     private val _state = MutableStateFlow(initialData)
@@ -62,13 +51,11 @@ class SignInScreenViewModel(
         )
         .build()
 
-
     companion object {
         const val RESET_COOLDOWN = 30
         const val EMPTY_EMAIL_ERROR = "Email cannot be empty"
         const val EMPTY_PASSWORD_ERROR = "Password cannot be empty"
         const val INVALID_EMAIL_ERROR = "Please enter a valid email"
-        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
     }
 
     fun updateEmail(new: String) {
@@ -97,34 +84,13 @@ class SignInScreenViewModel(
     fun signIn(activityContext: Activity?) {
         if (!credentialsOk()) return
         viewModelScope.launch {
-            auth.signInWithEmailAndPassword(_state.value.email.trim(), _state.value.password)
-                .addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        val exception = task.exception
-                        _state.update {
-                            it.copy(error = exception?.message)
-                        }
-                    } else {
-                        // check for notification permission
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(
-                                app,
-                                POST_NOTIFICATIONS
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            ActivityCompat.requestPermissions(
-                                activityContext!!,
-                                arrayOf(POST_NOTIFICATIONS),
-                                REQUEST_CODE_POST_NOTIFICATIONS
-                            )
-                        }
-                    }
-                }
+            authRepository.signInWithEmail(_state.value.email.trim(), _state.value.password)
+                .onSuccess { NotificationPermissionHelper.requestIfNeeded(app, activityContext) }
+                .onFailure { e -> _state.update { it.copy(error = e.message) } }
         }
     }
 
     private fun credentialsOk(): Boolean {
-
         if (_state.value.email.isEmpty()) {
             _state.update { it.copy(error = EMPTY_EMAIL_ERROR) }
             return false
@@ -135,7 +101,6 @@ class SignInScreenViewModel(
             return false
         }
 
-
         if (_state.value.password.isEmpty()) {
             _state.update { it.copy(error = EMPTY_PASSWORD_ERROR) }
             return false
@@ -144,59 +109,32 @@ class SignInScreenViewModel(
         return true
     }
 
-    private fun incorrectEmail(email: String) = !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+    private fun incorrectEmail(email: String) =
+        !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 
     fun sendPasswordResetEmail() {
         if (incorrectEmail(_state.value.bottomSheetEmail)) {
             _state.update { it.copy(error = INVALID_EMAIL_ERROR) }
             return
         }
-        auth.sendPasswordResetEmail(_state.value.bottomSheetEmail.trim())
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _state.update {
-                        it.copy(emailSent = true, counter = RESET_COOLDOWN)
-                    }
-                    viewModelScope.launch {
-                        SnackbarController.sendEvent(SnackbarEvent(message = "Reset Email Sent"))
-                    }
-                } else {
-                    when (val e = task.exception) {
-                        is FirebaseAuthInvalidUserException -> {
-                            _state.update {
-                                it.copy(error = null, emailSent = true, counter = RESET_COOLDOWN)
-                            }
-                            viewModelScope.launch {
-                                SnackbarController.sendEvent(SnackbarEvent(message = "Reset Email Sent"))
-                            }
-                        }
-
-                        is FirebaseAuthInvalidCredentialsException -> {
-                            _state.update {
-                                it.copy(error = "Invalid email format")
-                            }
-                        }
-
-                        else -> {
-                            _state.update {
-                                it.copy(error = e?.message)
-                            }
-                        }
-                    }
+        viewModelScope.launch {
+            authRepository.sendPasswordResetEmail(_state.value.bottomSheetEmail.trim())
+                .onSuccess {
+                    _state.update { it.copy(emailSent = true, counter = RESET_COOLDOWN) }
+                    SnackbarController.sendEvent(SnackbarEvent(message = "Reset Email Sent"))
                 }
-            }
+                .onFailure { e ->
+                    _state.update { it.copy(error = e.message) }
+                }
+        }
     }
 
     fun resetEmailSent() {
-        _state.update {
-            it.copy(emailSent = false)
-        }
+        _state.update { it.copy(emailSent = false) }
     }
 
     fun decrementCounter() {
-        _state.update {
-            it.copy(counter = it.counter.dec())
-        }
+        _state.update { it.copy(counter = it.counter.dec()) }
     }
 
     fun handleGoogleSignIn(activityContext: Activity?, context: Context) {
@@ -204,55 +142,16 @@ class SignInScreenViewModel(
             try {
                 val response =
                     CredentialManager.create(context).getCredential(context, credentialRequest)
-                // ➊ We know this is a federated (Google) credential
                 val custom = response.credential as CustomCredential
                 val googleToken = GoogleIdTokenCredential.createFrom(custom.data).idToken
-                // ➋ Now hand the token off to Firebase
-                signUpWithGoogle(googleToken)
 
-                // check for notification permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                    ContextCompat.checkSelfPermission(
-                        app,
-                        POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    ActivityCompat.requestPermissions(
-                        activityContext!!,
-                        arrayOf(POST_NOTIFICATIONS),
-                        REQUEST_CODE_POST_NOTIFICATIONS
-                    )
-                }
+                authRepository.signInWithGoogle(googleToken)
+                    .onSuccess { NotificationPermissionHelper.requestIfNeeded(app, activityContext) }
+                    .onFailure { e -> _state.update { it.copy(error = e.message ?: "Unknown error") } }
             } catch (e: Exception) {
-                Log.e("tag", "Error: ${e.message}")
+                Log.e("SignInVM", "Google sign-in error: ${e.message}")
                 _state.update { it.copy(error = e.localizedMessage ?: "Unknown error") }
             }
         }
-    }
-
-    fun signUpWithGoogle(
-        idToken: String,
-    ) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    auth.currentUser?.let { user ->
-                        viewModelScope.launch {
-                            userRepository.addUser(
-                                User(
-                                    email = user.email ?: "",
-                                    id = auth.currentUser!!.uid,
-                                    name = user.displayName ?: "",
-                                )
-                            )
-                        }
-                    }
-                } else {
-                    task.exception?.let { e ->
-                        _state.update { it.copy(error = e.message ?: "Unknown error") }
-                    }
-                }
-            }
     }
 }

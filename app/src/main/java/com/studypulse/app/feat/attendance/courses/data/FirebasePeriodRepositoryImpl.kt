@@ -2,7 +2,7 @@ package com.studypulse.app.feat.attendance.courses.data
 
 import android.content.Context
 import android.util.Log
-import com.studypulse.common.utils.DateUtils.toTimestamp
+import com.studypulse.app.common.util.FirebaseDateUtils.toTimestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
