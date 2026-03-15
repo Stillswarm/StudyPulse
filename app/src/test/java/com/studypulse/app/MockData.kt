@@ -1,13 +1,13 @@
 package com.studypulse.app
 
-import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceRecord
-import com.studypulse.app.feat.attendance.attendance.domain.model.AttendanceStatus
-import com.studypulse.app.feat.attendance.courses.domain.CourseSummary
-import com.studypulse.app.feat.attendance.courses.domain.model.Course
-import com.studypulse.app.feat.attendance.courses.domain.model.Day
-import com.studypulse.app.feat.attendance.courses.domain.model.Period
-import com.studypulse.app.feat.semester.domain.model.Semester
-import com.studypulse.app.feat.semester.domain.model.SemesterName
+import com.studypulse.feat.attendance.attendance.domain.model.AttendanceRecord
+import com.studypulse.feat.attendance.attendance.domain.model.AttendanceStatus
+import com.studypulse.feat.attendance.courses.domain.CourseSummary
+import com.studypulse.feat.attendance.courses.domain.model.Course
+import com.studypulse.feat.attendance.courses.domain.model.Period
+import com.studypulse.core.semester.model.Semester
+import com.studypulse.core.semester.model.SemesterName
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -18,7 +18,7 @@ val mockPeriod = Period(
     semesterId = "sem1",
     courseId = "c1",
     courseName = "Course 1",
-    day = Day.SATURDAY,
+    day = DayOfWeek.SATURDAY,
     startTime = LocalTime.parse("09:00"),
     endTime = LocalTime.parse("10:00"),
 )
@@ -57,7 +57,7 @@ val period1 = Period(
     semesterId = "sem1",
     courseId = "c1",
     courseName = "Course 1",
-    day = Day.FRIDAY,
+    day = DayOfWeek.FRIDAY,
     startTime = LocalTime.of(9, 0),
     endTime = LocalTime.of(10, 0),
     createdAt = 10000
@@ -68,7 +68,7 @@ val period2 = Period(
     semesterId = "sem2",
     courseId = "c2",
     courseName = "Course 2",
-    day = Day.WEDNESDAY,
+    day = DayOfWeek.WEDNESDAY,
     startTime = LocalTime.of(14, 50),
     endTime = LocalTime.of(16, 0),
     createdAt = 10000

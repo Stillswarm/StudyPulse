@@ -1,0 +1,23 @@
+package com.studypulse.feat.attendance.attendance.domain
+
+import com.studypulse.feat.attendance.attendance.domain.model.AttendanceRecord
+import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+
+interface AttendanceRepository {
+    suspend fun upsertAttendance(attendanceRecord: AttendanceRecord)
+    suspend fun findExistingRecordId(record: AttendanceRecord): Result<String>
+    fun getAttendanceByDate(date: LocalDate): Flow<List<AttendanceRecord>>
+    suspend fun getAttendanceForPeriodAndDate(periodId: String, date: LocalDate) : AttendanceRecord?
+    fun getAllAttendanceRecords(): Flow<List<AttendanceRecord>>
+    fun getAttendanceGroupedByCourse(): Flow<Map<String, List<AttendanceRecord>>>
+    suspend fun hasPendingAttendanceForDate(semesterId: String, date: LocalDate): Result<Boolean>
+    suspend fun upsertManyAttendance(records: List<AttendanceRecord>): Result<Unit>
+    suspend fun getDatesWithUnmarkedAttendance(
+        semesterId: String,
+        monthStartDate: LocalDate,
+        endDate: LocalDate
+    ): Result<Set<LocalDate>>
+    fun getUnmarkedRecordsFlow(upto: LocalDate): Flow<List<AttendanceRecord>>
+    suspend fun deleteAttendance(attendanceRecordId: String): Result<Unit>
+}

@@ -1,0 +1,14 @@
+package com.studypulse.core.semester.model
+
+data class SemesterSummary(
+    val id: String,
+    val semesterId: String,
+    val cancelledRecords: Int,
+    val presentRecords: Int,
+    val absentRecords: Int,
+    val unmarkedRecords: Int,
+    val minAttendance: Int,
+) {
+    val totalClasses: Int
+        get() = presentRecords + absentRecords + unmarkedRecords
+}

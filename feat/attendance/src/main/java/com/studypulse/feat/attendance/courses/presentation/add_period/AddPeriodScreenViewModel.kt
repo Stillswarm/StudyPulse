@@ -1,0 +1,180 @@
+package com.studypulse.feat.attendance.courses.presentation.add_period
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.feat.attendance.courses.domain.CourseRepository
+import com.studypulse.feat.attendance.courses.domain.PeriodRepository
+import com.studypulse.feat.attendance.courses.domain.model.Period
+import java.time.DayOfWeek
+import com.studypulse.feat.attendance.courses.domain.model.overlapsWith
+import com.studypulse.core.semester.repository.SemesterRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.time.LocalTime
+
+class AddPeriodScreenViewModel(
+    private val courseRepository: CourseRepository,
+    private val periodRepository: PeriodRepository,
+    private val semesterRepository: SemesterRepository,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+    private val initialData = AddPeriodScreenState(
+        selectedDay = savedStateHandle.get<String>("day")?.let { DayOfWeek.valueOf(it) } ?: DayOfWeek.MONDAY,
+        startTimeHour = 9,
+        startTimeMinute = 0,
+        endTimeMinute = 0,
+        endTimeHour = 10
+    )
+    private val _state = MutableStateFlow(initialData)
+    val state = _state.asStateFlow()
+    private val courseId: String = checkNotNull(savedStateHandle["courseId"])
+    private val periodId: String? = savedStateHandle["periodId"]
+
+    init {
+        if (periodId != null) {
+            viewModelScope.launch {
+                val period = periodRepository.getPeriodById(periodId).getOrNull()
+                if (period != null) {
+                    _state.update {
+                        it.copy(
+                            periodId = periodId,
+                            selectedDay = period.day,
+                            startTimeHour = period.startTime.hour,
+                            startTimeMinute = period.startTime.minute,
+                            endTimeHour = period.endTime.hour,
+                            endTimeMinute = period.endTime.minute
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun showStartTimePicker() {
+        _state.update {
+            it.copy(
+                showStartTimePicker = true,
+                showEndTimePicker = false
+            )
+        }
+    }
+
+    fun hideStartTimePicker() {
+        _state.update { it.copy(showStartTimePicker = false) }
+    }
+
+    fun showEndTimePicker() {
+        _state.update {
+            it.copy(
+                showEndTimePicker = true,
+                showStartTimePicker = false
+            )
+        }
+    }
+
+    fun hideEndTimePicker() {
+        _state.update { it.copy(showEndTimePicker = false) }
+    }
+
+
+    fun onDayChange(newVal: DayOfWeek) {
+        _state.update { it.copy(selectedDay = newVal) }
+    }
+
+    fun onStartTimeChange(newHour: Int, newMinute: Int) {
+        _state.update { it.copy(startTimeHour = newHour, startTimeMinute = newMinute) }
+    }
+
+    fun onEndTimeChange(newHour: Int, newMinute: Int) {
+        _state.update { it.copy(endTimeHour = newHour, endTimeMinute = newMinute) }
+    }
+
+    fun updateShowConfirmationPopup(new: Boolean) {
+        _state.update { it.copy(showConfirmationPopup = new) }
+    }
+
+    fun updateGranted(new: Boolean) {
+        _state.update { it.copy(granted = new) }
+    }
+
+    fun onSubmit(navigateBack: () -> Unit) {
+        // sanity check
+        if (_state.value.startTimeHour > _state.value.endTimeHour || (_state.value.startTimeHour == _state.value.endTimeHour && _state.value.startTimeMinute >= _state.value.endTimeMinute)) {
+            viewModelScope.launch {
+                SnackbarController.sendEvent(SnackbarEvent("start time cannot be after end time"))
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(loading = true) }
+            // check for abnormal date range
+            val s = _state.value
+            val startTime = LocalTime.of(s.startTimeHour, s.startTimeMinute)
+            val endTime = LocalTime.of(s.endTimeHour, s.endTimeMinute)
+            val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes()
+            if (!s.granted) {
+                if (durationMinutes < 30) {
+                    _state.update {
+                        it.copy(
+                            showConfirmationPopup = true,
+                            timeRange = "$durationMinutes minutes"
+                        )
+                    }
+                    _state.update { it.copy(loading = false) }
+                    return@launch
+                } else if (durationMinutes > 180) {
+                    _state.update {
+                        it.copy(
+                            showConfirmationPopup = true,
+                            timeRange = "${durationMinutes / 60} hours ${durationMinutes % 60} minutes"
+                        )
+                    }
+                    _state.update { it.copy(loading = false) }
+                    return@launch
+                }
+            }
+
+            // check if any collision
+            val periodToAdd = Period(
+                id = _state.value.periodId, // if new period -> periodId = some valid id, else periodId = "", rest of the logic is in addNewPeriod()
+                courseId = courseId,
+                courseName = courseRepository.getCourseById(courseId)
+                    .getOrNull()?.courseName
+                    ?: "",
+                day = _state.value.selectedDay,
+                startTime = startTime,
+                endTime = endTime,
+                semesterId = semesterRepository.getActiveSemester().getOrNull()?.id ?: ""
+            )
+            val collision = periodRepository
+                .getAllPeriodsByDayInStartTimeOrder(_state.value.selectedDay)
+                .getOrNull()?.first()?.firstOrNull { period -> period.overlapsWith(periodToAdd) }
+
+            if (collision != null) {
+                SnackbarController.sendEvent(SnackbarEvent("Failed to add period. Period timings collide with another ${collision.courseName} period."))
+                _state.update { it.copy(loading = false) }
+                return@launch
+            }
+
+            // all checks complete, safe to add now
+            periodRepository.addNewPeriod(periodToAdd)
+
+            _state.update {
+                it.copy(
+                    showConfirmationPopup = false,
+                    granted = false,
+                    timeRange = "",
+                    loading = false
+                )
+            }
+            navigateBack()
+        }
+    }
+}

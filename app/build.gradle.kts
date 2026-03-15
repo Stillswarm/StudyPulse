@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("kotlin-parcelize")
@@ -102,8 +101,11 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:nav"))
     implementation(project(":core:user"))
+    implementation(project(":core:semester"))
     implementation(project(":feat:user"))
     implementation(project(":feat:auth"))
+    implementation(project(":feat:semester"))
+    implementation(project(":feat:attendance"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -132,11 +134,6 @@ dependencies {
     // coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-
-    // room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
 
     // kotlinx.serialization
     implementation(libs.kotlinx.serialization.json)

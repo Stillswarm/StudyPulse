@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.studypulse.app.feat.attendance.notification.BootWorker
-import com.studypulse.app.feat.attendance.notification.NotificationHelper
+import com.studypulse.feat.attendance.notification.BootWorker
+import com.studypulse.feat.attendance.notification.NotificationHelper
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin

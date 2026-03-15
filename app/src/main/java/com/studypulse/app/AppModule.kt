@@ -6,12 +6,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.studypulse.app.common.datastore.AppDatastore
-import com.studypulse.app.feat.attendance.di.attendanceModule
+import com.studypulse.core.semester.datastore.AppDatastore
+import com.studypulse.feat.attendance.di.attendanceModule
 import com.studypulse.app.feat.feedback.FeedbackScreenViewModel
 import com.studypulse.app.feat.feedback.data.FeedbackRepository
 import com.studypulse.app.feat.feedback.data.FeedbackRepositoryImpl
-import com.studypulse.app.feat.semester.di.semesterModule
+import com.studypulse.feat.semester.di.semesterModule
 import com.studypulse.feat.user.di.userModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
@@ -25,7 +25,6 @@ val appModule = module {
         semesterModule,
     )
 
-
     // DataStore
     single<AppDatastore> {
         AppDatastore(androidContext())
@@ -35,14 +34,8 @@ val appModule = module {
     single<FirebaseAuth> { Firebase.auth }
     single<FirebaseFirestore> { Firebase.firestore }
 
-    // DB
-    single<StudyPulseDatabase> { StudyPulseDatabase.getDatabase(get()) }
-
     // Feedback Repository
     single<FeedbackRepository> { FeedbackRepositoryImpl(get(), get()) }
-
-    // Algolia Client
-//    single { SearchClient(BuildConfig.ALGOLIA_APP_ID, BuildConfig.ALGOLIA_SEARCH_KEY) }
 
     // VM
     viewModelOf(::AppViewModel)

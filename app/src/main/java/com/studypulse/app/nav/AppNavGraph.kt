@@ -8,10 +8,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.studypulse.feat.auth.nav.authNavGraph
 import com.studypulse.app.LocalCurrentUser
-import com.studypulse.app.feat.attendance.nav.attendanceGraph
+import com.studypulse.feat.attendance.nav.attendanceGraph
 import com.studypulse.app.feat.feedback.FeedbackScreen
 import com.studypulse.app.feat.home.nav.homeGraph
-import com.studypulse.app.feat.semester.semesterNavGraph
+import com.studypulse.feat.semester.nav.semesterNavGraph
 import com.studypulse.feat.user.nav.userNavGraph
 import com.studypulse.nav.routes.Route
 
@@ -24,7 +24,6 @@ fun AppNavGraph(
         modifier = modifier,
         navController = navController,
         startDestination = if (LocalCurrentUser.current != null) Route.HomeRoute else Route.SignUpRoute,
-//        startDestination = Route.FeedbackRoute
     ) {
         attendanceGraph(navController)
         homeGraph(navController)
