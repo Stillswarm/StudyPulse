@@ -1,4 +1,4 @@
-package com.example.feat.auth
+package com.studypulse.feat.auth
 
 import org.junit.Test
 

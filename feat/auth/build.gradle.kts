@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.feat.auth"
+    namespace = "com.studypulse.feat.auth"
     compileSdk = 35
 
     defaultConfig {

@@ -1,6 +1,6 @@
 package com.studypulse.app
 
-import com.example.feat.auth.di.authModule
+import com.studypulse.feat.auth.di.authModule
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth

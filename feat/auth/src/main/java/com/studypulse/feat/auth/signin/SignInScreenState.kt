@@ -1,4 +1,4 @@
-package com.example.feat.auth.signin
+package com.studypulse.feat.auth.signin
 
 data class SignInScreenState(
     val email: String = "",

@@ -1,4 +1,4 @@
-package com.example.feat.auth.signin
+package com.studypulse.feat.auth.signin
 
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
@@ -16,7 +16,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.feat.auth.R
+import com.studypulse.feat.auth.R
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth

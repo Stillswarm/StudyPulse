@@ -1,4 +1,4 @@
-package com.example.feat.auth.signin
+package com.studypulse.feat.auth.signin
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
@@ -48,7 +48,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.feat.auth.R
+import com.studypulse.feat.auth.R
 import com.studypulse.ui.components.OrDivider
 import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.ui.theme.DarkGray
