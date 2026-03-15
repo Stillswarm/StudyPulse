@@ -1,0 +1,14 @@
+package com.studypulse.feat.user.presentation
+
+import com.studypulse.core.user.model.User
+
+data class ProfileScreenState(
+    val user: User? = null,
+    val editingName: Boolean = false,
+    val editingInstitution: Boolean = false,
+    val currentName: String? = null,
+    val currentInstitution: String? = null,
+    val isLoading: Boolean = false,
+//    val currentSemester: Semester? = null,
+//    val semesterList: List<Semester> = emptyList()
+)

@@ -28,7 +28,7 @@ class AttendanceScreenViewModel(
     private val semesterSummaryRepository: SemesterSummaryRepository,
     private val courseSummaryRepository: CourseSummaryRepository,
     private val semesterRepository: SemesterRepository,
-    ds: AppDatastore,
+    private val ds: AppDatastore,
     initialState: AttendanceScreenState = AttendanceScreenState(),
 ) : ViewModel() {
     private val _state = MutableStateFlow(initialState)
@@ -72,6 +72,7 @@ class AttendanceScreenViewModel(
                         SnackbarEvent("Failed to fetch active semester: ${e.message ?: "Unknown error"}")
                     )
                     _state.update { it.copy(isLoading = false) }
+                    ds.clearSemesterId()
                     return@supervisorScope
                 }
 

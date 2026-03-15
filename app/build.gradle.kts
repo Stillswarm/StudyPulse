@@ -102,6 +102,8 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:nav"))
     implementation(project(":core:user"))
+    implementation(project(":feat:user"))
+    implementation(project(":feat:auth"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -124,13 +126,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // koin
-    val koinVersion = "4.0.4"
-    implementation("io.insert-koin:koin-android:$koinVersion")
-    implementation("io.insert-koin:koin-androidx-compose:$koinVersion")
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
 
     // coil
-    implementation("io.coil-kt.coil3:coil-compose:3.2.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // room
     implementation(libs.androidx.room.runtime)
@@ -151,12 +152,6 @@ dependencies {
 
     // algolia
     implementation(libs.algoliasearch.client.kotlin)
-
-
-    // Credential Manager libraries
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services.auth)
-    implementation(libs.googleid)
 
     // crashlytics
     implementation(libs.firebase.crashlytics.ndk)

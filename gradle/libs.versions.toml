@@ -3,6 +3,7 @@ accompanistSystemuicontroller = "0.36.0"
 agp = "8.11.0"
 algoliasearchClientKotlin = "3.39.1"
 androidxJunit = "1.3.0"
+coilNetworkOkhttp = "3.4.0"
 credentials = "1.5.0"
 datastorePreferences = "1.2.1"
 espressoCoreVersion = "3.7.0"
@@ -10,6 +11,7 @@ firebaseBom = "34.10.0"
 googleid = "1.2.0"
 koinTest = "4.1.1"
 koinTestJunit4 = "4.1.1"
+koinVersion = "4.0.4"
 kotlin = "2.2.0"
 kotlinxCoroutinesTestVersion = "1.10.2"
 ksp = "2.2.0-2.0.2"
@@ -38,6 +40,7 @@ junitJunit = "4.12"
 appcompat = "1.7.1"
 material = "1.13.0"
 uiText = "1.10.4"
+firebaseAuthKtxVersion = "24.0.1"
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
@@ -58,6 +61,8 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVers
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilNetworkOkhttp" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk" }
@@ -66,6 +71,8 @@ google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" 
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesTestVersion" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinVersion" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinVersion" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koinTest" }
 koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koinTestJunit4" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -96,6 +103,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
+google-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtxVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

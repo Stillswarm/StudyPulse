@@ -6,13 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.feat.auth.nav.authNavGraph
 import com.studypulse.app.LocalCurrentUser
 import com.studypulse.app.feat.attendance.nav.attendanceGraph
-import com.studypulse.app.feat.auth.nav.authNavGraph
 import com.studypulse.app.feat.feedback.FeedbackScreen
 import com.studypulse.app.feat.home.nav.homeGraph
 import com.studypulse.app.feat.semester.semesterNavGraph
-import com.studypulse.app.feat.user.nav.userNavGraph
+import com.studypulse.feat.user.nav.userNavGraph
 import com.studypulse.nav.routes.Route
 
 @Composable

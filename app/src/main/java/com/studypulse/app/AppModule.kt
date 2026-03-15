@@ -1,5 +1,6 @@
 package com.studypulse.app
 
+import com.example.feat.auth.di.authModule
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -7,12 +8,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.studypulse.app.common.datastore.AppDatastore
 import com.studypulse.app.feat.attendance.di.attendanceModule
-import com.studypulse.app.feat.auth.di.authModule
 import com.studypulse.app.feat.feedback.FeedbackScreenViewModel
 import com.studypulse.app.feat.feedback.data.FeedbackRepository
 import com.studypulse.app.feat.feedback.data.FeedbackRepositoryImpl
 import com.studypulse.app.feat.semester.di.semesterModule
-import com.studypulse.app.feat.user.di.userModule
+import com.studypulse.feat.user.di.userModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
