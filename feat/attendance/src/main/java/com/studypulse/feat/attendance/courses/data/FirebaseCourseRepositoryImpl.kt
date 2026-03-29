@@ -2,6 +2,7 @@ package com.studypulse.feat.attendance.courses.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.semester.datastore.AppDatastore
 import com.studypulse.feat.attendance.courses.domain.CourseRepository
 import com.studypulse.feat.attendance.courses.domain.CourseSummaryRepository
@@ -21,21 +22,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseCourseRepositoryImpl(
-    private val db: FirebaseFirestore,
+    db: FirebaseFirestore,
     private val ds: AppDatastore,
-    private val auth: FirebaseAuth,
+    auth: FirebaseAuth,
     private val courseSummaryRepository: CourseSummaryRepository,
     private val periodRepository: PeriodRepository,
-) : CourseRepository {
+) : BaseFirebaseRepository(auth, db), CourseRepository {
     suspend fun getSemesterId(): String = ds.semesterIdFlow.first()
     override fun getAllCoursesFlow(): Flow<List<Course>> {
-        val userId = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
         return callbackFlow {
-            val listener = db.collection("users")
-                .document(userId)
-                .collection("semesters")
-                .document(getSemesterId())
-                .collection("courses")
+            val listener = userCollection("semesters", getSemesterId(), "courses")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         close(error)
@@ -58,14 +54,8 @@ class FirebaseCourseRepositoryImpl(
 
     override fun getAllCoursesSortedByNameFlow(): Result<Flow<List<Course>>> =
         runCatching {
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             callbackFlow {
-                val listener = db.collection("users")
-                    .document(userId)
-                    .collection("semesters")
-                    .document(getSemesterId())
-                    .collection("courses")
+                val listener = userCollection("semesters", getSemesterId(), "courses")
                     .orderBy("courseName")
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
@@ -85,13 +75,7 @@ class FirebaseCourseRepositoryImpl(
         }
 
     override suspend fun getAllCourses() = runCatching {
-        val userId =
-            auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
-        val snapshot = db.collection("users")
-            .document(userId)
-            .collection("semesters")
-            .document(getSemesterId())
-            .collection("courses")
+        val snapshot = userCollection("semesters", getSemesterId(), "courses")
             .get()
             .await()
 
@@ -101,13 +85,7 @@ class FirebaseCourseRepositoryImpl(
 
     override suspend fun getCourseById(id: String): Result<Course?> =
         runCatching {
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
-            val doc = db.collection("users")
-                .document(userId)
-                .collection("semesters")
-                .document(getSemesterId())
-                .collection("courses")
+            val doc = userCollection("semesters", getSemesterId(), "courses")
                 .document(id)
                 .get()
                 .await()
@@ -120,27 +98,16 @@ class FirebaseCourseRepositoryImpl(
             if (course.id.isNotEmpty()) {
                 updateCourse(course)
             }
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val courseData = course.copy(
                 createdAt = System.currentTimeMillis()
             )
             val semesterId = ds.semesterIdFlow.first()
+            val coursesCol = userCollection("semesters", semesterId, "courses")
 
             val docRef = if (course.id.isBlank()) {
-                db.collection("users")
-                    .document(userId)
-                    .collection("semesters")
-                    .document(semesterId)
-                    .collection("courses")
-                    .document()            // generates new random ID
+                coursesCol.document()
             } else {
-                db.collection("users")
-                    .document(userId)
-                    .collection("semesters")
-                    .document(semesterId)
-                    .collection("courses")
-                    .document(course.id)
+                coursesCol.document(course.id)
             }
 
             docRef.set(courseData.toDto().copy(id = docRef.id))
@@ -150,23 +117,15 @@ class FirebaseCourseRepositoryImpl(
 
     override suspend fun updateCourse(course: Course): Result<Unit> =
         runCatching {
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val courseId = course.id
             val semesterId = ds.semesterIdFlow.first()
 
-            // if course name has changed, update course name in course summary document AND
-            // in all periods belonging to this course
             coroutineScope {
                 val putCourseSummaryJob = launch {
                     courseSummaryRepository.put(courseId, course.minAttendance, course.courseName).getOrThrow()
                 }
                 val periodsDeferred = async {
-                    val periodQuery = db.collection("users")
-                        .document(userId)
-                        .collection("semesters")
-                        .document(semesterId)
-                        .collection("periods")
+                    val periodQuery = userCollection("semesters", semesterId, "periods")
                         .whereEqualTo("courseId", courseId)
                         .get()
                         .await()
@@ -179,11 +138,7 @@ class FirebaseCourseRepositoryImpl(
                     }
                 }
                 val updateCourseJob = launch {
-                    db.collection("users")
-                        .document(userId)
-                        .collection("semesters")
-                        .document(semesterId)
-                        .collection("courses")
+                    userCollection("semesters", semesterId, "courses")
                         .document(courseId)
                         .set(course.toDto())
                         .await()
@@ -197,16 +152,9 @@ class FirebaseCourseRepositoryImpl(
 
     override suspend fun deleteCourse(id: String): Result<Unit> =
         runCatching {
-            val userId =
-                auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
             val semesterId = ds.semesterIdFlow.first()
 
-            // Query all periods for this course
-            val periodQuery = db.collection("users")
-                .document(userId)
-                .collection("semesters")
-                .document(semesterId)
-                .collection("periods")
+            val periodQuery = userCollection("semesters", semesterId, "periods")
                 .whereEqualTo("courseId", id)
                 .get()
                 .await()
@@ -219,16 +167,10 @@ class FirebaseCourseRepositoryImpl(
                 }
                 deleteJobs.awaitAll()
 
-                // delete the course summary
                 launch { courseSummaryRepository.delete(id) }
 
-                // Finally, delete this course document
                 launch {
-                    db.collection("users")
-                        .document(userId)
-                        .collection("semesters")
-                        .document(semesterId)
-                        .collection("courses")
+                    userCollection("semesters", semesterId, "courses")
                         .document(id)
                         .delete()
                         .await()

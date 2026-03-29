@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.user.model.User
 import com.studypulse.core.user.model.UserDto
 import com.studypulse.core.user.model.toDomain
@@ -13,16 +14,13 @@ import com.studypulse.core.user.repository.UserRepository
 import kotlinx.coroutines.tasks.await
 
 class FirebaseUserRepositoryImpl(
-    private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore,
-//    private val searchClient: SearchClient,
-) : UserRepository {
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
+) : BaseFirebaseRepository(auth, db), UserRepository {
 
     override suspend fun fetchCurrentUser() =
         runCatching {
-            val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-            db.collection("users")
-                .document(userId)
+            userDocument()
                 .get()
                 .await()
                 .toObject<UserDto>()
@@ -32,14 +30,14 @@ class FirebaseUserRepositoryImpl(
         }
 
     override suspend fun addUser(user: User) = try {
-        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-        db.collection("users").document(userId)
-            .set(user.toDto(), SetOptions.merge()) // This will merge with existing data
+        userDocument()
+            .set(user.toDto(), SetOptions.merge())
             .await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }
+
     // todo
     override suspend fun deleteUser(user: User) = Result.success(Unit)
 
@@ -62,15 +60,13 @@ class FirebaseUserRepositoryImpl(
 
     override suspend fun updateName(newName: String) =
         runCatching {
-            val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-            db.collection("users").document(userId).update("name", newName).await()
+            userDocument().update("name", newName).await()
             Unit
         }
 
     override suspend fun updateInstitution(newInstitution: String) =
         runCatching {
-            val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-            db.collection("users").document(userId).update("institution", newInstitution).await()
+            userDocument().update("institution", newInstitution).await()
             Unit
         }
 }

@@ -13,11 +13,16 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core/common" />
+            <option value="$PROJECT_DIR$/core/firebase" />
             <option value="$PROJECT_DIR$/core/nav" />
+            <option value="$PROJECT_DIR$/core/semester" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/core/user" />
             <option value="$PROJECT_DIR$/feat" />
+            <option value="$PROJECT_DIR$/feat/attendance" />
             <option value="$PROJECT_DIR$/feat/auth" />
+            <option value="$PROJECT_DIR$/feat/flashcards" />
+            <option value="$PROJECT_DIR$/feat/semester" />
             <option value="$PROJECT_DIR$/feat/user" />
           </set>
         </option>

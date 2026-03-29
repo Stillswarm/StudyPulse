@@ -1,5 +1,6 @@
 package com.studypulse.feat.attendance.di
 
+import com.studypulse.core.firebase.firebaseModule
 import com.studypulse.feat.attendance.attendance.data.FirebaseAttendanceRepositoryImpl
 import com.studypulse.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.feat.attendance.attendance.domain.use_cases.GetAllUnmarkedPeriodsUseCase
@@ -29,6 +30,9 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val attendanceModule = module {
+
+    includes(firebaseModule)
+
     // firebase repository
     single<CourseRepository> { FirebaseCourseRepositoryImpl(get(), get(), get(), get(), get()) }
     single<CourseSummaryRepository> { FirebaseCourseSummaryRepositoryImpl(get(), get(), get(), get()) }

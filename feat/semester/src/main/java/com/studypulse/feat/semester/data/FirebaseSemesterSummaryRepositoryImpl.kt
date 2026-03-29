@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.semester.datastore.AppDatastore
 import com.studypulse.core.semester.model.SemesterSummary
 import com.studypulse.core.semester.repository.SemesterSummaryRepository
@@ -13,18 +14,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
 class FirebaseSemesterSummaryRepositoryImpl(
-    private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
     private val ds: AppDatastore,
-) : SemesterSummaryRepository {
+) : BaseFirebaseRepository(auth, db), SemesterSummaryRepository {
 
     private suspend fun getSemesterId() = ds.semesterIdFlow.first()
-    private fun getUserId() =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
-    private suspend fun summaryDocument() = db
-        .collection("users/${getUserId()}/semesters/${getSemesterId()}/sem_summaries")
-        .document("sem_summary")
+    private suspend fun summaryDocument() =
+        userCollection("semesters", getSemesterId(), "sem_summaries")
+            .document("sem_summary")
 
     override suspend fun put(minAttendance: Int): Result<Unit> =
         runCatching {

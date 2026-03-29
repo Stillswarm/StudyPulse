@@ -102,6 +102,8 @@ dependencies {
     implementation(project(":core:nav"))
     implementation(project(":core:user"))
     implementation(project(":core:semester"))
+    implementation(project(":core:firebase"))
+
     implementation(project(":feat:user"))
     implementation(project(":feat:auth"))
     implementation(project(":feat:semester"))

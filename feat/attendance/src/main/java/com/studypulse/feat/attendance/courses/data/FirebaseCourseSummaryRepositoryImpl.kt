@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.semester.datastore.AppDatastore
 import com.studypulse.feat.attendance.courses.domain.CourseSummary
 import com.studypulse.feat.attendance.courses.domain.CourseSummaryRepository
@@ -18,19 +19,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseCourseSummaryRepositoryImpl(
-    private val auth: FirebaseAuth,
+    auth: FirebaseAuth,
     private val semesterSummaryRepository: SemesterSummaryRepository,
-    private val db: FirebaseFirestore,
+    db: FirebaseFirestore,
     private val ds: AppDatastore,
-) : CourseSummaryRepository {
+) : BaseFirebaseRepository(auth, db), CourseSummaryRepository {
 
     private suspend fun getSemesterId() = ds.semesterIdFlow.first()
-    private fun getUserId() =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
-    private suspend fun summaryDocument(courseId: String) = db
-        .collection("users/${getUserId()}/semesters/${getSemesterId()}/courses/$courseId/course_summaries")
-        .document("course_summary")
+    private suspend fun summaryDocument(courseId: String) =
+        userCollection("semesters", getSemesterId(), "courses", courseId, "course_summaries")
+            .document("course_summary")
 
     override suspend fun put(
         courseId: String,
@@ -46,7 +45,7 @@ class FirebaseCourseSummaryRepositoryImpl(
                     courseId = courseId,
                     minAttendance = minAttendance,
                     courseName = courseName,
-                    userId = getUserId(),
+                    userId = requireUserId(),
                     semesterId = getSemesterId(),
                     presentRecords = existingRecord?.presentRecords ?: 0,
                     absentRecords = existingRecord?.absentRecords ?: 0,
@@ -185,7 +184,7 @@ class FirebaseCourseSummaryRepositoryImpl(
 
     override suspend fun getSummaryForAllCourses(): Result<List<CourseSummary>> =
         runCatching {
-            val userId = getUserId()
+            val userId = requireUserId()
             val semesterId = getSemesterId()
             val snapshot = db
                 .collectionGroup("course_summaries")

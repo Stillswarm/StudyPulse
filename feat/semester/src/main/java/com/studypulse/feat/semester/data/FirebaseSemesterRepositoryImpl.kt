@@ -2,6 +2,7 @@ package com.studypulse.feat.semester.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.semester.datastore.AppDatastore
 import com.studypulse.core.semester.model.Semester
 import com.studypulse.core.semester.repository.SemesterRepository
@@ -9,21 +10,16 @@ import com.studypulse.core.semester.repository.SemesterSummaryRepository
 import kotlinx.coroutines.tasks.await
 
 class FirebaseSemesterRepositoryImpl(
-    private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
     private val ds: AppDatastore,
     private val semesterSummaryRepository: SemesterSummaryRepository
-) : SemesterRepository {
-    private fun getUserId() =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+) : BaseFirebaseRepository(auth, db), SemesterRepository {
 
     override suspend fun addActiveSemester(semester: Semester) = runCatching {
-        val userId   = getUserId()
         val now      = System.currentTimeMillis()
         val s        = semester.copy(createdAt = now)
-        val col      = db.collection("users")
-            .document(userId)
-            .collection("semesters")
+        val col      = userCollection("semesters")
         val newDoc   = col.document()
 
         val snapshot = col
@@ -47,10 +43,7 @@ class FirebaseSemesterRepositoryImpl(
 
     override suspend fun markCurrent(semesterId: String) =
         kotlin.runCatching {
-            val userId = getUserId()
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
+            userCollection("semesters")
                 .whereEqualTo("current", true)
                 .get()
                 .await()
@@ -59,9 +52,7 @@ class FirebaseSemesterRepositoryImpl(
                     document.reference.update("current", false).await()
                 }
 
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
+            userCollection("semesters")
                 .document(semesterId)
                 .update("current", true)
 
@@ -70,10 +61,7 @@ class FirebaseSemesterRepositoryImpl(
 
     override suspend fun markCompleted(semesterId: String) =
         runCatching {
-            val userId = getUserId()
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
+            userCollection("semesters")
                 .document(semesterId)
                 .update("isCompleted", false)
             Unit
@@ -81,10 +69,7 @@ class FirebaseSemesterRepositoryImpl(
 
     override suspend fun getActiveSemester() =
         runCatching {
-            val userId = getUserId()
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
+            userCollection("semesters")
                 .whereEqualTo("current", true)
                 .get()
                 .await()
@@ -95,10 +80,7 @@ class FirebaseSemesterRepositoryImpl(
 
     override suspend fun getAllSemesters() =
         runCatching {
-            val userId = getUserId()
-            db.collection("users")
-                .document(userId)
-                .collection("semesters")
+            userCollection("semesters")
                 .get()
                 .await()
                 .toObjects(SemesterDto::class.java)

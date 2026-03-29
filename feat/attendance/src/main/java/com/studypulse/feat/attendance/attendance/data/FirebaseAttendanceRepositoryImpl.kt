@@ -1,11 +1,12 @@
 package com.studypulse.feat.attendance.attendance.data
 
 import android.util.Log
-import com.studypulse.feat.attendance.data.FirebaseDateUtils.toLocalDate
-import com.studypulse.feat.attendance.data.FirebaseDateUtils.toTimestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.studypulse.feat.attendance.data.FirebaseDateUtils.toLocalDate
+import com.studypulse.feat.attendance.data.FirebaseDateUtils.toTimestamp
 import com.google.firebase.firestore.Query
+import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.core.semester.datastore.AppDatastore
 import com.studypulse.feat.attendance.attendance.domain.AttendanceRepository
 import com.studypulse.feat.attendance.attendance.domain.model.AttendanceRecord
@@ -25,20 +26,16 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class FirebaseAttendanceRepositoryImpl(
-    private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
     private val semesterSummaryRepository: SemesterSummaryRepository,
     private val courseSummaryRepository: CourseSummaryRepository,
     private val ds: AppDatastore,
-) : AttendanceRepository {
+) : BaseFirebaseRepository(auth, db), AttendanceRepository {
 
     private suspend fun getSemesterId() = ds.semesterIdFlow.first()
 
-    private fun getUserId(): String =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
-
-    private fun getAttendanceCollection() =
-        db.collection("users/${getUserId()}/attendance")
+    private fun getAttendanceCollection() = userCollection("attendance")
 
     override suspend fun upsertAttendance(attendanceRecord: AttendanceRecord) {
         val collection = getAttendanceCollection()
@@ -144,11 +141,11 @@ class FirebaseAttendanceRepositoryImpl(
         date: LocalDate,
     ): AttendanceRecord? {
         Log.d("tag", "inside getAttendanceForPeriodAndDate")
-        val user = auth.currentUser ?: throw IllegalStateException("User not authenticated")
+        val userId = requireUserId()
         val dateTimestamp = date.toTimestamp()
         Log.d("tag", "dateTimestamp: $dateTimestamp")
         val snapshot = db.collectionGroup("attendance")
-            .whereEqualTo("userId", user.uid)
+            .whereEqualTo("userId", userId)
             .whereEqualTo("periodId", periodId)
             .whereEqualTo("date", dateTimestamp)
             .limit(1)
