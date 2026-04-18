@@ -108,6 +108,7 @@ dependencies {
     implementation(project(":feat:auth"))
     implementation(project(":feat:semester"))
     implementation(project(":feat:attendance"))
+    implementation(project(":feat:flashcards"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

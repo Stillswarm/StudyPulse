@@ -101,8 +101,8 @@ val homeScreenItems = listOf(
         "Revisions made easy",
         R.drawable.ic_flashcards,
         Cyan,
-        active = false,
-        route = null,
+        active = true,
+        route = Route.FlashcardEntryRoute,
     ),
     HomeScreenItem(
         "Budget Tracker",

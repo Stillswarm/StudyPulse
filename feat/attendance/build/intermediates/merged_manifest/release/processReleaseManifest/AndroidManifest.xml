@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.studypulse.feat.attendance" >
+
+    <uses-sdk android:minSdkVersion="26" />
+
+    <application>
+        <receiver android:name="com.studypulse.feat.attendance.notification.ClassAlarmReceiver" />
+        <receiver android:name="com.studypulse.feat.attendance.notification.AttendanceActionReceiver" />
+        <receiver
+            android:name="com.studypulse.feat.attendance.notification.BootReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

@@ -60,6 +60,10 @@ object Route {
     @Serializable
     data object FeedbackRoute : NavigableRoute
 
+    // FLASHCARD ROUTES
+    @Serializable
+    data object FlashcardEntryRoute : NavigableRoute
+
 }
 
 fun NavBackStackEntry.isRoute(routeClass: KClass<out NavigableRoute>): Boolean {

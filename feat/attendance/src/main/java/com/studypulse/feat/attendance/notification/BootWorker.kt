@@ -15,11 +15,11 @@ class BootWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(appContext, params), KoinComponent {
     private val periodRepository: PeriodRepository by inject()
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
     override suspend fun doWork(): Result =
         withContext(Dispatchers.IO)
         {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@withContext Result.failure()
             return@withContext try {
                 val periods = periodRepository.getAllPeriods().getOrNull() ?: emptyList()
 

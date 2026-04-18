@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="/Users/abhinav.s1_int/StudioProjects/StudyPulse/core/semester"
+    name=":core:semester"
+    type="LIBRARY"
+    maven="StudyPulse.core:semester:unspecified"
+    agpVersion="8.11.0"
+    buildFolder="build"
+    bootClassPath="/Users/abhinav.s1_int/Library/Android/sdk/platforms/android-35/android.jar:/Users/abhinav.s1_int/Library/Android/sdk/build-tools/35.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="11"
+    compileTarget="android-35"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

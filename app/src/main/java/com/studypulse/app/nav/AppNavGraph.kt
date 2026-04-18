@@ -11,6 +11,7 @@ import com.studypulse.app.LocalCurrentUser
 import com.studypulse.feat.attendance.nav.attendanceGraph
 import com.studypulse.app.feat.feedback.FeedbackScreen
 import com.studypulse.app.feat.home.nav.homeGraph
+import com.studypulse.feat.flashcards.nav.flashcardNavGraph
 import com.studypulse.feat.semester.nav.semesterNavGraph
 import com.studypulse.feat.user.nav.userNavGraph
 import com.studypulse.nav.routes.Route
@@ -30,6 +31,7 @@ fun AppNavGraph(
         authNavGraph(navController)
         userNavGraph(navController)
         semesterNavGraph(navController)
+        flashcardNavGraph(navController)
 
         composable<Route.FeedbackRoute> {
             FeedbackScreen()
