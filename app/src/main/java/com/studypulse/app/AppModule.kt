@@ -12,6 +12,7 @@ import com.studypulse.app.feat.feedback.FeedbackScreenViewModel
 import com.studypulse.app.feat.feedback.data.FeedbackRepository
 import com.studypulse.app.feat.feedback.data.FeedbackRepositoryImpl
 import com.studypulse.core.firebase.firebaseModule
+import com.studypulse.feat.flashcards.di.flashcardsModule
 import com.studypulse.feat.semester.di.semesterModule
 import com.studypulse.feat.user.di.userModule
 import org.koin.android.ext.koin.androidContext
@@ -25,6 +26,7 @@ val appModule = module {
         userModule,
         semesterModule,
         firebaseModule,
+        flashcardsModule,
     )
 
     // DataStore

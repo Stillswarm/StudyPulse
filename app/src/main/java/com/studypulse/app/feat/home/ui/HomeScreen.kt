@@ -65,6 +65,14 @@ val homeScreenItems = listOf(
         route = Route.AttendanceRoute
     ),
     HomeScreenItem(
+        "Flashcards",
+        "Revisions made easy",
+        R.drawable.ic_flashcards,
+        Cyan,
+        active = true,
+        route = Route.FlashcardEntryRoute,
+    ),
+    HomeScreenItem(
         "Exam Portal",
         "Manage your assessments",
         icon = R.drawable.ic_notes,
@@ -95,14 +103,6 @@ val homeScreenItems = listOf(
         color = Blue,
         active = false,
         route = null,
-    ),
-    HomeScreenItem(
-        "Flashcards",
-        "Revisions made easy",
-        R.drawable.ic_flashcards,
-        Cyan,
-        active = true,
-        route = Route.FlashcardEntryRoute,
     ),
     HomeScreenItem(
         "Budget Tracker",
