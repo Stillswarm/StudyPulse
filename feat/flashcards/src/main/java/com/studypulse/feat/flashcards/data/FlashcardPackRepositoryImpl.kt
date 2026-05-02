@@ -18,12 +18,13 @@ class FlashcardPackRepositoryImpl(
 
     private fun flashcardPacksCollection() = userCollection("flashcardPacks")
 
-    override suspend fun upsert(fcp: FlashcardPack): Result<Unit> = runCatching {
+    override suspend fun upsert(fcp: FlashcardPack): Result<String> = runCatching {
         val collection = flashcardPacksCollection()
         val docId = fcp.id.ifBlank { collection.document().id }
         collection.document(docId)
             .set(fcp.copy(id = docId, ownerId = requireUserId()).toDto())
             .await()
+        docId
     }
 
     override suspend fun delete(fcp: FlashcardPack): Result<Unit> = runCatching {

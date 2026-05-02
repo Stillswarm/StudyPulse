@@ -4,6 +4,7 @@ import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 
 data class FlashcardEntryScreenState(
+    val newFcpTitle: String = "",
     val quickRevisionCards: List<Flashcard> = emptyList(),
     val userPacks: List<FlashcardPack> = emptyList(),
     val popularPacks: List<FlashcardPack> = emptyList(),

@@ -17,16 +17,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +57,6 @@ import com.studypulse.ui.theme.LightGray
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCourseScreen(
     onNavigateBack: () -> Unit,
@@ -66,7 +65,7 @@ fun AddCourseScreen(
     vm: AddCourseScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
-    val semSheetState = rememberModalBottomSheetState()
+    var showSemSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -208,25 +207,23 @@ fun AddCourseScreen(
                             color = Color.Black,
                             modifier = Modifier
                                 .padding(16.dp)
-                                .noRippleClickable {
-                                    scope.launch { semSheetState.show() }
-                                }
+                                .noRippleClickable { showSemSheet = true }
                                 .testTag("AddCourseScreen_InfoText"),
                             textAlign = TextAlign.Center
                         )
 
                         AllSemestersBottomSheet(
-                            sheetState = semSheetState,
+                            visible = showSemSheet,
                             semesterList = state.allSemesters,
-                            onDismiss = { scope.launch { semSheetState.hide() } },
+                            onDismiss = { showSemSheet = false },
                             onSemesterClick = {
-                                scope.launch { semSheetState.hide() }
+                                showSemSheet = false
                                 vm.updateCurrentSemester(it)
                             },
                             selectedSemesterId = state.activeSemester?.id ?: "",
                             buttonColor = GreenSecondary,
                             onAddSemester = {
-                                scope.launch { semSheetState.hide() }
+                                showSemSheet = false
                                 onNavigateToAddSemester()
                             }
                         )

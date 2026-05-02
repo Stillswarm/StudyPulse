@@ -2,10 +2,10 @@ package com.studypulse.feat.flashcards.domain.model
 
 data class FlashcardPack(
     val id: String = "",
-    val ownerId: String,
+    val ownerId: String? = null,
     val title: String,
-    val description: String?,
-    val color: Int,
+    val description: String? = null,
+    val color: Int? = null,
 ) {
     fun toDto() = FlashcardPackDto(
         id = id,

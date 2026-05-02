@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface FlashcardPackRepository {
 
-    suspend fun upsert(fcp: FlashcardPack): Result<Unit>
+    suspend fun upsert(fcp: FlashcardPack): Result<String>
 
     suspend fun delete(fcp: FlashcardPack): Result<Unit>
 

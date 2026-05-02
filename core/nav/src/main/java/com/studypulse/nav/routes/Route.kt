@@ -64,6 +64,8 @@ object Route {
     @Serializable
     data object FlashcardEntryRoute : NavigableRoute
 
+    data class FcpRoute(val id: String): NavigableRoute
+
 }
 
 fun NavBackStackEntry.isRoute(routeClass: KClass<out NavigableRoute>): Boolean {
