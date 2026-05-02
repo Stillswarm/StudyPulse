@@ -75,4 +75,13 @@ class FlashcardRepositoryImpl(
             .delete()
             .await()
     }
+
+    override suspend fun getNRandom(n: Long): Result<List<Flashcard>> = runCatching {
+        flashcardsCollection()
+            .limit(n)
+            .get()
+            .await()
+            .toObjects(FlashcardDto::class.java)
+            .map { it.toDomain() }
+    }
 }

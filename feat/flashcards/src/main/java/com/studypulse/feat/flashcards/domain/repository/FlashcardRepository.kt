@@ -16,4 +16,6 @@ interface FlashcardRepository {
     suspend fun getAllByPackIdFlow(packId: String): Result<Flow<List<Flashcard>>>
 
     suspend fun delete(flashcard: Flashcard): Result<Unit>
+
+    suspend fun getNRandom(n: Long): Result<List<Flashcard>>
 }
