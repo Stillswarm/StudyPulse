@@ -66,7 +66,7 @@ class FlashcardRepositoryImpl(
             .map { it.toDomain() }
     }
 
-    override suspend fun getAllByPackIdFlow(packId: String): Result<Flow<List<Flashcard>>> =
+    override fun getAllByPackIdFlow(packId: String): Result<Flow<List<Flashcard>>> =
         runCatching {
             flashcardsCollection()
                 .whereEqualTo("packId", packId)

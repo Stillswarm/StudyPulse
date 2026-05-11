@@ -18,7 +18,9 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
     }
 
     composable<Route.FcpDetailsRoute> {
-        FlashcardPackDetailsScreen()
+        FlashcardPackDetailsScreen(
+            navigateToFcDetails = { id, e -> navController.navigate(Route.FlashcardDetailsRoute(id, e)) }
+        )
     }
 
     composable<Route.FlashcardDetailsRoute> {

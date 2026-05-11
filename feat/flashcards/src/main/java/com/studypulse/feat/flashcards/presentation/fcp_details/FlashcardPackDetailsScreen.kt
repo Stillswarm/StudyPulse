@@ -9,6 +9,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FlashcardPackDetailsScreen(
     modifier: Modifier = Modifier,
+    navigateToFcDetails: (id: String?, editing: Boolean) -> Unit,
     vm: FlashcardPackDetailsScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()

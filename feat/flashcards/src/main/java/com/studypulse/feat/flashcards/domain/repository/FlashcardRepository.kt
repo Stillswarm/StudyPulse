@@ -13,7 +13,7 @@ interface FlashcardRepository {
     suspend fun getAllByOwnerFlow(ownerId: String): Result<Flow<List<Flashcard>>>
 
     suspend fun getAllByPackId(packId: String): Result<List<Flashcard>>
-    suspend fun getAllByPackIdFlow(packId: String): Result<Flow<List<Flashcard>>>
+    fun getAllByPackIdFlow(packId: String): Result<Flow<List<Flashcard>>>
 
     suspend fun delete(flashcard: Flashcard): Result<Unit>
 
