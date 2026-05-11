@@ -64,6 +64,7 @@ object Route {
     @Serializable
     data object FlashcardEntryRoute : NavigableRoute
 
+    @Serializable
     data class FcpRoute(val id: String): NavigableRoute
 
 }

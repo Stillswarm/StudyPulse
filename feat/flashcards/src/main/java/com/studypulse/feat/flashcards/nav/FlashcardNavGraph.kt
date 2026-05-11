@@ -18,4 +18,8 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
         FlashcardPackScreen()
     }
 
+    composable<Route.FcpRoute> {
+        FlashcardPackScreen()
+    }
+
 }
