@@ -18,6 +18,10 @@ class FlashcardEntryScreenViewModel(
     private val fcpRepository: FlashcardPackRepository,
 ) : ViewModel() {
 
+    companion object {
+        const val CAROUSEL_CARDS_LIMIT = 20
+    }
+
     private val initialState = FlashcardEntryScreenState()
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
@@ -35,4 +39,10 @@ class FlashcardEntryScreenViewModel(
                 onNavigateToFcpScreen(id)
             }
         }
+
+    fun fetchUsersRandomCards(offset: Int, limit: Int = CAROUSEL_CARDS_LIMIT) {
+
+    }
+
+
 }

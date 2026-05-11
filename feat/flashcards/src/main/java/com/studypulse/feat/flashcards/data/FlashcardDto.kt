@@ -9,6 +9,12 @@ data class FlashcardDto(
     val description: String? = null,
     val packId: String = "",
     val ownerId: String = "",
+    val n: Int,
+    val ef: Double,
+    val interval: Int,
+    val dueDate: Long,
+    val createdAt: Long,
+    val updatedAt: Long,
 ) {
     fun toDomain() = Flashcard(
         id = id,
@@ -17,6 +23,12 @@ data class FlashcardDto(
         description = description,
         packId = packId,
         ownerId = ownerId,
+        n = n,
+        ef = ef,
+        interval = interval,
+        dueDate = dueDate,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
     )
 }
 
@@ -27,4 +39,10 @@ fun Flashcard.toDto() = FlashcardDto(
     description = description,
     packId = packId,
     ownerId = ownerId,
+    n = n,
+    ef = ef,
+    interval = interval,
+    dueDate = dueDate,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
 )

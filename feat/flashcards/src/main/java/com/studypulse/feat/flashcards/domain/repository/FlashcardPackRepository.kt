@@ -12,12 +12,12 @@ interface FlashcardPackRepository {
     suspend fun getById(id: String): Result<FlashcardPack>
 
     suspend fun getAllForOwner(ownerId: String): Result<List<FlashcardPack>>
-    suspend fun getAllForOwnerFlow(ownerId: String): Result<Flow<List<FlashcardPack>>>
+    fun getAllForOwnerFlow(ownerId: String): Result<Flow<List<FlashcardPack>>>
     suspend fun getNForOwner(ownerId: String, n: Long): Result<List<FlashcardPack>>
-    suspend fun getNForOwnerFlow(ownerId: String, n: Long): Result<Flow<List<FlashcardPack>>>
+    fun getNForOwnerFlow(ownerId: String, n: Long): Result<Flow<List<FlashcardPack>>>
 
     suspend fun getAllForThisUser(): Result<List<FlashcardPack>>
-    suspend fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>>
+    fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>>
     suspend fun getNForThisUser(n: Long): Result<List<FlashcardPack>>
-    suspend fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>>
+    fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>>
 }

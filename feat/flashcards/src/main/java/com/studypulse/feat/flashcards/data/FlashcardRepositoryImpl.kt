@@ -19,7 +19,13 @@ class FlashcardRepositoryImpl(
         val collection = flashcardsCollection()
         val docId = flashcard.id.ifBlank { collection.document().id }
         collection.document(docId)
-            .set(flashcard.copy(id = docId, ownerId = requireUserId()).toDto())
+            .set(
+                flashcard.copy(
+                    id = docId,
+                    ownerId = requireUserId(),
+                    updatedAt = System.currentTimeMillis()
+                ).toDto()
+            )
             .await()
     }
 

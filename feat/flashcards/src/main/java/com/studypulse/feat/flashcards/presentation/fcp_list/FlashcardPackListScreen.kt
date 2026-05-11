@@ -1,4 +1,4 @@
-package com.studypulse.feat.flashcards.presentation.fcp
+package com.studypulse.feat.flashcards.presentation.fcp_list
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,9 +7,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun FlashcardPackScreen(
+fun FlashcardPackListScreen(
     modifier: Modifier = Modifier,
-    vm: FlashcardPackScreenViewModel = koinViewModel()
+    vm: FlashcardPackListScreenViewModel = koinViewModel(),
 ) {
-    val state by vm.state.collectAsStateWithLifecycle()
+
+    val list by vm.listStateFlow.collectAsStateWithLifecycle()
+
+
 }

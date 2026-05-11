@@ -22,7 +22,13 @@ class FlashcardPackRepositoryImpl(
         val collection = flashcardPacksCollection()
         val docId = fcp.id.ifBlank { collection.document().id }
         collection.document(docId)
-            .set(fcp.copy(id = docId, ownerId = requireUserId()).toDto())
+            .set(
+                fcp.copy(
+                    id = docId,
+                    ownerId = requireUserId(),
+                    updatedAt = System.currentTimeMillis()
+                ).toDto()
+            )
             .await()
         docId
     }
@@ -41,22 +47,24 @@ class FlashcardPackRepositoryImpl(
             ?: throw NoSuchElementException("No such pack found")
     }
 
-    override suspend fun getAllForOwner(ownerId: String): Result<List<FlashcardPack>> = runCatching {
-        flashcardPacksCollection()
-            .whereEqualTo("ownerId", ownerId)
-            .get()
-            .await()
-            .toObjects<FlashcardPackDto>()
-            .map { it.toDomain() }
-    }
+    override suspend fun getAllForOwner(ownerId: String): Result<List<FlashcardPack>> =
+        runCatching {
+            flashcardPacksCollection()
+                .whereEqualTo("ownerId", ownerId)
+                .get()
+                .await()
+                .toObjects<FlashcardPackDto>()
+                .map { it.toDomain() }
+        }
 
-    override suspend fun getAllForOwnerFlow(ownerId: String): Result<Flow<List<FlashcardPack>>> = runCatching {
-        flashcardPacksCollection()
-            .whereEqualTo("ownerId", ownerId)
-            .snapshotFlow { doc ->
-                doc.toObject<FlashcardPackDto>()?.toDomain()
-            }
-    }
+    override fun getAllForOwnerFlow(ownerId: String): Result<Flow<List<FlashcardPack>>> =
+        runCatching {
+            flashcardPacksCollection()
+                .whereEqualTo("ownerId", ownerId)
+                .snapshotFlow { doc ->
+                    doc.toObject<FlashcardPackDto>()?.toDomain()
+                }
+        }
 
     override suspend fun getNForOwner(
         ownerId: String,
@@ -71,7 +79,7 @@ class FlashcardPackRepositoryImpl(
             .map { it.toDomain() }
     }
 
-    override suspend fun getNForOwnerFlow(
+    override fun getNForOwnerFlow(
         ownerId: String,
         n: Long,
     ) = runCatching {
@@ -87,7 +95,7 @@ class FlashcardPackRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>> {
+    override fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>> {
         TODO("Not yet implemented")
     }
 
@@ -95,7 +103,7 @@ class FlashcardPackRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>> {
+    override fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>> {
         TODO("Not yet implemented")
     }
 }

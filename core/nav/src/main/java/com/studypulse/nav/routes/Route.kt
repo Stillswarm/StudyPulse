@@ -65,7 +65,12 @@ object Route {
     data object FlashcardEntryRoute : NavigableRoute
 
     @Serializable
-    data class FcpRoute(val id: String): NavigableRoute
+    data class FcpDetailsRoute(val id: String) : NavigableRoute
+
+    data class FlashcardDetailsRoute(val id: String, val isEditing: Boolean) : NavigableRoute
+
+    data class FcpListRoute(val type: FcpListType) : NavigableRoute
+
 
 }
 
@@ -77,4 +82,9 @@ enum class OverviewType {
     ALL,
     LOW,
     FULL
+}
+
+enum class FcpListType {
+    USER,
+    POPULAR,
 }
