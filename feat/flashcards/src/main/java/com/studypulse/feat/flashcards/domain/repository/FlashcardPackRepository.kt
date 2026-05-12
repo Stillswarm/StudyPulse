@@ -20,4 +20,5 @@ interface FlashcardPackRepository {
     fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>>
     suspend fun getNForThisUser(n: Long): Result<List<FlashcardPack>>
     fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>>
+    suspend fun getPopularPacks(limit: Int): Result<List<FlashcardPack>>
 }

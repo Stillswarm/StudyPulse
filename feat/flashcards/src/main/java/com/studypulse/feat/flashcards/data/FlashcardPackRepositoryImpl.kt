@@ -2,6 +2,7 @@ package com.studypulse.feat.flashcards.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
@@ -105,5 +106,16 @@ class FlashcardPackRepositoryImpl(
 
     override fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getPopularPacks(limit: Int) = runCatching {
+        flashcardPacksCollection()
+            .whereNotEqualTo("ownerId", requireUserId())
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
+            .limit(limit.toLong())
+            .get()
+            .await()
+            .toObjects<FlashcardPackDto>()
+            .map { it.toDomain() }
     }
 }

@@ -120,6 +120,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     testImplementation(libs.junit.junit)
     testImplementation(libs.junit.junit)

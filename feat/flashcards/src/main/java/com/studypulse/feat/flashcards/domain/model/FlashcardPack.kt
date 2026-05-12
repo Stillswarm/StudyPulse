@@ -6,6 +6,7 @@ data class FlashcardPack(
     val title: String,
     val description: String? = null,
     val color: Int? = null,
+    val isPublic: Boolean? = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
@@ -15,6 +16,7 @@ data class FlashcardPack(
         title = title,
         description = description,
         color = color,
+        isPublic = isPublic,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -26,6 +28,7 @@ data class FlashcardPackDto(
     val title: String? = null,
     val description: String? = null,
     val color: Int? = null,
+    val isPublic: Boolean? = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -35,6 +38,7 @@ data class FlashcardPackDto(
         title = title ?: "",
         description = description ?: "",
         color = color ?: 0,
+        isPublic = isPublic,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
