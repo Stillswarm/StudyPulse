@@ -1,11 +1,17 @@
 package com.studypulse.feat.flashcards.domain.model
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import kotlin.random.Random
+
+const val CYAN_ARGB = -11230031
+
 data class FlashcardPack(
     val id: String = "",
     val ownerId: String? = null,
     val title: String,
     val description: String? = null,
-    val color: Int? = null,
+    val color: Color = randomDarkColor(),
     val isPublic: Boolean? = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
@@ -15,7 +21,7 @@ data class FlashcardPack(
         ownerId = ownerId,
         title = title,
         description = description,
-        color = color,
+        color = color.toArgb(),
         isPublic = isPublic,
         createdAt = createdAt,
         updatedAt = updatedAt,
@@ -37,9 +43,17 @@ data class FlashcardPackDto(
         ownerId = ownerId ?: "",
         title = title ?: "",
         description = description ?: "",
-        color = color ?: 0,
+        color = Color(color ?: CYAN_ARGB),
         isPublic = isPublic,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
+}
+
+fun randomDarkColor(): Color {
+    val hue = Random.nextFloat() * 360f        // 0–360, any hue
+    val saturation = Random.nextFloat() * 0.5f + 0.5f  // 0.5–1.0, vivid
+    val lightness = Random.nextFloat() * 0.25f + 0.15f // 0.15–0.40, dark
+
+    return Color.hsl(hue, saturation, lightness)
 }
