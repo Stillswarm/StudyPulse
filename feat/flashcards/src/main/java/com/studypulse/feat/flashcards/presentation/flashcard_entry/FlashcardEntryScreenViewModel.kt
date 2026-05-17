@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_entry
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.common.event.SnackbarController
@@ -7,6 +8,7 @@ import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,16 @@ class FlashcardEntryScreenViewModel(
 
     companion object {
         const val CAROUSEL_CARDS_LIMIT = 20
+        const val INITIAL_PACK_LIMIT = 5L
+    }
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            getPopularPacks()
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            getUserPacks()
+        }
     }
 
     private val initialState = FlashcardEntryScreenState()
@@ -28,20 +40,48 @@ class FlashcardEntryScreenViewModel(
 
 
     fun onNewFcpTitleChange(newTitle: String) {
-        _state.update { it.copy(newFcpTitle = newTitle) }
+        _state.update { it.copy(newFcp = it.newFcp.copy(title = newTitle)) }
     }
 
-    fun addAndNavigate(onNavigateToFcpScreen: (id: String) -> Unit) =
+    fun onNewFcpDescriptionChange(newDescription: String) {
+        _state.update { it.copy(newFcp = it.newFcp.copy(description = newDescription)) }
+    }
+
+    fun onNewFcpColorChange(newColor: Color) {
+        _state.update { it.copy(newFcp = it.newFcp.copy(color = newColor)) }
+    }
+
+    fun onNewFcpVisibilityToggle(new: Boolean) {
+        _state.update { it.copy(newFcp = it.newFcp.copy(isPublic = new)) }
+    }
+
+    fun resetNewFcpState() {
+        _state.update { it.copy(newFcp = FlashcardPack(title = "")) }
+    }
+
+    fun addNewPackAndNavigate(onNavigateToFcpScreen: (id: String) -> Unit) =
         viewModelScope.launch {
-            fcpRepository.upsert(FlashcardPack(title = state.value.newFcpTitle)).onFailure {
+            fcpRepository.upsert(_state.value.newFcp).onFailure {
                 SnackbarController.sendEvent(SnackbarEvent("Failed to create flashcard pack!"))
             }.onSuccess { id ->
+                resetNewFcpState()
                 onNavigateToFcpScreen(id)
             }
         }
 
     fun fetchUsersRandomCards(offset: Int, limit: Int = CAROUSEL_CARDS_LIMIT) {
 
+    }
+
+    suspend fun getPopularPacks(limit: Long = INITIAL_PACK_LIMIT) {
+        fcpRepository.getPopularPacks(limit)
+    }
+
+    suspend fun getUserPacks(limit: Long = INITIAL_PACK_LIMIT) {
+        fcpRepository.getNForThisUser(limit)
+            .onSuccess { packList ->
+                _state.update { it.copy(userPacks = packList) }
+            }
     }
 
 

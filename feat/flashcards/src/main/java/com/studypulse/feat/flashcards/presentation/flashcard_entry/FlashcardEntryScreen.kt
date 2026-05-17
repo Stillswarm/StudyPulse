@@ -4,13 +4,15 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,8 +35,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -43,51 +47,46 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
+import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.R
 import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.theme.Blue
 import com.studypulse.ui.theme.Cyan
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.GreenSecondary
+import com.studypulse.ui.theme.Orange
+import com.studypulse.ui.theme.Pink
 import com.studypulse.ui.theme.Purple
-import com.studypulse.ui.theme.SeafoamWhite
 import com.studypulse.ui.theme.Typography
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-val sampleFc = Flashcard(
+private val sampleFc = Flashcard(
     id = "dx",
     "What is the time complexity of binary search",
-    "O(n logn)",
+    "O(log n)",
     "wee",
     "sfs",
     "iy"
-)
-
-val sampleFcPack = FlashcardPack(
-    id = "sfs",
-    ownerId = "iy",
-    title = "Computer Science Physics Chemistry Maths",
-    description = "",
-    color = 0xFF40E0D0.toInt()
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,18 +94,16 @@ val sampleFcPack = FlashcardPack(
 fun FlashcardEntryScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToFcpScreen: (id: String) -> Unit,
+    onNavigateToPackListScreen: (FcpListType) -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardEntryScreenViewModel = koinViewModel(),
 ) {
-
     val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { 4 }
-    var showAddPackSheet by remember { mutableStateOf(false) }
+    var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
         LargeAppTopBar(
             backgroundColor = Cyan,
             title = "Revisions made easy!",
@@ -121,113 +118,130 @@ fun FlashcardEntryScreen(
                 )
             ),
             imageRes = R.drawable.im_flashcards_black,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter)
         )
 
-        Column(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Spacer(modifier = Modifier.height(200.dp))
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(Modifier.height(184.dp))
+
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
-                item { QuickRevisionCarousel(pagerState = pagerState) }
+                item {
+                    QuickRevisionCarousel(
+                        flashcards = listOf(sampleFc, sampleFc, sampleFc, sampleFc),
+                        pagerState = pagerState,
+                    )
+                }
+
                 item {
                     HorizontalCardListWithTitle(
                         title = "Your Packs",
-                        items = listOf(sampleFcPack, sampleFcPack, sampleFcPack),
+                        items = state.userPacks,
                         addNew = true,
-                        onAddNewClick = { showAddPackSheet = true }
+                        onAddNewClick = { showAddPackSheet = true },
+                        onSeeAllClick = { onNavigateToPackListScreen(FcpListType.USER) },
+                        onPackClick = { onNavigateToFcpScreen(it.id) },
                     )
                 }
+
                 item {
                     HorizontalCardListWithTitle(
                         title = "Popular Packs",
-                        items = listOf(sampleFcPack, sampleFcPack, sampleFcPack),
-                        addNew = false
+                        items = state.popularPacks,
+                        addNew = false,
+                        onSeeAllClick = { onNavigateToPackListScreen(FcpListType.POPULAR) },
+                        onPackClick = { onNavigateToFcpScreen(it.id) },
                     )
                 }
+
+                item { Spacer(Modifier.height(24.dp)) }
             }
         }
     }
 
     if (showAddPackSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(
-            onDismissRequest = { showAddPackSheet = false },
-            sheetState = sheetState,
-            dragHandle = {},
-            shape = RectangleShape,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                TextField(
-                    value = state.newFcpTitle,
-                    onValueChange = vm::onNewFcpTitleChange,
-                    label = { Text("Title") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                    )
-                )
-
-                Button(
-                    onClick = {
-                        showAddPackSheet = false
-                        vm.addAndNavigate(onNavigateToFcpScreen)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Cyan),
-                ) {
-                    Text(
-                        text = "Create",
-                        fontSize = 16.sp,
-                        color = Color.White,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
-        }
+        AddPackSheet(
+            fcp = state.newFcp,
+            onTitleChange = vm::onNewFcpTitleChange,
+            onDescriptionChange = vm::onNewFcpDescriptionChange,
+            onColorPick = vm::onNewFcpColorChange,
+            onPublicToggle = vm::onNewFcpVisibilityToggle,
+            onCreate = {
+                vm.addNewPackAndNavigate(onNavigateToFcpScreen)
+            },
+            onDismiss = { showAddPackSheet = false },
+        )
     }
 }
 
 @Composable
-fun QuickRevisionCarousel(modifier: Modifier = Modifier, pagerState: PagerState) {
-
+fun QuickRevisionCarousel(
+    flashcards: List<Flashcard>,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = SeafoamWhite),
-        border = BorderStroke(2.dp, Cyan)
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(2.dp, Cyan),
     ) {
-        Column {
+        Column(
+            modifier = Modifier.padding(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Text(
                 text = "Quick Revision",
                 style = Typography.headlineSmall,
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .padding(top = 12.dp)
+                fontWeight = FontWeight.SemiBold,
+                color = DarkGray,
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
 
-            HorizontalPager(
-                modifier = modifier,
-                state = pagerState,
-                contentPadding = PaddingValues(12.dp),
-                key = { it }
-            ) {
-                FlashcardItem(modifier = Modifier.padding(end = 16.dp), fc = sampleFc)
+            if (flashcards.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Add a pack to start revising",
+                        style = Typography.bodyMedium,
+                        color = DarkGray.copy(alpha = 0.6f),
+                    )
+                }
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    pageSpacing = 12.dp,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { page ->
+                    FlashcardItem(fc = flashcards[page % flashcards.size])
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    repeat(flashcards.size) { i ->
+                        val active = pagerState.currentPage == i
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 3.dp)
+                                .size(if (active) 8.dp else 6.dp)
+                                .clip(CircleShape)
+                                .background(if (active) Cyan else Cyan.copy(alpha = 0.3f))
+                        )
+                    }
+                }
             }
         }
     }
@@ -238,75 +252,306 @@ fun HorizontalCardListWithTitle(
     title: String,
     items: List<FlashcardPack>,
     modifier: Modifier = Modifier,
-    addNew: Boolean = true,
+    addNew: Boolean = false,
     onAddNewClick: (() -> Unit)? = null,
+    onSeeAllClick: (() -> Unit)? = null,
+    onPackClick: (FlashcardPack) -> Unit = {},
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = title,
-        )
-
-        LazyRow {
-            if (addNew) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(
-                                Dp.Hairline, Cyan,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .noRippleClickable { onAddNewClick?.invoke() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "add new",
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-
-            items(
-                items = items,
-//                key = { it.id },
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.im_fc_pack),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(
-                                0.5.dp, Cyan,
-                                RoundedCornerShape(8.dp)
-                            ),
-//                        colorFilter = ColorFilter.tint(Color(it.color).copy(alpha = 0.1f), blendMode = BlendMode.Modulate)
-                    )
-
-                    Text(
-                        text = it.title,
-                        style = Typography.labelSmall,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .width(100.dp)
-                            .padding(top = 4.dp),
-                    )
-                }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = title,
+                style = Typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkGray,
+            )
+            if (onSeeAllClick != null) {
+                Text(
+                    text = "See all  ›",
+                    style = Typography.labelLarge,
+                    color = Cyan,
+                    modifier = Modifier.noRippleClickable { onSeeAllClick.invoke() },
+                )
             }
         }
 
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (addNew) {
+                item {
+                    AddPackTile(onClick = { onAddNewClick?.invoke() })
+                }
+            }
+            items(items) { pack ->
+                MiniPackTile(pack = pack, onClick = { onPackClick(pack) })
+            }
+        }
     }
+}
+
+@Composable
+private fun MiniPackTile(
+    pack: FlashcardPack,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val tileWidth = 140.dp
+    val tileHeight = 150.dp
+    val mildPackColor = pack.color.copy(alpha = 0.08f)
+    val mildCyan = Cyan.copy(alpha = 0.35f)
+
+    Box(
+        modifier = modifier
+            .width(tileWidth)
+            .height(tileHeight)
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                Brush.linearGradient(listOf(mildCyan, mildPackColor))
+            )
+            .noRippleClickable { onClick() },
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(6.dp)
+                    .background(pack.color)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = pack.title,
+                    style = Typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DarkGray,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = if (pack.isPublic) "PUBLIC" else "PRIVATE",
+                    style = Typography.labelSmall,
+                    color = Cyan,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddPackTile(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .width(140.dp)
+            .height(170.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Cyan.copy(alpha = 0.10f))
+            .border(
+                width = 1.5.dp,
+                color = Cyan.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(14.dp),
+            )
+            .noRippleClickable { onClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Cyan),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add pack",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+            Text(
+                text = "New pack",
+                style = Typography.labelLarge,
+                color = DarkGray,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddPackSheet(
+    fcp: FlashcardPack,
+    onTitleChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onColorPick: (Color) -> Unit,
+    onPublicToggle: (Boolean) -> Unit,
+    onCreate: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val swatches = remember {
+        listOf(Cyan, Purple, Gold, GreenSecondary, Pink, Orange, Blue, DarkGray)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = Color.White,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = "New flashcard pack",
+                style = Typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkGray,
+            )
+
+            SheetTextField(
+                value = fcp.title,
+                onValueChange = onTitleChange,
+                placeholder = "Title",
+                singleLine = true,
+            )
+
+            SheetTextField(
+                value = fcp.description ?: "",
+                onValueChange = onDescriptionChange,
+                placeholder = "Description (optional)",
+                singleLine = false,
+                minLines = 2,
+            )
+
+            Text(
+                text = "Color",
+                style = Typography.labelLarge,
+                color = DarkGray,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                swatches.forEach { c ->
+                    val selected = c == fcp.color
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(c)
+                            .border(
+                                width = if (selected) 3.dp else 0.dp,
+                                color = Cyan,
+                                shape = CircleShape,
+                            )
+                            .noRippleClickable { onColorPick(c) }
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Public",
+                        style = Typography.titleMedium,
+                        color = DarkGray,
+                    )
+                    Text(
+                        text = "Anyone can find and star this pack",
+                        style = Typography.bodySmall,
+                        color = DarkGray.copy(alpha = 0.6f),
+                    )
+                }
+                Switch(
+                    checked = fcp.isPublic,
+                    onCheckedChange = onPublicToggle,
+                    colors = SwitchDefaults.colors(
+                        checkedTrackColor = Cyan,
+                        checkedThumbColor = Color.White,
+                    ),
+                )
+            }
+
+            Button(
+                onClick = onCreate,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Cyan),
+                enabled = fcp.title.isNotBlank(),
+            ) {
+                Text(
+                    text = "Create pack",
+                    style = Typography.titleLarge,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SheetTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = Typography.bodyLarge,
+                color = DarkGray.copy(alpha = 0.5f),
+            )
+        },
+        singleLine = singleLine,
+        minLines = minLines,
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Cyan.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(12.dp),
+            ),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+        ),
+    )
 }
 
 @Composable
@@ -316,7 +561,6 @@ fun FlashcardItem(
     height: Dp = 160.dp,
     width: Dp = 220.dp,
 ) {
-
     var flipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (flipped) 180f else 0f,
@@ -340,22 +584,29 @@ fun FlashcardItem(
             modifier = Modifier
                 .height(height)
                 .fillMaxWidth(0.8f)
-                .graphicsLayer { rotationY = if (isShowingAnswer) 180f else 0f }
+                .graphicsLayer { rotationY = if (isShowingAnswer) 180f else 0f },
+            shape = RoundedCornerShape(14.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Cyan.copy(alpha = 0.4f)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = if (isShowingAnswer) fc.answer else fc.question,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.align(Alignment.TopStart)
+                    style = Typography.bodyMedium,
+                    color = DarkGray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center)
                 )
                 Text(
                     text = "Tap to flip",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = Typography.labelSmall,
+                    color = DarkGray.copy(alpha = 0.45f),
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }

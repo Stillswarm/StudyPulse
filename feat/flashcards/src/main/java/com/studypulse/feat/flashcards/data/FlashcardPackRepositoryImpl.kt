@@ -92,27 +92,48 @@ class FlashcardPackRepositoryImpl(
             }
     }
 
-    override suspend fun getAllForThisUser(): Result<List<FlashcardPack>> {
-        TODO("Not yet implemented")
+    override suspend fun getAllForThisUser() = runCatching {
+        flashcardPacksCollection()
+            .whereEqualTo("id", requireUserId())
+            .get()
+            .await()
+            .toObjects<FlashcardPackDto>()
+            .map { it.toDomain() }
     }
 
-    override fun getAllForThisUserFlow(): Result<Flow<List<FlashcardPack>>> {
-        TODO("Not yet implemented")
+    override fun getAllForThisUserFlow() = runCatching {
+        flashcardPacksCollection()
+            .whereEqualTo("id", requireUserId())
+            .snapshotFlow {
+                it.toObject<FlashcardPackDto>()?.toDomain()
+            }
     }
 
-    override suspend fun getNForThisUser(n: Long): Result<List<FlashcardPack>> {
-        TODO("Not yet implemented")
+    override suspend fun getNForThisUser(n: Long)= runCatching {
+        flashcardPacksCollection()
+            .whereEqualTo("id", requireUserId())
+            .limit(n)
+            .get()
+            .await()
+            .toObjects<FlashcardPackDto>()
+            .map { it.toDomain() }
     }
 
-    override fun getNForThisUserFlow(n: Long): Result<Flow<List<FlashcardPack>>> {
-        TODO("Not yet implemented")
+    override fun getNForThisUserFlow(n: Long) = runCatching {
+        flashcardPacksCollection()
+            .whereEqualTo("id", requireUserId())
+            .limit(n)
+            .snapshotFlow {
+                it.toObject<FlashcardPackDto>()?.toDomain()
+            }
     }
 
-    override suspend fun getPopularPacks(limit: Int) = runCatching {
+    // TODO: do this in more idiomatic pattern
+    override suspend fun getPopularPacks(limit: Long) = runCatching {
         flashcardPacksCollection()
             .whereNotEqualTo("ownerId", requireUserId())
             .orderBy("updatedAt", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
+            .limit(limit)
             .get()
             .await()
             .toObjects<FlashcardPackDto>()

@@ -82,6 +82,7 @@ class FlashcardRepositoryImpl(
             .await()
     }
 
+    // TODO: improve this
     override suspend fun getNRandom(n: Long): Result<List<Flashcard>> = runCatching {
         flashcardsCollection()
             .limit(n)
