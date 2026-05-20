@@ -26,7 +26,7 @@ class FlashcardPackListScreenViewModel(
         when (type) {
             null -> emptyFlow()
             FcpListType.USER -> fcpRepository.getAllForThisUserFlow().getOrNull() ?: emptyFlow()
-            FcpListType.POPULAR -> fcpRepository.getAllForThisUserFlow().getOrNull() ?: emptyFlow()
+            FcpListType.POPULAR -> fcpRepository.getPopularPacksFlow(50).getOrNull() ?: emptyFlow()
         }
     }
     val listStateFlow: StateFlow<List<FlashcardPack>> = listFlow.stateIn(

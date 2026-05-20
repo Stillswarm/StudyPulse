@@ -170,4 +170,16 @@ class FlashcardPackRepositoryImpl(
             .toObjects<FlashcardPackDto>()
             .map { it.toDomain() }
     }
+
+    override fun getPopularPacksFlow(limit: Long) = runCatching {
+        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
+            .whereEqualTo("isPublic", true)
+            .whereNotEqualTo("ownerId", requireUserId())
+            .orderBy("ownerId")
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .snapshotFlow {
+                it.toObject<FlashcardPackDto>()?.toDomain()
+            }
+    }
 }
