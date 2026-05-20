@@ -20,9 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.R
 import com.studypulse.common.utils.DateUtils.toFullString
 import com.studypulse.common.utils.DateUtils.toLocalDate
-import com.studypulse.feat.flashcards.R as FcR
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.components.AppTopBar
@@ -53,12 +50,13 @@ import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
 import com.studypulse.ui.theme.WhiteSecondary
 import org.koin.androidx.compose.koinViewModel
+import com.studypulse.feat.flashcards.R as FcR
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardPackListScreen(
-    onBack: () -> Unit = {},
-    onPackClick: (id: String) -> Unit = {},
-    onAddNewPack: () -> Unit = {},
+    onBack: () -> Unit,
+    onPackClick: (id: String) -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardPackListScreenViewModel = koinViewModel(),
 ) {
@@ -70,7 +68,6 @@ fun FlashcardPackListScreen(
         FcpListType.POPULAR -> "Popular Packs"
         null -> "Packs"
     }
-    val showAddFab = type == FcpListType.USER
 
     Box(modifier = modifier.fillMaxSize()) {
         if (list.isEmpty()) {
@@ -87,7 +84,7 @@ fun FlashcardPackListScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = 116.dp,
-                    bottom = if (showAddFab) 120.dp else 24.dp,
+                    bottom = 24.dp,
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -111,25 +108,6 @@ fun FlashcardPackListScreen(
             onActionClick = null,
             modifier = Modifier.align(Alignment.TopCenter),
         )
-
-        if (showAddFab) {
-            FloatingActionButton(
-                onClick = onAddNewPack,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp)
-                    .size(60.dp),
-                shape = RoundedCornerShape(18.dp),
-                containerColor = Cyan,
-                contentColor = Color.White,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add new pack",
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-        }
     }
 }
 

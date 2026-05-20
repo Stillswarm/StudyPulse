@@ -30,7 +30,10 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
     }
 
     composable<Route.FcpListRoute> {
-        FlashcardPackListScreen()
+        FlashcardPackListScreen(
+            onBack = { navController.navigateUp() },
+            onPackClick = { navController.navigate(Route.FcpDetailsRoute(it))},
+        )
     }
 
 

@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
+import com.studypulse.feat.flashcards.presentation.AddPackBottomSheet
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.R
 import com.studypulse.ui.components.LargeAppTopBar
@@ -163,7 +164,7 @@ fun FlashcardEntryScreen(
     }
 
     if (showAddPackSheet) {
-        AddPackSheet(
+        AddPackBottomSheet(
             fcp = state.newFcp,
             onTitleChange = vm::onNewFcpTitleChange,
             onDescriptionChange = vm::onNewFcpDescriptionChange,
@@ -393,165 +394,6 @@ private fun AddPackTile(
             )
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AddPackSheet(
-    fcp: FlashcardPack,
-    onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onColorPick: (Color) -> Unit,
-    onPublicToggle: (Boolean) -> Unit,
-    onCreate: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val swatches = remember {
-        listOf(Cyan, Purple, Gold, GreenSecondary, Pink, Orange, Blue, DarkGray)
-    }
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-        containerColor = Color.White,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                text = "New flashcard pack",
-                style = Typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = DarkGray,
-            )
-
-            SheetTextField(
-                value = fcp.title,
-                onValueChange = onTitleChange,
-                placeholder = "Title",
-                singleLine = true,
-            )
-
-            SheetTextField(
-                value = fcp.description ?: "",
-                onValueChange = onDescriptionChange,
-                placeholder = "Description (optional)",
-                singleLine = false,
-                minLines = 2,
-            )
-
-            Text(
-                text = "Color",
-                style = Typography.labelLarge,
-                color = DarkGray,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                swatches.forEach { c ->
-                    val selected = c == fcp.color
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(c)
-                            .border(
-                                width = if (selected) 3.dp else 0.dp,
-                                color = Cyan,
-                                shape = CircleShape,
-                            )
-                            .noRippleClickable { onColorPick(c) }
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Public",
-                        style = Typography.titleMedium,
-                        color = DarkGray,
-                    )
-                    Text(
-                        text = "Anyone can find and star this pack",
-                        style = Typography.bodySmall,
-                        color = DarkGray.copy(alpha = 0.6f),
-                    )
-                }
-                Switch(
-                    checked = fcp.isPublic,
-                    onCheckedChange = onPublicToggle,
-                    colors = SwitchDefaults.colors(
-                        checkedTrackColor = Cyan,
-                        checkedThumbColor = Color.White,
-                    ),
-                )
-            }
-
-            Button(
-                onClick = onCreate,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Cyan),
-                enabled = fcp.title.isNotBlank(),
-            ) {
-                Text(
-                    text = "Create pack",
-                    style = Typography.titleLarge,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SheetTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier,
-    singleLine: Boolean = true,
-    minLines: Int = 1,
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = {
-            Text(
-                text = placeholder,
-                style = Typography.bodyLarge,
-                color = DarkGray.copy(alpha = 0.5f),
-            )
-        },
-        singleLine = singleLine,
-        minLines = minLines,
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = Cyan.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(12.dp),
-            ),
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-        ),
-    )
 }
 
 @Composable

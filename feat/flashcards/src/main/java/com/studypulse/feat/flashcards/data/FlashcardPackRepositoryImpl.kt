@@ -17,17 +17,27 @@ class FlashcardPackRepositoryImpl(
     db: FirebaseFirestore,
 ) : BaseFirebaseRepository(auth, db), FlashcardPackRepository {
 
-    private fun flashcardPacksCollection() = userCollection("flashcardPacks")
+    companion object {
+        private const val FLASHCARD_PACK_COLLECTION_KEY = "flashcardPacks"
+        private const val FLASHCARD_COLLECTION_KEY = "flashcards"
+    }
+
+    private fun flashcardPacksCollection() = userCollection(FLASHCARD_PACK_COLLECTION_KEY)
+    private fun flashcardsCollection() = userCollection(FLASHCARD_COLLECTION_KEY)
 
     override suspend fun upsert(fcp: FlashcardPack): Result<String> = runCatching {
         val collection = flashcardPacksCollection()
+        val now = System.currentTimeMillis()
+        val isNew = fcp.id.isBlank()
         val docId = fcp.id.ifBlank { collection.document().id }
+
         collection.document(docId)
             .set(
                 fcp.copy(
                     id = docId,
                     ownerId = requireUserId(),
-                    updatedAt = System.currentTimeMillis()
+                    updatedAt = now,
+                    createdAt = if (isNew) now else fcp.createdAt
                 ).toDto()
             )
             .await()
@@ -35,23 +45,39 @@ class FlashcardPackRepositoryImpl(
     }
 
     override suspend fun delete(fcp: FlashcardPack): Result<Unit> = runCatching {
-        flashcardPacksCollection().document(fcp.id).delete().await()
+        val packDocRef = flashcardPacksCollection().document(fcp.id)
+        val cardDocs = flashcardsCollection()
+            .whereEqualTo("packId", fcp.id)
+            .get()
+            .await()
+            .documents
+
+        // Note: Firestore batches are limited to 500 operations.
+        // If a single pack ever holds 500+ cards, this needs chunking.
+        db.runBatch { batch ->
+            cardDocs.forEach { batch.delete(it.reference) }
+            batch.delete(packDocRef)
+        }.await()
     }
 
     override suspend fun getById(id: String): Result<FlashcardPack> = runCatching {
-        flashcardPacksCollection()
-            .document(id)
+        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
+            .whereEqualTo("id", id)
+            .limit(1)
             .get()
             .await()
-            .toObject(FlashcardPackDto::class.java)
+            .documents
+            .firstOrNull()
+            ?.toObject(FlashcardPackDto::class.java)
             ?.toDomain()
             ?: throw NoSuchElementException("No such pack found")
     }
 
     override suspend fun getAllForOwner(ownerId: String): Result<List<FlashcardPack>> =
         runCatching {
-            flashcardPacksCollection()
+            db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
                 .whereEqualTo("ownerId", ownerId)
+                .orderBy("updatedAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .toObjects<FlashcardPackDto>()
@@ -60,8 +86,9 @@ class FlashcardPackRepositoryImpl(
 
     override fun getAllForOwnerFlow(ownerId: String): Result<Flow<List<FlashcardPack>>> =
         runCatching {
-            flashcardPacksCollection()
+            db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
                 .whereEqualTo("ownerId", ownerId)
+                .orderBy("updatedAt", Query.Direction.DESCENDING)
                 .snapshotFlow { doc ->
                     doc.toObject<FlashcardPackDto>()?.toDomain()
                 }
@@ -71,8 +98,9 @@ class FlashcardPackRepositoryImpl(
         ownerId: String,
         n: Long,
     ): Result<List<FlashcardPack>> = runCatching {
-        flashcardPacksCollection()
+        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("ownerId", ownerId)
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(n)
             .get()
             .await()
@@ -84,8 +112,9 @@ class FlashcardPackRepositoryImpl(
         ownerId: String,
         n: Long,
     ) = runCatching {
-        flashcardPacksCollection()
+        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("ownerId", ownerId)
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(n)
             .snapshotFlow { doc ->
                 doc.toObject<FlashcardPackDto>()?.toDomain()
@@ -94,7 +123,7 @@ class FlashcardPackRepositoryImpl(
 
     override suspend fun getAllForThisUser() = runCatching {
         flashcardPacksCollection()
-            .whereEqualTo("id", requireUserId())
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .get()
             .await()
             .toObjects<FlashcardPackDto>()
@@ -103,15 +132,15 @@ class FlashcardPackRepositoryImpl(
 
     override fun getAllForThisUserFlow() = runCatching {
         flashcardPacksCollection()
-            .whereEqualTo("id", requireUserId())
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .snapshotFlow {
                 it.toObject<FlashcardPackDto>()?.toDomain()
             }
     }
 
-    override suspend fun getNForThisUser(n: Long)= runCatching {
+    override suspend fun getNForThisUser(n: Long) = runCatching {
         flashcardPacksCollection()
-            .whereEqualTo("id", requireUserId())
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(n)
             .get()
             .await()
@@ -121,7 +150,7 @@ class FlashcardPackRepositoryImpl(
 
     override fun getNForThisUserFlow(n: Long) = runCatching {
         flashcardPacksCollection()
-            .whereEqualTo("id", requireUserId())
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(n)
             .snapshotFlow {
                 it.toObject<FlashcardPackDto>()?.toDomain()
@@ -130,8 +159,10 @@ class FlashcardPackRepositoryImpl(
 
     // TODO: do this in more idiomatic pattern
     override suspend fun getPopularPacks(limit: Long) = runCatching {
-        flashcardPacksCollection()
+        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
+            .whereEqualTo("isPublic", true)
             .whereNotEqualTo("ownerId", requireUserId())
+            .orderBy("ownerId")
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(limit)
             .get()

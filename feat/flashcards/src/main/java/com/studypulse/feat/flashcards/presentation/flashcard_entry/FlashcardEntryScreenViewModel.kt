@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_entry
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -66,6 +67,8 @@ class FlashcardEntryScreenViewModel(
             }.onSuccess { id ->
                 resetNewFcpState()
                 onNavigateToFcpScreen(id)
+            }.onFailure {
+                Log.e("app", "${it.printStackTrace()}")
             }
         }
 
@@ -75,12 +78,21 @@ class FlashcardEntryScreenViewModel(
 
     suspend fun getPopularPacks(limit: Long = INITIAL_PACK_LIMIT) {
         fcpRepository.getPopularPacks(limit)
+            .onSuccess { packList ->
+                _state.update { it.copy(popularPacks = packList) }
+                Log.d("fcuk", packList.toString())
+            }.onFailure {
+                Log.e("app", "${it.printStackTrace()}")
+            }
     }
 
     suspend fun getUserPacks(limit: Long = INITIAL_PACK_LIMIT) {
         fcpRepository.getNForThisUser(limit)
             .onSuccess { packList ->
                 _state.update { it.copy(userPacks = packList) }
+                Log.d("fcuk", packList.toString())
+            }.onFailure {
+                Log.e("app", "${it.printStackTrace()}")
             }
     }
 
