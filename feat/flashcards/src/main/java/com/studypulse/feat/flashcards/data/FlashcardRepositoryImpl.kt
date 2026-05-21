@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -183,6 +184,7 @@ class FlashcardRepositoryImpl(
             .get().await()                          // ← hold QuerySnapshot
 
         val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+        Log.d("fcuk", "dn" + dueNow.toString())
 
         if (dueNow.size >= n) return@runCatching FlashcardPage(
             cards = dueNow.take(n.toInt()),
@@ -203,6 +205,8 @@ class FlashcardRepositoryImpl(
             .get().await()
 
         val newCards = newCardsSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+        Log.d("fcuk", "nc" + newCards.toString())
+
 
         val tot = dueNow.size + newCards.size
         if (tot >= n) return@runCatching FlashcardPage(
@@ -225,6 +229,8 @@ class FlashcardRepositoryImpl(
             .get().await()
 
         val dueLater = dueLaterSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+        Log.d("fcuk", "dl" + dueLater.toString())
+
 
         FlashcardPage(
             cards = dueNow + newCards + dueLater,

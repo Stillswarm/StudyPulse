@@ -48,30 +48,24 @@ class FlashcardPackDetailsScreenViewModel(
 
     fun fetchCards() {
         if (packId == null) return
-        val state = _state.value
-        var newCards: List<Flashcard> = emptyList()
-        var newCursors: FlashcardCursors = state.flashcardPage.cursors
         viewModelScope.launch {
             val cursors = _state.value.flashcardPage.cursors
             fcRepository.getNRandomFromSamePack(
                 DEFAULT_FC_FETCH_COUNT,
                 packId = packId,
-                cursors = cursors
+                cursors = cursors,
             ).onSuccess { fcPage ->
-                newCards = fcPage.cards
-                newCursors = fcPage.cursors
+                _state.update {
+                    it.copy(
+                        flashcardPage = FlashcardPage(
+                            cards = it.flashcardPage.cards + fcPage.cards,
+                            cursors = fcPage.cursors,
+                        )
+                    )
+                }
             }.onFailure { e ->
-                Log.e(
-                    "app",
-                    "flashcard pack details: getNRandomFromPack(): ${e.printStackTrace()}"
-                )
+                Log.e("app", "flashcard pack details: getNRandomFromPack()", e)
             }
         }
-
-        val newPage = FlashcardPage(
-            cards = _state.value.flashcardPage.cards + newCards,
-            cursors = newCursors
-        )
-        _state.update { it.copy(flashcardPage = newPage) }
     }
 }
