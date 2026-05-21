@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +44,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.R
 import com.studypulse.common.utils.DateUtils.toFullString
 import com.studypulse.common.utils.DateUtils.toLocalDate
-import com.studypulse.feat.flashcards.R as FcR
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.ui.components.AppTopBar
@@ -56,10 +56,11 @@ import com.studypulse.ui.theme.Purple
 import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
 import org.koin.androidx.compose.koinViewModel
+import com.studypulse.feat.flashcards.R as FcR
 
 @Composable
 fun FlashcardPackDetailsScreen(
-    navigateToFcDetails: (id: String?, editing: Boolean) -> Unit,
+    navigateToFcDetails: (id: String?, packId: String, editing: Boolean) -> Unit,
     onBack: () -> Unit = {},
     onStudy: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -67,6 +68,7 @@ fun FlashcardPackDetailsScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val pack = state.fcp
+    val flashcards = state.flashcardPage.cards
 
     Box(modifier = modifier.fillMaxSize()) {
         if (pack == null) {
@@ -90,14 +92,14 @@ fun FlashcardPackDetailsScreen(
                 item {
                     PackHeroCard(
                         pack = pack,
-                        cardCount = state.flashcards.size,
+                        cardCount = flashcards.size,
                         onStudy = onStudy,
                     )
                 }
 
                 item {
                     Text(
-                        text = "Cards (${state.flashcards.size})",
+                        text = "Cards (${flashcards.size})",
                         style = Typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = DarkGray,
@@ -105,13 +107,13 @@ fun FlashcardPackDetailsScreen(
                     )
                 }
 
-                if (state.flashcards.isEmpty()) {
+                if (flashcards.isEmpty()) {
                     item { EmptyCardsState() }
                 } else {
-                    items(items = state.flashcards, key = { it.id }) { fc ->
+                    items(items = flashcards, key = { it.id }) { fc ->
                         FlashcardListItem(
                             flashcard = fc,
-                            onClick = { navigateToFcDetails(fc.id, false) },
+                            onClick = { navigateToFcDetails(fc.id, fc.packId, false) },
                         )
                     }
                 }
@@ -132,7 +134,7 @@ fun FlashcardPackDetailsScreen(
 
         if (pack != null) {
             FloatingActionButton(
-                onClick = { navigateToFcDetails(null, true) },
+                onClick = { navigateToFcDetails(null, pack.id, true) },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(24.dp)
@@ -158,24 +160,21 @@ private fun PackHeroCard(
     onStudy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val mildFcpColor = pack.color.copy(alpha = 0.06f)
-    val mildCyan = Cyan.copy(alpha = 0.35f)
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Brush.linearGradient(listOf(mildCyan, mildFcpColor))),
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(8.dp)
+                    .fillMaxWidth()
+                    .height(14.dp)
                     .background(pack.color),
             )
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Row(
@@ -208,29 +207,32 @@ private fun PackHeroCard(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    StatCell(label = "CARDS", value = cardCount.toString())
-                    StatCell(label = "STARS", value = "34")
-                    StatCell(
-                        label = "UPDATED",
-                        value = pack.updatedAt.toLocalDate().toFullString(),
+                    StatChip(text = "$cardCount cards")
+                    StatChip(
+                        text = "34",
+                        leadingIcon = R.drawable.ic_filled_star,
+                    )
+                    StatChip(
+                        text = "Updated ${pack.updatedAt.toLocalDate().toFullString()}",
+                        modifier = Modifier.weight(1f),
                     )
                 }
 
                 Button(
                     onClick = onStudy,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Cyan),
                     enabled = cardCount > 0,
                 ) {
                     Text(
                         text = if (cardCount > 0) "Study" else "Add cards to study",
                         style = Typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        modifier = Modifier.padding(vertical = 4.dp),
+                        modifier = Modifier.padding(vertical = 6.dp),
                     )
                 }
             }
@@ -239,22 +241,34 @@ private fun PackHeroCard(
 }
 
 @Composable
-private fun StatCell(
-    label: String,
-    value: String,
+private fun StatChip(
+    text: String,
     modifier: Modifier = Modifier,
+    leadingIcon: Int? = null,
 ) {
-    Column(modifier = modifier) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(Cyan.copy(alpha = 0.10f))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (leadingIcon != null) {
+            Icon(
+                painter = painterResource(leadingIcon),
+                contentDescription = null,
+                tint = Cyan,
+                modifier = Modifier.size(14.dp),
+            )
+        }
         Text(
-            text = label,
-            style = Typography.labelSmall,
-            color = DarkGray.copy(alpha = 0.6f),
-        )
-        Text(
-            text = value,
-            style = Typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+            text = text,
+            style = Typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
             color = DarkGray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

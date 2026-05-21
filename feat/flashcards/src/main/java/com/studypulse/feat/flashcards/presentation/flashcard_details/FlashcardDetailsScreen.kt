@@ -1,17 +1,286 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_details
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studypulse.feat.flashcards.R as FcR
+import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.domain.model.FlashcardFeedback
+import com.studypulse.feat.flashcards.presentation.flashcard_entry.FlashcardItem
+import com.studypulse.ui.components.AppTopBar
+import com.studypulse.ui.theme.Cyan
+import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Typography
+import com.studypulse.ui.theme.WarmWhite
 import org.koin.androidx.compose.koinViewModel
-
 @Composable
 fun FlashcardDetailsScreen(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardDetailsScreenViewModel = koinViewModel(),
 ) {
-
     val state by vm.state.collectAsStateWithLifecycle()
+    val isCreating = vm.id == null
 
+    val title = when {
+        isCreating -> "New Card"
+        state.editing -> "Edit Card"
+        else -> "Flashcard"
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(WarmWhite),
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            AppTopBar(
+                backgroundColor = Cyan,
+                foregroundGradient = null,
+                title = title,
+                navigationIcon = FcR.drawable.ic_arrow_left,
+                onNavigationClick = onBack,
+                actionIcon = if (state.editing) FcR.drawable.ic_check else FcR.drawable.ic_edit,
+                onActionClick = {
+                    if (state.editing) {
+                        vm.submitEdit()
+                        vm.toggleEditing()
+                    } else {
+                        vm.toggleEditing()
+                    }
+                },
+                titleColor = Color.White,
+            )
+
+            when {
+                state.loading -> CenteredMessage(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    CircularProgressIndicator(color = Cyan)
+                }
+
+                state.fc == null -> CenteredMessage(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    Text(
+                        text = "We couldn't load this card.",
+                        style = Typography.bodyMedium,
+                        color = DarkGray.copy(alpha = 0.7f),
+                    )
+                }
+
+                state.editing -> EditMode(
+                    fc = state.fc!!,
+                    onQuestionChange = vm::updateQuestion,
+                    onAnswerChange = vm::updateAnswer,
+                    onDescriptionChange = vm::updateDescription,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 20.dp),
+                )
+
+                else -> ViewMode(
+                    fc = state.fc!!,
+                    onFeedback = { fb -> vm.submitFeedback(fb.score) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 20.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CenteredMessage(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        content()
+    }
+}
+
+@Composable
+private fun ViewMode(
+    fc: Flashcard,
+    onFeedback: (FlashcardFeedback) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        FlashcardItem(
+            fc = fc,
+            onFeedback = onFeedback,
+            height = 300.dp,
+        )
+
+        if (!fc.description.isNullOrBlank()) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionLabel(text = "DESCRIPTION")
+                Text(
+                    text = fc.description,
+                    style = Typography.bodyMedium,
+                    color = DarkGray.copy(alpha = 0.85f),
+                )
+            }
+        }
+
+        StatsCard(fc = fc)
+    }
+}
+
+@Composable
+private fun StatsCard(
+    fc: Flashcard,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Cyan.copy(alpha = 0.10f))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        StatCell(label = "Reviewed", value = "${fc.n}×")
+        StatCell(label = "Interval", value = "${fc.interval}d")
+        StatCell(label = "Ease", value = "%.2f".format(fc.ef))
+    }
+}
+
+@Composable
+private fun StatCell(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = Typography.labelSmall,
+            color = DarkGray.copy(alpha = 0.65f),
+        )
+        Text(
+            text = value,
+            style = Typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = DarkGray,
+        )
+    }
+}
+
+@Composable
+private fun EditMode(
+    fc: Flashcard,
+    onQuestionChange: (String) -> Unit,
+    onAnswerChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        EditField(
+            label = "QUESTION",
+            value = fc.question,
+            onValueChange = onQuestionChange,
+            placeholder = "What's the question?",
+            minLines = 2,
+        )
+        EditField(
+            label = "ANSWER",
+            value = fc.answer,
+            onValueChange = onAnswerChange,
+            placeholder = "What's the answer?",
+            minLines = 2,
+        )
+        EditField(
+            label = "DESCRIPTION (optional)",
+            value = fc.description.orEmpty(),
+            onValueChange = onDescriptionChange,
+            placeholder = "Add a hint or extra context",
+            minLines = 3,
+        )
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = Typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = DarkGray.copy(alpha = 0.65f),
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun EditField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    minLines: Int,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SectionLabel(text = label)
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    style = Typography.bodyMedium,
+                    color = DarkGray.copy(alpha = 0.45f),
+                )
+            },
+            singleLine = false,
+            minLines = minLines,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = Cyan.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(12.dp),
+                ),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                cursorColor = Cyan,
+            ),
+        )
+    }
 }

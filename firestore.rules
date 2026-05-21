@@ -1,0 +1,107 @@
+rules_version = '2';
+
+// =============================================================================
+// StudyPulse Firestore Security Rules
+//
+// Data model:
+//   /users/{uid}                                          -> user profile
+//   /users/{uid}/attendance/{aid}                         -> attendance record
+//   /users/{uid}/semesters/{sid}                          -> semester
+//   /users/{uid}/semesters/{sid}/periods/{pid}            -> period
+//   /users/{uid}/semesters/{sid}/courses/{cid}            -> course
+//   /users/{uid}/semesters/{sid}/courses/{cid}/course_summaries/{sumId}
+//   /users/{uid}/semesters/{sid}/sem_summaries/{sumId}
+//   /users/{uid}/flashcards/{cardId}                      -> flashcard (carries packId)
+//   /users/{uid}/flashcardPacks/{packId}                  -> flashcard pack (public/private)
+//   /feedback/{id}                                        -> user-submitted feedback
+//
+// Collection-group queries used by the app:
+//   - /{path=**}/attendance/{aid}        filtered by userId == request.auth.uid
+//   - /{path=**}/course_summaries/{id}   filtered by userId == request.auth.uid
+//   - /{path=**}/flashcardPacks/{packId} filtered by isPublic == true
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // /users/{uid} and the entire user-private subtree
+    //
+    // Catch-all owner-only rule. Covers attendance, semesters, periods, courses,
+    // course_summaries, sem_summaries, flashcards, and flashcardPacks (when
+    // accessed via the direct subcollection path).
+    //
+    // Public-pack reads via collection-group queries are additionally permitted
+    // by the rule below; rules combine as a logical OR.
+    // -------------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection-group reads
+    //
+    // Each rule below depends on a field that the corresponding query also
+    // filters on, so Firestore's static query-filter check accepts the query.
+    // -------------------------------------------------------------------------
+
+    // attendance: queries always filter by userId == requester
+    match /{anyPath=**}/attendance/{attendanceId} {
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // course_summaries: queries always filter by userId == requester
+    match /{anyPath=**}/course_summaries/{summaryId} {
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // flashcardPacks: any signed-in user may READ a pack marked public.
+    // Owner read/write is already granted by /users/{uid}/{document=**} above;
+    // the ownerId disjunct is kept here for documentation / single-doc GETs.
+    match /{anyPath=**}/flashcardPacks/{packId} {
+      allow read: if isSignedIn() && (
+        resource.data.isPublic == true
+        || resource.data.ownerId == request.auth.uid
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // /feedback/{id}
+    //
+    // Anyone signed in may submit feedback. Reads / mutations happen only via
+    // admin tooling, so client access is denied.
+    // -------------------------------------------------------------------------
+
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Default deny
+    // -------------------------------------------------------------------------
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

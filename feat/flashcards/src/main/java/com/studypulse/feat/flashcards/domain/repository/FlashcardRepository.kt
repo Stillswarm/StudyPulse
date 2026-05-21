@@ -1,9 +1,14 @@
 package com.studypulse.feat.flashcards.domain.repository
 
 import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
+import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import kotlinx.coroutines.flow.Flow
 
 interface FlashcardRepository {
+
+    // keep flashcard page data against packId
+    var flashcardPageCache: MutableMap<String, FlashcardPage>
 
     suspend fun upsert(flashcard: Flashcard): Result<Unit>
 
@@ -17,5 +22,6 @@ interface FlashcardRepository {
 
     suspend fun delete(flashcard: Flashcard): Result<Unit>
 
-    suspend fun getNRandom(n: Long): Result<List<Flashcard>>
+    suspend fun getNRandomFromSamePack(n: Long, packId: String, cursors: FlashcardCursors = FlashcardCursors()): Result<FlashcardPage>
+    suspend fun getNRandomFromAcrossPacks(n: Long, cursors: FlashcardCursors = FlashcardCursors()): Result<FlashcardPage>
 }

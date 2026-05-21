@@ -11,6 +11,7 @@ data class Flashcard(
     val description: String?,
     val packId: String,
     val ownerId: String,
+    val read: Boolean = false,
 
     // SM-2 fields
     val n: Int = 0,              // number of successful reviews (repetitions)

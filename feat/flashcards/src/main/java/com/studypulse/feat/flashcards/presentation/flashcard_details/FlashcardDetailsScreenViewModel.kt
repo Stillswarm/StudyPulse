@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,11 +22,31 @@ class FlashcardDetailsScreenViewModel(
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
     val id = savedStateHandle.get<String>("id")
+    val packId = savedStateHandle.get<String>("packId")
     val isEditing = savedStateHandle.get<Boolean>("isEditing")
 
     init {
-        _state.update { it.copy(editing = isEditing ?: false) }
-        loadInitialFc()
+        if (packId != null) {
+            _state.update { it.copy(editing = isEditing ?: false) }
+            if (id == null) {
+                _state.update {
+                    it.copy(
+                        loading = false,
+                        editing = true,
+                        fc = Flashcard(
+                            id = "",
+                            question = "",
+                            answer = "",
+                            description = null,
+                            packId = packId,
+                            ownerId = "",
+                        ),
+                    )
+                }
+            } else {
+                loadInitialFc()
+            }
+        }
     }
 
     fun loadInitialFc() {

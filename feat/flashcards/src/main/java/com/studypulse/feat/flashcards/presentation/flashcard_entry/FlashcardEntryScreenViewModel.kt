@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
+import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 class FlashcardEntryScreenViewModel(
     private val fcRepository: FlashcardRepository,
@@ -26,6 +28,13 @@ class FlashcardEntryScreenViewModel(
         const val INITIAL_PACK_LIMIT = 5L
     }
 
+    private val initialState = FlashcardEntryScreenState()
+    private val _state = MutableStateFlow(initialState)
+    val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
+
+    private val mutex = Mutex()
+    private var allFetched = false
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             getPopularPacks()
@@ -35,10 +44,34 @@ class FlashcardEntryScreenViewModel(
         }
     }
 
-    private val initialState = FlashcardEntryScreenState()
-    private val _state = MutableStateFlow(initialState)
-    val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
-
+    fun getRandomCards() {
+        if (allFetched) return
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!mutex.tryLock()) return@launch
+            try {
+                fcRepository.getNRandomFromAcrossPacks(
+                    CAROUSEL_CARDS_LIMIT.toLong(),
+                    cursors = _state.value.quickRevisionPage.cursors
+                )
+                    .onSuccess { newPage ->
+                        if (newPage.cards.isEmpty()) {
+                            allFetched = true
+                            return@onSuccess
+                        }
+                        _state.update {
+                            it.copy(
+                                quickRevisionPage = FlashcardPage(
+                                    cards = it.quickRevisionPage.cards + newPage.cards,
+                                    cursors = newPage.cursors
+                                )
+                            )
+                        }
+                    }
+            } finally {
+                mutex.unlock()
+            }
+        }
+    }
 
     fun onNewFcpTitleChange(newTitle: String) {
         _state.update { it.copy(newFcp = it.newFcp.copy(title = newTitle)) }
@@ -71,10 +104,6 @@ class FlashcardEntryScreenViewModel(
                 Log.e("app", "${it.printStackTrace()}")
             }
         }
-
-    fun fetchUsersRandomCards(offset: Int, limit: Int = CAROUSEL_CARDS_LIMIT) {
-
-    }
 
     suspend fun getPopularPacks(limit: Long = INITIAL_PACK_LIMIT) {
         fcpRepository.getPopularPacks(limit)

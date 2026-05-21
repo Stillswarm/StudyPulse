@@ -2,16 +2,23 @@ package com.studypulse.feat.flashcards.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
+import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.ConcurrentHashMap
 
 class FlashcardRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
 ) : BaseFirebaseRepository(auth, db), FlashcardRepository {
+
+    override var flashcardPageCache: MutableMap<String, FlashcardPage> = ConcurrentHashMap()
 
     private fun flashcardsCollection() = userCollection("flashcards")
 
@@ -82,13 +89,160 @@ class FlashcardRepositoryImpl(
             .await()
     }
 
-    // TODO: improve this
-    override suspend fun getNRandom(n: Long): Result<List<Flashcard>> = runCatching {
-        flashcardsCollection()
+    /*
+        1. take all cards that are due today, ordered by most overdue first
+        2. take new cards, cards that haven't been seen yet
+        3. take cards that have been seen and are due later
+     */
+    override suspend fun getNRandomFromAcrossPacks(
+        n: Long,
+        cursors: FlashcardCursors
+    ): Result<FlashcardPage> = runCatching {
+        val now = System.currentTimeMillis()
+        
+        val collection = db.collectionGroup("flashcards")
+        val userId = requireUserId()
+
+        // Priority 1: due/overdue
+        val dueNowSnap = collection
+            .whereEqualTo("ownerId", userId)
+            .whereLessThanOrEqualTo("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
             .limit(n)
-            .get()
-            .await()
-            .toObjects(FlashcardDto::class.java)
-            .map { it.toDomain() }
+            .let { if (cursors.lastDueNow != null) it.startAfter(cursors.lastDueNow) else it }
+            .get().await()                          // ← hold QuerySnapshot
+
+        val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        if (dueNow.size >= n) return@runCatching FlashcardPage(
+            cards = dueNow.take(n.toInt()),
+            cursors = cursors.copy(lastDueNow = dueNowSnap.documents.lastOrNull())
+        )
+
+        // Priority 2: new, never reviewed
+        var rem = n - dueNow.size
+        val newCardsSnap = collection
+            .whereEqualTo("ownerId", userId)
+            .whereEqualTo("read", false)
+            .whereGreaterThan("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
+            .limit(rem)
+            .let { if (cursors.lastNewCard != null) it.startAfter(cursors.lastNewCard) else it }
+            .get().await()
+
+        val newCards = newCardsSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        val tot = dueNow.size + newCards.size
+        if (tot >= n) return@runCatching FlashcardPage(
+            cards = dueNow + newCards,
+            cursors = cursors.copy(
+                lastDueNow = dueNowSnap.documents.lastOrNull(),
+                lastNewCard = newCardsSnap.documents.lastOrNull()
+            )
+        )
+
+        // Priority 3: reviewed, not yet due
+        rem = n - tot
+        val dueLaterSnap = collection
+            .whereEqualTo("ownerId", userId)
+            .whereEqualTo("read", true)
+            .whereGreaterThan("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
+            .limit(rem)
+            .let { if (cursors.lastDueLater != null) it.startAfter(cursors.lastDueLater) else it }
+            .get().await()
+
+        val dueLater = dueLaterSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        FlashcardPage(
+            cards = dueNow + newCards + dueLater,
+            cursors = cursors.copy(
+                lastDueNow = dueNowSnap.documents.lastOrNull(),
+                lastNewCard = newCardsSnap.documents.lastOrNull(),
+                lastDueLater = dueLaterSnap.documents.lastOrNull()
+            )
+        )
+    }
+
+    override suspend fun getNRandomFromSamePack(
+        n: Long,
+        packId: String,
+        cursors: FlashcardCursors
+    ): Result<FlashcardPage> = runCatching {
+        val now = System.currentTimeMillis()
+
+        // Priority 1: due/overdue
+        val dueNowSnap = flashcardsCollection()
+            .whereEqualTo("packId", packId)
+            .whereLessThanOrEqualTo("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
+            .limit(n)
+            .let { if (cursors.lastDueNow != null) it.startAfter(cursors.lastDueNow) else it }
+            .get().await()                          // ← hold QuerySnapshot
+
+        val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        if (dueNow.size >= n) return@runCatching FlashcardPage(
+            cards = dueNow.take(n.toInt()),
+            cursors = cursors.copy(lastDueNow = dueNowSnap.documents.lastOrNull())
+        ).also { newPage ->
+            updateCache(packId, newPage)
+        }
+
+        // Priority 2: new, never reviewed
+        var rem = n - dueNow.size
+        val newCardsSnap = flashcardsCollection()
+            .whereEqualTo("packId", packId)
+            .whereEqualTo("read", false)
+            .whereGreaterThan("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
+            .limit(rem)
+            .let { if (cursors.lastNewCard != null) it.startAfter(cursors.lastNewCard) else it }
+            .get().await()
+
+        val newCards = newCardsSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        val tot = dueNow.size + newCards.size
+        if (tot >= n) return@runCatching FlashcardPage(
+            cards = dueNow + newCards,
+            cursors = cursors.copy(
+                lastDueNow = dueNowSnap.documents.lastOrNull(),
+                lastNewCard = newCardsSnap.documents.lastOrNull()
+            )
+        ).also { newPage -> updateCache(packId, newPage) }
+
+        // Priority 3: reviewed, not yet due
+        rem = n - tot
+        val dueLaterSnap = flashcardsCollection()
+            .whereEqualTo("packId", packId)
+            .whereEqualTo("read", true)
+            .whereGreaterThan("dueDate", now)
+            .orderBy("dueDate", Query.Direction.ASCENDING)
+            .limit(rem)
+            .let { if (cursors.lastDueLater != null) it.startAfter(cursors.lastDueLater) else it }
+            .get().await()
+
+        val dueLater = dueLaterSnap.toObjects<FlashcardDto>().map { it.toDomain() }
+
+        FlashcardPage(
+            cards = dueNow + newCards + dueLater,
+            cursors = cursors.copy(
+                lastDueNow = dueNowSnap.documents.lastOrNull(),
+                lastNewCard = newCardsSnap.documents.lastOrNull(),
+                lastDueLater = dueLaterSnap.documents.lastOrNull()
+            )
+        ).also { newPage ->
+            updateCache(packId, newPage)
+        }
+    }
+
+    // compute() makes the process atomic and concurrency-safe
+    private fun updateCache(packId: String, newPage: FlashcardPage) {
+        flashcardPageCache.compute(packId) { _, existing ->
+            existing?.copy(
+                cards = existing.cards + newPage.cards,
+                cursors = newPage.cursors,
+            ) ?: newPage
+        }
     }
 }

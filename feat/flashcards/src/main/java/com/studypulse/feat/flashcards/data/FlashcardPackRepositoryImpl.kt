@@ -61,8 +61,18 @@ class FlashcardPackRepositoryImpl(
     }
 
     override suspend fun getById(id: String): Result<FlashcardPack> = runCatching {
+        val ownDoc = flashcardPacksCollection().document(id).get().await()
+        if (ownDoc.exists()) {
+            return@runCatching ownDoc.toObject(FlashcardPackDto::class.java)
+                ?.toDomain()
+                ?: throw NoSuchElementException("Failed to deserialize pack $id")
+        }
+
+        // Collection-group lookup must be constrained to a field the security
+        // rule depends on (isPublic) so the static query-filter check passes.
         db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("id", id)
+            .whereEqualTo("isPublic", true)
             .limit(1)
             .get()
             .await()

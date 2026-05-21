@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,26 +28,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,32 +56,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.event.NavigationDrawerController
 import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.domain.model.FlashcardFeedback
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.presentation.AddPackBottomSheet
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.R
 import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.ui.theme.Blue
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
-import com.studypulse.ui.theme.Gold
+import com.studypulse.ui.theme.GreenDark
 import com.studypulse.ui.theme.GreenSecondary
 import com.studypulse.ui.theme.Orange
-import com.studypulse.ui.theme.Pink
 import com.studypulse.ui.theme.Purple
+import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-private val sampleFc = Flashcard(
-    id = "dx",
-    "What is the time complexity of binary search",
-    "O(log n)",
-    "wee",
-    "sfs",
-    "iy"
-)
+const val PREFETCH_THRESHOLD = 5
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,8 +88,20 @@ fun FlashcardEntryScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState { 4 }
+    val flashcards = state.quickRevisionPage.cards
+    val pagerState = rememberPagerState { flashcards.size }
     var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow {
+            pagerState.currentPage
+        }.distinctUntilChanged()
+            .collect { page ->
+                if (page >= state.quickRevisionPage.cards.size - PREFETCH_THRESHOLD) {
+                    vm.getRandomCards()
+                }
+            }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         LargeAppTopBar(
@@ -132,7 +131,7 @@ fun FlashcardEntryScreen(
             ) {
                 item {
                     QuickRevisionCarousel(
-                        flashcards = listOf(sampleFc, sampleFc, sampleFc, sampleFc),
+                        flashcards = state.quickRevisionPage.cards,
                         pagerState = pagerState,
                     )
                 }
@@ -182,6 +181,7 @@ fun FlashcardEntryScreen(
 fun QuickRevisionCarousel(
     flashcards: List<Flashcard>,
     pagerState: PagerState,
+    onFeedback: (Flashcard, FlashcardFeedback) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -223,7 +223,11 @@ fun QuickRevisionCarousel(
                     pageSpacing = 12.dp,
                     modifier = Modifier.fillMaxWidth(),
                 ) { page ->
-                    FlashcardItem(fc = flashcards[page % flashcards.size])
+                    val card = flashcards[page % flashcards.size]
+                    FlashcardItem(
+                        fc = card,
+                        onFeedback = { fb -> onFeedback(card, fb) },
+                    )
                 }
 
                 Row(
@@ -304,47 +308,60 @@ private fun MiniPackTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val tileWidth = 140.dp
-    val tileHeight = 150.dp
-    val mildPackColor = pack.color.copy(alpha = 0.08f)
-    val mildCyan = Cyan.copy(alpha = 0.35f)
-
-    Box(
+    Card(
         modifier = modifier
-            .width(tileWidth)
-            .height(tileHeight)
-            .clip(RoundedCornerShape(14.dp))
-            .background(
-                Brush.linearGradient(listOf(mildCyan, mildPackColor))
-            )
+            .width(MINI_PACK_TILE_WIDTH)
+            .height(MINI_PACK_TILE_HEIGHT)
             .noRippleClickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(6.dp)
-                    .background(pack.color)
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .background(pack.color),
             )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(12.dp),
+                    .padding(14.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(
-                    text = pack.title,
-                    style = Typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = DarkGray,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = if (pack.isPublic) "PUBLIC" else "PRIVATE",
-                    style = Typography.labelSmall,
-                    color = Cyan,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = pack.title,
+                        style = Typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = DarkGray,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    pack.description?.takeIf { it.isNotBlank() }?.let {
+                        Text(
+                            text = it,
+                            style = Typography.bodySmall,
+                            color = DarkGray.copy(alpha = 0.6f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Cyan.copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                ) {
+                    Text(
+                        text = if (pack.isPublic) "PUBLIC" else "PRIVATE",
+                        style = Typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Cyan,
+                    )
+                }
             }
         }
     }
@@ -357,21 +374,21 @@ private fun AddPackTile(
 ) {
     Box(
         modifier = modifier
-            .width(140.dp)
-            .height(170.dp)
-            .clip(RoundedCornerShape(14.dp))
+            .width(MINI_PACK_TILE_WIDTH)
+            .height(MINI_PACK_TILE_HEIGHT)
+            .clip(RoundedCornerShape(16.dp))
             .background(Cyan.copy(alpha = 0.10f))
             .border(
                 width = 1.5.dp,
                 color = Cyan.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
             )
             .noRippleClickable { onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Box(
                 modifier = Modifier
@@ -390,18 +407,22 @@ private fun AddPackTile(
             Text(
                 text = "New pack",
                 style = Typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = DarkGray,
             )
         }
     }
 }
 
+private val MINI_PACK_TILE_WIDTH = 160.dp
+private val MINI_PACK_TILE_HEIGHT = 180.dp
+
 @Composable
 fun FlashcardItem(
     fc: Flashcard,
+    onFeedback: (FlashcardFeedback) -> Unit = {},
     modifier: Modifier = Modifier,
-    height: Dp = 160.dp,
-    width: Dp = 220.dp,
+    height: Dp = 240.dp,
 ) {
     var flipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
@@ -418,40 +439,126 @@ fun FlashcardItem(
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 12f * density
-            }
-            .noRippleClickable { flipped = !flipped },
-        contentAlignment = Alignment.Center
+            },
+        contentAlignment = Alignment.Center,
     ) {
         Card(
             modifier = Modifier
                 .height(height)
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth(0.88f)
                 .graphicsLayer { rotationY = if (isShowingAnswer) 180f else 0f },
-            shape = RoundedCornerShape(14.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Cyan.copy(alpha = 0.4f)),
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+                    .padding(16.dp),
             ) {
-                Text(
-                    text = if (isShowingAnswer) fc.answer else fc.question,
-                    style = Typography.bodyMedium,
-                    color = DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                Text(
-                    text = "Tap to flip",
-                    style = Typography.labelSmall,
-                    color = DarkGray.copy(alpha = 0.45f),
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .noRippleClickable { flipped = !flipped },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = if (isShowingAnswer) fc.answer else fc.question,
+                        style = Typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = DarkGray,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                if (isShowingAnswer) {
+                    FeedbackButtonRow(onFeedback = onFeedback)
+                } else {
+                    Text(
+                        text = "Tap to flip",
+                        style = Typography.labelSmall,
+                        color = DarkGray.copy(alpha = 0.45f),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .noRippleClickable { flipped = !flipped },
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun FeedbackButtonRow(
+    onFeedback: (FlashcardFeedback) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        FeedbackButton(
+            label = "AGAIN",
+            color = DarkGray,
+            onClick = { onFeedback(FlashcardFeedback.BLACKOUT) },
+            modifier = Modifier.weight(1f),
+        )
+        FeedbackButton(
+            label = "WRONG",
+            color = Red,
+            onClick = { onFeedback(FlashcardFeedback.WRONG) },
+            modifier = Modifier.weight(1f),
+        )
+        FeedbackButton(
+            label = "HARD",
+            color = Orange,
+            onClick = { onFeedback(FlashcardFeedback.HARD) },
+            modifier = Modifier.weight(1f),
+        )
+        FeedbackButton(
+            label = "GOOD",
+            color = GreenSecondary,
+            onClick = { onFeedback(FlashcardFeedback.OKAY) },
+            modifier = Modifier.weight(1f),
+        )
+        FeedbackButton(
+            label = "EASY",
+            color = GreenDark,
+            onClick = { onFeedback(FlashcardFeedback.EASY) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun FeedbackButton(
+    label: String,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(color.copy(alpha = 0.12f))
+            .border(
+                width = 1.dp,
+                color = color.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(8.dp),
+            )
+            .noRippleClickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = Typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = color,
+        )
     }
 }
