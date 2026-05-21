@@ -99,18 +99,22 @@ class FlashcardRepositoryImpl(
         cursors: FlashcardCursors
     ): Result<FlashcardPage> = runCatching {
         val now = System.currentTimeMillis()
-        
-        val collection = db.collectionGroup("flashcards")
-        val userId = requireUserId()
+
+        // Direct subcollection query under the requester's own user subtree.
+        // A collectionGroup query would be rejected by the rules' static
+        // query-filter check — there is no /{anyPath=**}/flashcards/{id} rule,
+        // and the catch-all owner rule cannot statically prove path scoping.
+        // The path itself already constrains results to the current user, so
+        // an additional ownerId filter would be redundant.
+        val collection = flashcardsCollection()
 
         // Priority 1: due/overdue
         val dueNowSnap = collection
-            .whereEqualTo("ownerId", userId)
             .whereLessThanOrEqualTo("dueDate", now)
             .orderBy("dueDate", Query.Direction.ASCENDING)
             .limit(n)
             .let { if (cursors.lastDueNow != null) it.startAfter(cursors.lastDueNow) else it }
-            .get().await()                          // ← hold QuerySnapshot
+            .get().await()
 
         val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
 
@@ -122,7 +126,6 @@ class FlashcardRepositoryImpl(
         // Priority 2: new, never reviewed
         var rem = n - dueNow.size
         val newCardsSnap = collection
-            .whereEqualTo("ownerId", userId)
             .whereEqualTo("read", false)
             .whereGreaterThan("dueDate", now)
             .orderBy("dueDate", Query.Direction.ASCENDING)
@@ -144,7 +147,6 @@ class FlashcardRepositoryImpl(
         // Priority 3: reviewed, not yet due
         rem = n - tot
         val dueLaterSnap = collection
-            .whereEqualTo("ownerId", userId)
             .whereEqualTo("read", true)
             .whereGreaterThan("dueDate", now)
             .orderBy("dueDate", Query.Direction.ASCENDING)
