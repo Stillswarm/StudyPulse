@@ -8,18 +8,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.R
@@ -48,7 +53,6 @@ import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
-import com.studypulse.ui.theme.WhiteSecondary
 import org.koin.androidx.compose.koinViewModel
 import com.studypulse.feat.flashcards.R as FcR
 
@@ -158,61 +162,63 @@ private fun EmptyPackListState(
         )
     }
 }
-
 @Composable
 fun PackView(
     fcp: FlashcardPack,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
-    val mildFcpColor = fcp.color.copy(alpha = 0.05f)
-    val mildCyan = Cyan.copy(alpha = 0.5f)
+    val packColor = fcp.color
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(160.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(mildCyan, mildFcpColor)
-                )
+            .border(
+                width = 1.dp,
+                color = Cyan.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(16.dp)
             )
             .then(
                 if (onClick != null) Modifier.noRippleClickable { onClick() } else Modifier
             )
     ) {
-        Row {
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Coloured sidebar
             Box(
                 modifier = Modifier
-                    .height(200.dp)
-                    .width(10.dp)
-                    .background(color = fcp.color)
+                    .fillMaxHeight()
+                    .width(6.dp)
+                    .background(color = packColor)
             )
 
+            // Card content
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
+                // Top row: title + description + badge | star
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(2f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
+                    // Left: title, description, visibility badge
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
                             text = fcp.title,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
-                            letterSpacing = 1.5.sp,
-                            color = DarkGray,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp,
+                            letterSpacing = 0.04.em,
+                            color = Color(0xFF0E2A2F),
                         )
                         fcp.description?.let {
                             Text(
@@ -220,36 +226,32 @@ fun PackView(
                                 maxLines = 2,
                                 minLines = 2,
                                 overflow = TextOverflow.Ellipsis,
-                                color = DarkGray.copy(alpha = 0.7f),
-                                fontSize = 10.sp,
+                                color = Color(0xFF334455).copy(alpha = 0.7f),
+                                fontSize = 11.sp,
+                                lineHeight = 15.sp,
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .aspectRatio(2f)
-                                .wrapContentSize()
-                                .clip(CircleShape)
-                                .border(1.dp, Cyan, CircleShape)
-                                .background(Cyan.copy(alpha = 0.5f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (fcp.isPublic) "PUBLIC" else "PRIVATE",
-                                fontSize = 8.sp,
-                                color = DarkGray,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
+                        VisibilityBadge(isPublic = fcp.isPublic)
                     }
-                    StarWithCount(34)
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Right: star count
+                    StarButton(count = fcp.starCount)
                 }
 
-                Column {
+                // Bottom row: updated date | card count chip
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "Last Updated: ${fcp.updatedAt.toLocalDate().toFullString()}",
-                        color = DarkGray.copy(alpha = 0.6f),
+                        text = "updated ${fcp.updatedAt.toLocalDate().toFullString()}",
+                        color = Color(0xFF334455).copy(alpha = 0.55f),
                         fontSize = 10.sp,
                     )
+                    CardCountChip(count = fcp.fcCount, packColor = packColor)
                 }
             }
         }
@@ -257,30 +259,90 @@ fun PackView(
 }
 
 @Composable
-fun StarWithCount(count: Int, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .width(48.dp)
-            .height(20.dp)
+private fun VisibilityBadge(isPublic: Boolean) {
+    val label = if (isPublic) "public" else "private"
+    val bgColor = if (isPublic) Cyan.copy(alpha = 0.12f) else Color(0xFF64648C).copy(alpha = 0.09f)
+    val borderColor = if (isPublic) Cyan.copy(alpha = 0.3f) else Color(0xFF64648C).copy(alpha = 0.2f)
+    val textColor = if (isPublic) Color(0xFF0E7490) else Color(0xFF4A4A6A)
+    val icon = if (isPublic) Icons.Outlined.Public else Icons.Outlined.Lock
+
+    Row(
+        modifier = Modifier
             .clip(CircleShape)
-            .background(WhiteSecondary)
+            .border(0.5.dp, borderColor, CircleShape)
+            .background(bgColor)
+            .padding(horizontal = 9.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = textColor,
+            modifier = Modifier.size(9.dp)
+        )
+        Text(
+            text = label,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.08.em,
+            color = textColor,
+        )
+    }
+}
+
+@Composable
+private fun StarButton(count: Int) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+                .size(28.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(0.5.dp, Cyan.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
+                .background(Cyan.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_filled_star),
-                contentDescription = null,
-                tint = Cyan,
-                modifier = Modifier.size(24.dp)
+                imageVector = Icons.Outlined.StarBorder,
+                contentDescription = "Stars",
+                tint = Color(0xFF0891B2),
+                modifier = Modifier.size(14.dp)
             )
-
-            Text(text = count.toString(), fontSize = 10.sp)
         }
+        Text(
+            text = count.toString(),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF0E7490),
+        )
+    }
+}
+
+@Composable
+private fun CardCountChip(count: Int, packColor: Color) {
+    Row(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(packColor.copy(alpha = 0.10f))
+            .padding(horizontal = 9.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Style,
+            contentDescription = null,
+            tint = packColor,
+            modifier = Modifier.size(12.dp)
+        )
+        Text(
+            text = "$count cards",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = packColor,
+        )
     }
 }
 

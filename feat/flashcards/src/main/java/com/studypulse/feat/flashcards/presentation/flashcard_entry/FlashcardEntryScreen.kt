@@ -255,8 +255,7 @@ fun QuickRevisionCarousel(
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     repeat(flashcards.size + 1) { i ->

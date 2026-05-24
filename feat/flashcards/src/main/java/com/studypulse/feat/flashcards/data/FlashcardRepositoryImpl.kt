@@ -31,6 +31,7 @@ class FlashcardRepositoryImpl(
     override suspend fun upsert(flashcard: Flashcard): Result<Unit> = runCatching {
         val collection = flashcardsCollection()
         val docId = flashcard.id.ifBlank { collection.document().id }
+
         collection.document(docId)
             .set(
                 flashcard.copy(
