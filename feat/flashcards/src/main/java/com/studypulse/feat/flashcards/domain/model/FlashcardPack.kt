@@ -2,6 +2,7 @@ package com.studypulse.feat.flashcards.domain.model
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
 const val CYAN_ARGB = -11230031
@@ -30,6 +31,7 @@ data class FlashcardPack(
     )
 }
 
+@Serializable
 data class FlashcardPackDto(
     val id: String = "",
     val ownerId: String? = null,

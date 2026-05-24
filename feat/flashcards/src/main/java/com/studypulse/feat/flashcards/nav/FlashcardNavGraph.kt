@@ -15,7 +15,10 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
         FlashcardEntryScreen(
             onNavigateToProfile = { navController.navigate(Route.ProfileRoute) },
             onNavigateToFcpScreen = { navController.navigate(Route.FcpDetailsRoute(it)) },
-            onNavigateToPackListScreen = { navController.navigate(Route.FcpListRoute(it) )}
+            onNavigateToPackListScreen = { navController.navigate(Route.FcpListRoute(it)) },
+            onNavigateToFcDetails = { id, packId ->
+                navController.navigate(Route.FlashcardDetailsRoute(id, packId, false))
+            },
         )
     }
 

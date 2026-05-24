@@ -50,6 +50,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit.v130)
     androidTestImplementation(libs.androidx.espresso.core.v370)
 
+    /// Serialization
+    implementation(libs.kotlinx.serialization.json)
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

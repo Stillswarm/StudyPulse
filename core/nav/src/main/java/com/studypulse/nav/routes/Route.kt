@@ -71,6 +71,9 @@ object Route {
     data class FlashcardDetailsRoute(val id: String?, val packId: String, val isEditing: Boolean) : NavigableRoute
 
     @Serializable
+    data class StudySession(val sm2cardsJson: String)
+
+    @Serializable
     data class FcpListRoute(val type: FcpListType) : NavigableRoute
 
 

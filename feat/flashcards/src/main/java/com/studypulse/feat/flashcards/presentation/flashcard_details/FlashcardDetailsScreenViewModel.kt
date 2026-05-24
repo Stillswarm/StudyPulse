@@ -4,17 +4,25 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.common.event.SnackbarController
-import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
 import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import com.studypulse.feat.flashcards.domain.repository.FlashcardReviewRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
-class FlashcardDetailsScreenViewModel(
+// if there are cards, this is a study session -> we show left/right arrows here
+// if not, this is a plain flashcard details view -> can edit here
+
+internal class FlashcardDetailsScreenViewModel(
     val fcRepository: FlashcardRepository,
+    val frRepository: FlashcardReviewRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -25,6 +33,11 @@ class FlashcardDetailsScreenViewModel(
     val packId = savedStateHandle.get<String>("packId")
     val isEditing = savedStateHandle.get<Boolean>("isEditing")
 
+    val cardsJson = savedStateHandle.get<String>("sm2cardsJson")
+    val cards = if (cardsJson != null) Json.decodeFromString<List<Sm2Flashcard>>(cardsJson) else null
+    val index = 0
+    val canEdit = cards == null
+
     init {
         if (packId != null) {
             _state.update { it.copy(editing = isEditing ?: false) }
@@ -33,19 +46,24 @@ class FlashcardDetailsScreenViewModel(
                     it.copy(
                         loading = false,
                         editing = true,
-                        fc = Flashcard(
-                            id = "",
-                            question = "",
-                            answer = "",
-                            description = null,
-                            packId = packId,
-                            ownerId = "",
+                        sm2fc = Sm2Flashcard(
+                            flashcard = Flashcard(
+                                id = "",
+                                question = "",
+                                answer = "",
+                                description = null,
+                                packId = packId,
+                                ownerId = "",
+                            ),
+                            reviewState = FlashcardReviewState()
                         ),
                     )
                 }
             } else {
                 loadInitialFc()
             }
+        } else if (cards != null) {
+            _state.update { it.copy(sm2fc = cards[0]) }
         }
     }
 
@@ -54,44 +72,58 @@ class FlashcardDetailsScreenViewModel(
         viewModelScope.launch {
             _state.update { it.copy(loading = true) }
 
-            fcRepository.getById(id).onFailure { e ->
-                SnackbarController.sendEvent(SnackbarEvent("Load Failed: ${e.localizedMessage}"))
-            }.onSuccess { fc ->
-                _state.update { it.copy(fc = fc) }
-            }
+            val sm2 = async { frRepository.get(id) }
+            val fc = async { fcRepository.getById(id) }
 
-            _state.update { it.copy(loading = false) }
+            val sm2fc = Sm2Flashcard(
+                flashcard = fc.await().getOrElse
+                {
+                    SnackbarController.plainText("flashcard fetch failed")
+                    return@launch
+                },
+                reviewState = sm2.await()
+                    .getOrElse { FlashcardReviewState() }
+            )
+
+            _state.update { it.copy(sm2fc = sm2fc, loading = false) }
         }
     }
 
     fun updateQuestion(new: String) {
-        _state.update { it.copy(fc = state.value.fc?.copy(question = new)) }
+        state.value.sm2fc?.let { sm2fc ->
+            _state.update { it.copy(sm2fc = sm2fc.copy(flashcard = sm2fc.flashcard.copy(question = new))) }
+        }
     }
 
     fun updateAnswer(new: String) {
-        _state.update { it.copy(fc = state.value.fc?.copy(answer = new)) }
+        state.value.sm2fc?.let { sm2fc ->
+            _state.update { it.copy(sm2fc = sm2fc.copy(flashcard = sm2fc.flashcard.copy(answer = new))) }
+        }
     }
 
     fun updateDescription(new: String) {
-        _state.update { it.copy(fc = state.value.fc?.copy(description = new)) }
+        state.value.sm2fc?.let { sm2fc ->
+            _state.update { it.copy(sm2fc = sm2fc.copy(flashcard = sm2fc.flashcard.copy(description = new))) }
+        }
     }
 
     fun submitEdit() {
         viewModelScope.launch {
-            state.value.fc?.let { fc ->
-                fcRepository.upsert(fc)
+            state.value.sm2fc?.let { fc ->
+                fcRepository.upsert(fc.flashcard)
             }
         }
     }
 
     fun toggleEditing() {
-        _state.update { it.copy(editing = !state.value.editing) }
+        if (!canEdit) _state.update { it.copy(editing = false) }
+        else _state.update { it.copy(editing = !state.value.editing) }
     }
 
     fun submitFeedback(score: Int) {
-        _state.value.fc?.let { fc ->
+        _state.value.sm2fc?.let { fc ->
             viewModelScope.launch {
-                fcRepository.upsert(fc.afterReview(score))
+                frRepository.upsert(fc.afterReview(score).reviewState)
             }
         }
     }

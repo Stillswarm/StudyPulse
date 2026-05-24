@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.event.NavigationDrawerController
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardFeedback
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
@@ -75,24 +76,25 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-const val PREFETCH_THRESHOLD = 5
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardEntryScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToFcpScreen: (id: String) -> Unit,
     onNavigateToPackListScreen: (FcpListType) -> Unit,
+    onNavigateToFcDetails: (id: String, packId: String) -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardEntryScreenViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val flashcards = state.quickRevisionPage.cards
-    val pagerState = rememberPagerState { flashcards.size }
+    val pagerState = rememberPagerState {
+        if (flashcards.isEmpty()) 0 else flashcards.size + 1
+    }
     var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(pagerState) {
+    /*LaunchedEffect(pagerState) {
         snapshotFlow {
             pagerState.currentPage
         }.distinctUntilChanged()
@@ -101,7 +103,7 @@ fun FlashcardEntryScreen(
                     vm.getRandomCards()
                 }
             }
-    }
+    }*/
 
     Box(modifier = modifier.fillMaxSize()) {
         LargeAppTopBar(
@@ -133,6 +135,11 @@ fun FlashcardEntryScreen(
                     QuickRevisionCarousel(
                         flashcards = state.quickRevisionPage.cards,
                         pagerState = pagerState,
+                        onFeedback = vm::onCardFeedback,
+                        onContinueStudying = {},
+                        onCardDetailsClick = { card ->
+                            onNavigateToFcDetails(card.flashcard.id, card.flashcard.packId)
+                        },
                     )
                 }
 
@@ -179,9 +186,11 @@ fun FlashcardEntryScreen(
 
 @Composable
 fun QuickRevisionCarousel(
-    flashcards: List<Flashcard>,
+    flashcards: List<Sm2Flashcard>,
     pagerState: PagerState,
-    onFeedback: (Flashcard, FlashcardFeedback) -> Unit = { _, _ -> },
+    onFeedback: (Sm2Flashcard, Int) -> Unit,
+    onContinueStudying: () -> Unit,
+    onCardDetailsClick: (Sm2Flashcard) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -223,11 +232,30 @@ fun QuickRevisionCarousel(
                     pageSpacing = 12.dp,
                     modifier = Modifier.fillMaxWidth(),
                 ) { page ->
-                    val card = flashcards[page % flashcards.size]
-                    FlashcardItem(
-                        fc = card,
-                        onFeedback = { fb -> onFeedback(card, fb) },
-                    )
+                    if (page == flashcards.size) {
+                        ContinueStudyingItem(onContinueStudying = onContinueStudying)
+                    } else {
+                        val card = flashcards[page % flashcards.size]
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            FlashcardItem(
+                                fc = card.flashcard,
+                                onFeedback = { fb -> onFeedback(card, fb.score) },
+                            )
+                            // align the link to the right edge of the FlashcardItem,
+                            // which is centred at 88% width inside this column
+                            Box(
+                                modifier = Modifier.fillMaxWidth(0.88f),
+                                contentAlignment = Alignment.CenterEnd,
+                            ) {
+                                ViewDetailsButton(
+                                    onClick = { onCardDetailsClick(card) },
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Row(
@@ -236,7 +264,7 @@ fun QuickRevisionCarousel(
                         .padding(top = 4.dp),
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    repeat(flashcards.size) { i ->
+                    repeat(flashcards.size + 1) { i ->
                         val active = pagerState.currentPage == i
                         Box(
                             modifier = Modifier
@@ -416,6 +444,83 @@ private fun AddPackTile(
 
 private val MINI_PACK_TILE_WIDTH = 160.dp
 private val MINI_PACK_TILE_HEIGHT = 180.dp
+
+@Composable
+private fun ViewDetailsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = "Details  ›",
+        style = Typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = Cyan.copy(alpha = 0.85f),
+        modifier = modifier
+            .noRippleClickable(onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 6.dp),
+    )
+}
+
+@Composable
+fun ContinueStudyingItem(
+    onContinueStudying: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    height: Dp = 240.dp,
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Card(
+            modifier = Modifier
+                .height(height)
+                .fillMaxWidth(0.88f),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Cyan.copy(alpha = 0.4f)),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "Nice work!",
+                    style = Typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkGray,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "You've finished this batch.\nReady for another round?",
+                    style = Typography.bodyMedium,
+                    color = DarkGray.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Cyan)
+                        .noRippleClickable(onClick = onContinueStudying)
+                        .padding(horizontal = 28.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Continue Studying?",
+                        style = Typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun FlashcardItem(

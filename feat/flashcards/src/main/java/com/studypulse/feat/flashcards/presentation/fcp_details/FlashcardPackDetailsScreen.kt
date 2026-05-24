@@ -110,7 +110,8 @@ fun FlashcardPackDetailsScreen(
                 if (flashcards.isEmpty()) {
                     item { EmptyCardsState() }
                 } else {
-                    items(items = flashcards, key = { it.id }) { fc ->
+                    items(items = flashcards, key = { it.flashcard.id }) { sm2 ->
+                        val fc = sm2.flashcard
                         FlashcardListItem(
                             flashcard = fc,
                             onClick = { navigateToFcDetails(fc.id, fc.packId, false) },
@@ -300,7 +301,6 @@ private fun FlashcardListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val status = remember(flashcard) { flashcard.toStatus() }
 
     Column(
         modifier = modifier
@@ -331,7 +331,7 @@ private fun FlashcardListItem(
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.width(8.dp))
-            StatusChip(status = status)
+            // TODO: have something here
         }
         Text(
             text = flashcard.answer,
@@ -343,42 +343,32 @@ private fun FlashcardListItem(
     }
 }
 
-private enum class CardStatus(val label: String, val color: Color) {
-    New("NEW", Purple),
-    Learning("LEARNING", Orange),
-    Due("DUE", Red),
-    Reviewing("REVIEWING", GreenSecondary),
-}
+//private enum class CardStatus(val label: String, val color: Color) {
+//    New("NEW", Purple),
+//    Learning("LEARNING", Orange),
+//    Due("DUE", Red),
+//    Reviewing("REVIEWING", GreenSecondary),
+//}
 
-private fun Flashcard.toStatus(): CardStatus {
-    val now = System.currentTimeMillis()
-    return when {
-        n == 0 -> CardStatus.New
-        dueDate <= now -> CardStatus.Due
-        n in 1..2 -> CardStatus.Learning
-        else -> CardStatus.Reviewing
-    }
-}
-
-@Composable
-private fun StatusChip(
-    status: CardStatus,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(status.color.copy(alpha = 0.15f))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    ) {
-        Text(
-            text = status.label,
-            style = Typography.labelSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = status.color,
-        )
-    }
-}
+//@Composable
+//private fun StatusChip(
+//    status: CardStatus,
+//    modifier: Modifier = Modifier,
+//) {
+//    Box(
+//        modifier = modifier
+//            .clip(CircleShape)
+//            .background(status.color.copy(alpha = 0.15f))
+//            .padding(horizontal = 10.dp, vertical = 4.dp),
+//    ) {
+//        Text(
+//            text = status.label,
+//            style = Typography.labelSmall,
+//            fontWeight = FontWeight.SemiBold,
+//            color = status.color,
+//        )
+//    }
+//}
 
 @Composable
 private fun EmptyCardsState(modifier: Modifier = Modifier) {

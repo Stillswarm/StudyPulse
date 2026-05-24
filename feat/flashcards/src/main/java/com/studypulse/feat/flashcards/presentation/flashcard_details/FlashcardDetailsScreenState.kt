@@ -1,9 +1,9 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_details
 
-import com.studypulse.feat.flashcards.domain.model.Flashcard
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 
 data class FlashcardDetailsScreenState(
-    val fc: Flashcard? = null,
+    val sm2fc: Sm2Flashcard? = null,
     val loading: Boolean = true,
     val editing: Boolean = false,
 )

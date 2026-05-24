@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.feat.flashcards.ReviewCache
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
+import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +24,7 @@ import kotlinx.coroutines.sync.Mutex
 class FlashcardEntryScreenViewModel(
     private val fcRepository: FlashcardRepository,
     private val fcpRepository: FlashcardPackRepository,
+    private val reviewCache: ReviewCache,
 ) : ViewModel() {
 
     companion object {
@@ -42,9 +46,17 @@ class FlashcardEntryScreenViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             getUserPacks()
         }
+        getRandomCards()
     }
 
-    fun getRandomCards() {
+    /** this was the earlier logic to keep fetching cards
+    // as the available cards neared exhaustion
+
+    // eventually it was decided that only a fixed number of cards
+    // will be loaded for entry screen. beyond that, the user can continue
+    // studying by entering a dedicated study session **/
+
+    /*fun getRandomCards() {
         if (allFetched) return
         viewModelScope.launch(Dispatchers.IO) {
             if (!mutex.tryLock()) return@launch
@@ -69,6 +81,14 @@ class FlashcardEntryScreenViewModel(
                     }
             } finally {
                 mutex.unlock()
+            }
+        }
+    }*/
+
+    fun getRandomCards() {
+        viewModelScope.launch(Dispatchers.IO) {
+            fcRepository.getNRandomFromAcrossPacks(INITIAL_PACK_LIMIT).onSuccess { page ->
+                _state.update { it.copy(quickRevisionPage = page) }
             }
         }
     }
@@ -123,6 +143,13 @@ class FlashcardEntryScreenViewModel(
             }.onFailure {
                 Log.e("app", "${it.printStackTrace()}")
             }
+    }
+
+    fun onCardFeedback(sm2fc: Sm2Flashcard, q: Int) {
+        val newReviewState = sm2fc.afterReview(q).reviewState.copy(cardId = sm2fc.flashcard.id)
+        Log.d("app", "new review state card id = ${newReviewState.cardId}")
+
+        reviewCache.append(newReviewState)
     }
 
 

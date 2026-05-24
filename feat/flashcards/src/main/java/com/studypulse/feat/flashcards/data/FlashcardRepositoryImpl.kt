@@ -1,6 +1,5 @@
 package com.studypulse.feat.flashcards.data
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -9,7 +8,12 @@ import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
+import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import com.studypulse.feat.flashcards.domain.repository.FlashcardReviewRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.ConcurrentHashMap
@@ -17,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
 class FlashcardRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
+    private val frRepository: FlashcardReviewRepository,
 ) : BaseFirebaseRepository(auth, db), FlashcardRepository {
 
     override var flashcardPageCache: MutableMap<String, FlashcardPage> = ConcurrentHashMap()
@@ -101,12 +106,6 @@ class FlashcardRepositoryImpl(
     ): Result<FlashcardPage> = runCatching {
         val now = System.currentTimeMillis()
 
-        // Direct subcollection query under the requester's own user subtree.
-        // A collectionGroup query would be rejected by the rules' static
-        // query-filter check — there is no /{anyPath=**}/flashcards/{id} rule,
-        // and the catch-all owner rule cannot statically prove path scoping.
-        // The path itself already constrains results to the current user, so
-        // an additional ownerId filter would be redundant.
         val collection = flashcardsCollection()
 
         // Priority 1: due/overdue
@@ -120,7 +119,7 @@ class FlashcardRepositoryImpl(
         val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
 
         if (dueNow.size >= n) return@runCatching FlashcardPage(
-            cards = dueNow.take(n.toInt()),
+            cards = dueNow.take(n.toInt()).toSm2Flashcards(),
             cursors = cursors.copy(lastDueNow = dueNowSnap.documents.lastOrNull())
         )
 
@@ -138,7 +137,7 @@ class FlashcardRepositoryImpl(
 
         val tot = dueNow.size + newCards.size
         if (tot >= n) return@runCatching FlashcardPage(
-            cards = dueNow + newCards,
+            cards = (dueNow + newCards).toSm2Flashcards(),
             cursors = cursors.copy(
                 lastDueNow = dueNowSnap.documents.lastOrNull(),
                 lastNewCard = newCardsSnap.documents.lastOrNull()
@@ -158,7 +157,7 @@ class FlashcardRepositoryImpl(
         val dueLater = dueLaterSnap.toObjects<FlashcardDto>().map { it.toDomain() }
 
         FlashcardPage(
-            cards = dueNow + newCards + dueLater,
+            cards = (dueNow + newCards + dueLater).toSm2Flashcards(),
             cursors = cursors.copy(
                 lastDueNow = dueNowSnap.documents.lastOrNull(),
                 lastNewCard = newCardsSnap.documents.lastOrNull(),
@@ -184,10 +183,9 @@ class FlashcardRepositoryImpl(
             .get().await()                          // ← hold QuerySnapshot
 
         val dueNow = dueNowSnap.toObjects<FlashcardDto>().map { it.toDomain() }
-        Log.d("fcuk", "dn" + dueNow.toString())
 
         if (dueNow.size >= n) return@runCatching FlashcardPage(
-            cards = dueNow.take(n.toInt()),
+            cards = dueNow.take(n.toInt()).toSm2Flashcards(),
             cursors = cursors.copy(lastDueNow = dueNowSnap.documents.lastOrNull())
         ).also { newPage ->
             updateCache(packId, newPage)
@@ -205,12 +203,11 @@ class FlashcardRepositoryImpl(
             .get().await()
 
         val newCards = newCardsSnap.toObjects<FlashcardDto>().map { it.toDomain() }
-        Log.d("fcuk", "nc" + newCards.toString())
 
 
         val tot = dueNow.size + newCards.size
         if (tot >= n) return@runCatching FlashcardPage(
-            cards = dueNow + newCards,
+            cards = (dueNow + newCards).toSm2Flashcards(),
             cursors = cursors.copy(
                 lastDueNow = dueNowSnap.documents.lastOrNull(),
                 lastNewCard = newCardsSnap.documents.lastOrNull()
@@ -229,11 +226,10 @@ class FlashcardRepositoryImpl(
             .get().await()
 
         val dueLater = dueLaterSnap.toObjects<FlashcardDto>().map { it.toDomain() }
-        Log.d("fcuk", "dl" + dueLater.toString())
 
 
         FlashcardPage(
-            cards = dueNow + newCards + dueLater,
+            cards = (dueNow + newCards + dueLater).toSm2Flashcards(),
             cursors = cursors.copy(
                 lastDueNow = dueNowSnap.documents.lastOrNull(),
                 lastNewCard = newCardsSnap.documents.lastOrNull(),
@@ -242,6 +238,21 @@ class FlashcardRepositoryImpl(
         ).also { newPage ->
             updateCache(packId, newPage)
         }
+    }
+
+    /**
+     * Fans out one review-state fetch per card in parallel and packs each
+     * Flashcard with its review state. Cards without a stored review state
+     * fall back to a default [FlashcardReviewState] (i.e. "never reviewed").
+     */
+    private suspend fun List<Flashcard>.toSm2Flashcards(): List<Sm2Flashcard> = coroutineScope {
+        map { card ->
+            async {
+                val reviewState = frRepository.get(card.id)
+                    .getOrElse { FlashcardReviewState() }
+                Sm2Flashcard(flashcard = card, reviewState = reviewState)
+            }
+        }.awaitAll()
     }
 
     // compute() makes the process atomic and concurrency-safe

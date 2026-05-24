@@ -25,9 +25,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.studypulse.feat.flashcards.R as FcR
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardFeedback
+import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
 import com.studypulse.feat.flashcards.presentation.flashcard_entry.FlashcardItem
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.theme.Cyan
@@ -35,8 +36,10 @@ import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
 import com.studypulse.ui.theme.WarmWhite
 import org.koin.androidx.compose.koinViewModel
+import com.studypulse.feat.flashcards.R as FcR
+
 @Composable
-fun FlashcardDetailsScreen(
+internal fun FlashcardDetailsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardDetailsScreenViewModel = koinViewModel(),
@@ -81,7 +84,7 @@ fun FlashcardDetailsScreen(
                     CircularProgressIndicator(color = Cyan)
                 }
 
-                state.fc == null -> CenteredMessage(
+                state.sm2fc == null -> CenteredMessage(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     Text(
@@ -92,7 +95,7 @@ fun FlashcardDetailsScreen(
                 }
 
                 state.editing -> EditMode(
-                    fc = state.fc!!,
+                    fc = state.sm2fc!!.flashcard,
                     onQuestionChange = vm::updateQuestion,
                     onAnswerChange = vm::updateAnswer,
                     onDescriptionChange = vm::updateDescription,
@@ -103,7 +106,7 @@ fun FlashcardDetailsScreen(
                 )
 
                 else -> ViewMode(
-                    fc = state.fc!!,
+                    fc = state.sm2fc!!,
                     onFeedback = { fb -> vm.submitFeedback(fb.score) },
                     modifier = Modifier
                         .fillMaxSize()
@@ -127,7 +130,7 @@ private fun CenteredMessage(
 
 @Composable
 private fun ViewMode(
-    fc: Flashcard,
+    fc: Sm2Flashcard,
     onFeedback: (FlashcardFeedback) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,29 +139,29 @@ private fun ViewMode(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         FlashcardItem(
-            fc = fc,
+            fc = fc.flashcard,
             onFeedback = onFeedback,
             height = 300.dp,
         )
 
-        if (!fc.description.isNullOrBlank()) {
+        if (!fc.flashcard.description.isNullOrBlank()) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(text = "DESCRIPTION")
                 Text(
-                    text = fc.description,
+                    text = fc.flashcard.description,
                     style = Typography.bodyMedium,
                     color = DarkGray.copy(alpha = 0.85f),
                 )
             }
         }
 
-        StatsCard(fc = fc)
+        StatsCard(reviewState = fc.reviewState)
     }
 }
 
 @Composable
 private fun StatsCard(
-    fc: Flashcard,
+    reviewState: FlashcardReviewState,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -169,9 +172,9 @@ private fun StatsCard(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        StatCell(label = "Reviewed", value = "${fc.n}×")
-        StatCell(label = "Interval", value = "${fc.interval}d")
-        StatCell(label = "Ease", value = "%.2f".format(fc.ef))
+        StatCell(label = "Reviewed", value = "${reviewState.n}×")
+        StatCell(label = "Interval", value = "${reviewState.interval}d")
+        StatCell(label = "Ease", value = "%.2f".format(reviewState.ef))
     }
 }
 

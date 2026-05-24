@@ -1,9 +1,10 @@
 package com.studypulse.feat.flashcards.domain.model
 
 import com.google.firebase.firestore.DocumentSnapshot
+import com.studypulse.feat.flashcards.data.Sm2Flashcard
 
 data class FlashcardPage(
-    val cards: List<Flashcard>,
+    val cards: List<Sm2Flashcard>,
     val cursors : FlashcardCursors = FlashcardCursors()
 ) {
     override fun equals(other: Any?): Boolean {

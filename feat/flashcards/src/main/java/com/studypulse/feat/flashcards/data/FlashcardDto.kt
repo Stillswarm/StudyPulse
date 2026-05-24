@@ -1,7 +1,9 @@
 package com.studypulse.feat.flashcards.data
 
 import com.studypulse.feat.flashcards.domain.model.Flashcard
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class FlashcardDto(
     val id: String = "",
     val question: String = "",
@@ -25,10 +27,6 @@ data class FlashcardDto(
         packId = packId,
         ownerId = ownerId,
         read = read,
-        n = n,
-        ef = ef,
-        interval = interval,
-        dueDate = dueDate,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -42,10 +40,6 @@ fun Flashcard.toDto() = FlashcardDto(
     packId = packId,
     ownerId = ownerId,
     read = read,
-    n = n,
-    ef = ef,
-    interval = interval,
-    dueDate = dueDate,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

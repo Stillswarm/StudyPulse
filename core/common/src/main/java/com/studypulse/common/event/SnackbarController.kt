@@ -20,4 +20,8 @@ object SnackbarController {
     suspend fun sendEvent(event: SnackbarEvent) {
         _events.send(event)
     }
+
+    suspend fun plainText(text: String) {
+        sendEvent(SnackbarEvent(text))
+    }
 }
