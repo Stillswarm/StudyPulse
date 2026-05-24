@@ -34,14 +34,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,7 +70,6 @@ import com.studypulse.ui.theme.Orange
 import com.studypulse.ui.theme.Purple
 import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -207,7 +204,7 @@ fun QuickRevisionCarousel(
             Text(
                 text = "Quick Revision",
                 style = Typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.W500,
                 color = DarkGray,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
@@ -228,7 +225,7 @@ fun QuickRevisionCarousel(
             } else {
                 HorizontalPager(
                     state = pagerState,
-                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                     pageSpacing = 12.dp,
                     modifier = Modifier.fillMaxWidth(),
                 ) { page ->
@@ -244,8 +241,6 @@ fun QuickRevisionCarousel(
                                 fc = card.flashcard,
                                 onFeedback = { fb -> onFeedback(card, fb.score) },
                             )
-                            // align the link to the right edge of the FlashcardItem,
-                            // which is centred at 88% width inside this column
                             Box(
                                 modifier = Modifier.fillMaxWidth(0.88f),
                                 contentAlignment = Alignment.CenterEnd,
@@ -442,7 +437,7 @@ private fun AddPackTile(
     }
 }
 
-private val MINI_PACK_TILE_WIDTH = 160.dp
+private val MINI_PACK_TILE_WIDTH = 150.dp
 private val MINI_PACK_TILE_HEIGHT = 180.dp
 
 @Composable
@@ -451,7 +446,7 @@ private fun ViewDetailsButton(
     modifier: Modifier = Modifier,
 ) {
     Text(
-        text = "Details  ›",
+        text = "Details  >>",
         style = Typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = Cyan.copy(alpha = 0.85f),
@@ -465,7 +460,7 @@ private fun ViewDetailsButton(
 fun ContinueStudyingItem(
     onContinueStudying: () -> Unit = {},
     modifier: Modifier = Modifier,
-    height: Dp = 240.dp,
+    height: Dp = 180.dp,
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
@@ -527,7 +522,7 @@ fun FlashcardItem(
     fc: Flashcard,
     onFeedback: (FlashcardFeedback) -> Unit = {},
     modifier: Modifier = Modifier,
-    height: Dp = 240.dp,
+    height: Dp = 180.dp,
 ) {
     var flipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(

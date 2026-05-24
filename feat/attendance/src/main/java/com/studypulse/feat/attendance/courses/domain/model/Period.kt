@@ -1,11 +1,10 @@
 package com.studypulse.feat.attendance.courses.domain.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+//import kotlinx.parcelize.Parcelize
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-@Parcelize
+//@Parcelize
 data class Period(
     val id: String = "",
     val semesterId: String,
@@ -15,7 +14,7 @@ data class Period(
     val startTime: LocalTime,
     val endTime: LocalTime,
     val createdAt: Long = System.currentTimeMillis()
-) : Parcelable
+)
 
 fun Period.overlapsWith(other: Period): Boolean {
     // only compare periods on the same day

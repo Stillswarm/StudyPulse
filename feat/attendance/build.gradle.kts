@@ -1,14 +1,13 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    id("kotlin-parcelize")
+//    id("org.jetbrains.kotlin.plugin.parcelize")
 }
 
 android {
     namespace = "com.studypulse.feat.attendance"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 26
@@ -29,9 +28,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -62,6 +58,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material.icons.core)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -71,4 +68,6 @@ dependencies {
 
     // WorkManager (for boot rescheduling)
     implementation(libs.androidx.work.runtime.ktx)
+
+    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:2.2.0")
 }
