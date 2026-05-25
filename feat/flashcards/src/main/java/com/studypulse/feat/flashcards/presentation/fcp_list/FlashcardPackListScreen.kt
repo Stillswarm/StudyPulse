@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,11 +29,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +53,7 @@ import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.modifier.shimmer
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
@@ -64,8 +68,24 @@ fun FlashcardPackListScreen(
     modifier: Modifier = Modifier,
     vm: FlashcardPackListScreenViewModel = koinViewModel(),
 ) {
-    val list by vm.listStateFlow.collectAsStateWithLifecycle()
-    val type by vm.type.collectAsStateWithLifecycle()
+    val list by vm.list.collectAsStateWithLifecycle()
+    val type = vm.type
+    val loading by vm.isLoading.collectAsStateWithLifecycle()
+
+    val lazyColumnState = rememberLazyListState()
+
+    // Trigger a fetch when the user scrolls within 5 items of the tail.
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible =
+                lazyColumnState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            list.isNotEmpty() && lastVisible >= list.size - 5
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) vm.getNextSet()
+    }
 
     val title = when (type) {
         FcpListType.USER -> "Your Packs"
@@ -74,29 +94,46 @@ fun FlashcardPackListScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        if (list.isEmpty()) {
-            EmptyPackListState(
-                isUserList = type == FcpListType.USER,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 100.dp),
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 116.dp,
-                    bottom = 24.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(items = list, key = { it.id }) { pack ->
-                    PackView(
-                        fcp = pack,
-                        onClick = { onPackClick(pack.id) },
-                    )
+        when {
+            loading && list.isEmpty() -> {
+                PackListShimmer(
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+
+            list.isEmpty() -> {
+                EmptyPackListState(
+                    isUserList = type == FcpListType.USER,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 100.dp),
+                )
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = lazyColumnState,
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 116.dp,
+                        bottom = 24.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(items = list, key = { it.id }) { pack ->
+                        PackView(
+                            fcp = pack,
+                            onClick = { onPackClick(pack.id) },
+                        )
+                    }
+
+                    if (loading) {
+                        item(key = "loading-shimmer") {
+                            PackShimmerRow(modifier = Modifier.fillMaxWidth())
+                        }
+                    }
                 }
             }
         }
@@ -113,6 +150,38 @@ fun FlashcardPackListScreen(
             modifier = Modifier.align(Alignment.TopCenter),
         )
     }
+}
+
+@Composable
+private fun PackListShimmer(
+    modifier: Modifier = Modifier,
+    rowCount: Int = 6,
+) {
+    Column(
+        modifier = modifier
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 116.dp,
+                bottom = 24.dp,
+            ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        repeat(rowCount) {
+            PackShimmerRow(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+private fun PackShimmerRow(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFE6E8EB))
+            .shimmer(),
+    )
 }
 
 @Composable

@@ -127,9 +127,8 @@ class FlashcardEntryScreenViewModel(
 
     suspend fun getPopularPacks(limit: Long = INITIAL_PACK_LIMIT) {
         fcpRepository.getPopularPacks(limit)
-            .onSuccess { packList ->
-                _state.update { it.copy(popularPacks = packList) }
-                Log.d("fcuk", packList.toString())
+            .onSuccess { page ->
+                _state.update { it.copy(popularPacks = page.items) }
             }.onFailure {
                 Log.e("app", "${it.printStackTrace()}")
             }
@@ -137,9 +136,8 @@ class FlashcardEntryScreenViewModel(
 
     suspend fun getUserPacks(limit: Long = INITIAL_PACK_LIMIT) {
         fcpRepository.getNForThisUser(limit)
-            .onSuccess { packList ->
-                _state.update { it.copy(userPacks = packList) }
-                Log.d("fcuk", packList.toString())
+            .onSuccess { page ->
+                _state.update { it.copy(userPacks = page.items) }
             }.onFailure {
                 Log.e("app", "${it.printStackTrace()}")
             }

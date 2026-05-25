@@ -317,7 +317,7 @@ fun HorizontalCardListWithTitle(
                     AddPackTile(onClick = { onAddNewClick?.invoke() })
                 }
             }
-            items(items) { pack ->
+            items(items, key = { it.id }) { pack ->
                 MiniPackTile(pack = pack, onClick = { onPackClick(pack) })
             }
         }

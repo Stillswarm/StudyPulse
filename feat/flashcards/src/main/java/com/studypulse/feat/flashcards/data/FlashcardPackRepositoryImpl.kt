@@ -1,6 +1,7 @@
 package com.studypulse.feat.flashcards.data
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
@@ -8,6 +9,7 @@ import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.FlashcardPackDto
+import com.studypulse.feat.flashcards.domain.model.PackPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
@@ -148,14 +150,19 @@ class FlashcardPackRepositoryImpl(
             }
     }
 
-    override suspend fun getNForThisUser(n: Long) = runCatching {
-        flashcardPacksCollection()
+    override suspend fun getNForThisUser(n: Long, cursor: DocumentSnapshot?) = runCatching {
+        var query = flashcardPacksCollection()
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .limit(n)
-            .get()
-            .await()
-            .toObjects<FlashcardPackDto>()
-            .map { it.toDomain() }
+        cursor?.let { query = query.startAfter(it) }
+
+        val snapshot = query.get().await()
+        val items = snapshot.toObjects<FlashcardPackDto>().map { it.toDomain() }
+        PackPage(
+            items = items,
+            nextCursor = snapshot.documents.lastOrNull(),
+            endReached = items.size < n,
+        )
     }
 
     override fun getNForThisUserFlow(n: Long) = runCatching {
@@ -167,26 +174,33 @@ class FlashcardPackRepositoryImpl(
             }
     }
 
-    // TODO: do this in more idiomatic pattern
-    override suspend fun getPopularPacks(limit: Long) = runCatching {
-        db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
+    override suspend fun getPopularPacks(limit: Long, cursor: DocumentSnapshot?) = runCatching {
+        var query = db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("isPublic", true)
-            .whereNotEqualTo("ownerId", requireUserId())
-            .orderBy("ownerId")
-            .orderBy("updatedAt", Query.Direction.DESCENDING)
+            .orderBy("starCount", Query.Direction.DESCENDING)
             .limit(limit)
-            .get()
-            .await()
+        cursor?.let { query = query.startAfter(it) }
+
+        val snapshot = query.get().await()
+        val userId = requireUserId()
+        val items = snapshot
             .toObjects<FlashcardPackDto>()
+            .filter { it.ownerId != userId }
             .map { it.toDomain() }
+        PackPage(
+            items = items,
+            nextCursor = snapshot.documents.lastOrNull(),
+            // The raw page size determines whether more rows exist on the
+            // server; `items` may be shorter after the owner filter.
+            endReached = snapshot.size() < limit,
+        )
     }
 
     override fun getPopularPacksFlow(limit: Long) = runCatching {
         db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("isPublic", true)
             .whereNotEqualTo("ownerId", requireUserId())
-            .orderBy("ownerId")
-            .orderBy("updatedAt", Query.Direction.DESCENDING)
+            .orderBy("starCount", Query.Direction.DESCENDING)
             .limit(limit)
             .snapshotFlow {
                 it.toObject<FlashcardPackDto>()?.toDomain()
