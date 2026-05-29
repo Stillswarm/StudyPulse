@@ -18,6 +18,8 @@ data class FlashcardPack(
     val isPublic: Boolean = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
+
+    val isStarredByUser: Boolean = false,
 ) {
     fun toDto() = FlashcardPackDto(
         id = id,

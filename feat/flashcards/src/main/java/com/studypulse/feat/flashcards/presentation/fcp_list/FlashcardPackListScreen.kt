@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.StarBorder
@@ -306,7 +307,7 @@ fun PackView(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     // Right: star count
-                    StarButton(count = fcp.starCount)
+                    StarButton(isStarred = fcp.isStarredByUser, count = fcp.starCount)
                 }
 
                 // Bottom row: updated date | card count chip
@@ -361,7 +362,7 @@ private fun VisibilityBadge(isPublic: Boolean) {
 }
 
 @Composable
-private fun StarButton(count: Int) {
+private fun StarButton(isStarred: Boolean, count: Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -375,7 +376,7 @@ private fun StarButton(count: Int) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.StarBorder,
+                imageVector = if (isStarred) Icons.Filled.Star else Icons.Outlined.StarBorder,
                 contentDescription = "Stars",
                 tint = Color(0xFF0891B2),
                 modifier = Modifier.size(14.dp)

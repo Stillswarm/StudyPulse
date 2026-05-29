@@ -24,7 +24,8 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
 
     composable<Route.FcpDetailsRoute> {
         FlashcardPackDetailsScreen(
-            navigateToFcDetails = { id, packId, editing -> navController.navigate(Route.FlashcardDetailsRoute(id, packId, editing)) }
+            navigateToFcDetails = { id, packId, editing -> navController.navigate(Route.FlashcardDetailsRoute(id, packId, editing)) },
+            onBack = { navController.navigateUp() }
         )
     }
 

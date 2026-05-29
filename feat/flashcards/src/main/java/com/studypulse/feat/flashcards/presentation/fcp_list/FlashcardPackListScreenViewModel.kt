@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.presentation.fcp_list
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.PackPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
+import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPacksForPresentation
 import com.studypulse.nav.routes.FcpListType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 
 class FlashcardPackListScreenViewModel(
     private val fcpRepository: FlashcardPackRepository,
+    private val getFlashcardPacksForPresentation: GetFlashcardPacksForPresentation,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -47,7 +50,12 @@ class FlashcardPackListScreenViewModel(
                 cursor = page.nextCursor ?: cursor
                 endReached = page.endReached
                 if (page.items.isNotEmpty()) {
-                    _list.update { it + page.items }
+                    // Stars are non-critical decoration; on failure fall back
+                    // to the raw items rather than hiding the page entirely.
+                    val decorated = getFlashcardPacksForPresentation(page.items)
+                        .onFailure { Log.w(TAG, "Failed to decorate packs with stars", it) }
+                        .getOrDefault(page.items)
+                    _list.update { it + decorated }
                 }
             }
         } finally {
@@ -57,5 +65,6 @@ class FlashcardPackListScreenViewModel(
 
     companion object {
         private const val PAGE_SIZE = 5L
+        private const val TAG = "FcpListVM"
     }
 }

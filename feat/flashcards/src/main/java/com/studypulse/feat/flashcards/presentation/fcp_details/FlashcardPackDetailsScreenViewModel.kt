@@ -4,11 +4,10 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.studypulse.feat.flashcards.domain.model.Flashcard
-import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
-import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
+import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,7 +15,8 @@ import kotlinx.coroutines.launch
 
 class FlashcardPackDetailsScreenViewModel(
     private val fcRepository: FlashcardRepository,
-    private val fcpRepository: FlashcardPackRepository,
+    private val userStarsRepository: UserStarsRepository,
+    private val getFlashcardPackForPresentation: GetFlashcardPackForPresentation,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -36,7 +36,7 @@ class FlashcardPackDetailsScreenViewModel(
     fun fetchInitialData() {
         if (packId == null) return
         viewModelScope.launch {
-            fcpRepository.getById(packId).onSuccess { fcp ->
+            getFlashcardPackForPresentation(packId).onSuccess { fcp ->
                 _state.update { it.copy(fcp = fcp) }
             }.onFailure {
                 Log.d("app", "fcpRepository.getById(id): ${it.message}")
@@ -65,6 +65,19 @@ class FlashcardPackDetailsScreenViewModel(
                 }
             }.onFailure { e ->
                 Log.e("app", "flashcard pack details: getNRandomFromPack()", e)
+            }
+        }
+    }
+
+    fun onStarIconClick() {
+        state.value.fcp?.let { fcp ->
+            if (packId == null) return
+            viewModelScope.launch {
+                if (fcp.isStarredByUser) {
+                    userStarsRepository.unstarPack(packId)
+                } else {
+                    userStarsRepository.starPack(packId)
+                }
             }
         }
     }

@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -30,11 +32,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,10 +52,6 @@ import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
-import com.studypulse.ui.theme.GreenSecondary
-import com.studypulse.ui.theme.Orange
-import com.studypulse.ui.theme.Purple
-import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
 import org.koin.androidx.compose.koinViewModel
 import com.studypulse.feat.flashcards.R as FcR
@@ -61,7 +59,7 @@ import com.studypulse.feat.flashcards.R as FcR
 @Composable
 fun FlashcardPackDetailsScreen(
     navigateToFcDetails: (id: String?, packId: String, editing: Boolean) -> Unit,
-    onBack: () -> Unit = {},
+    onBack: () -> Unit,
     onStudy: () -> Unit = {},
     modifier: Modifier = Modifier,
     vm: FlashcardPackDetailsScreenViewModel = koinViewModel(),
@@ -94,6 +92,7 @@ fun FlashcardPackDetailsScreen(
                         pack = pack,
                         cardCount = flashcards.size,
                         onStudy = onStudy,
+                        onStarIconClick = vm::onStarIconClick,
                     )
                 }
 
@@ -159,6 +158,7 @@ private fun PackHeroCard(
     pack: FlashcardPack,
     cardCount: Int,
     onStudy: () -> Unit,
+    onStarIconClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -212,8 +212,11 @@ private fun PackHeroCard(
                 ) {
                     StatChip(text = "$cardCount cards")
                     StatChip(
-                        text = "34",
-                        leadingIcon = R.drawable.ic_filled_star,
+                        text = pack.starCount.toString(),
+                        leadingIcon = if (pack.isStarredByUser) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                        onClick = {
+                            onStarIconClick()
+                        }
                     )
                     StatChip(
                         text = "Updated ${pack.updatedAt.toLocalDate().toFullString()}",
@@ -245,19 +248,21 @@ private fun PackHeroCard(
 private fun StatChip(
     text: String,
     modifier: Modifier = Modifier,
-    leadingIcon: Int? = null,
+    leadingIcon: ImageVector? = null,
+    onClick: () -> Unit = {},
 ) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(Cyan.copy(alpha = 0.10f))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .noRippleClickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         if (leadingIcon != null) {
             Icon(
-                painter = painterResource(leadingIcon),
+                imageVector = leadingIcon,
                 contentDescription = null,
                 tint = Cyan,
                 modifier = Modifier.size(14.dp),
