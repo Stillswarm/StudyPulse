@@ -1,9 +1,12 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_details
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
@@ -23,7 +26,8 @@ import kotlinx.serialization.json.Json
 internal class FlashcardDetailsScreenViewModel(
     val fcRepository: FlashcardRepository,
     val frRepository: FlashcardReviewRepository,
-    savedStateHandle: SavedStateHandle
+    private val auth: FirebaseAuth,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val initialData = FlashcardDetailsScreenState()
@@ -63,7 +67,14 @@ internal class FlashcardDetailsScreenViewModel(
                 loadInitialFc()
             }
         } else if (cards != null) {
-            _state.update { it.copy(sm2fc = cards[0]) }
+            // We're inside a study session. Editing and deleting are
+            // intentionally disabled here so users can't mutate cards mid-flow.
+            _state.update {
+                it.copy(
+                    sm2fc = cards[0],
+                    canDelete = false,
+                )
+            }
         }
     }
 
@@ -85,7 +96,13 @@ internal class FlashcardDetailsScreenViewModel(
                     .getOrElse { FlashcardReviewState() }
             )
 
-            _state.update { it.copy(sm2fc = sm2fc, loading = false) }
+            _state.update {
+                it.copy(
+                    sm2fc = sm2fc,
+                    loading = false,
+                    canDelete = canEdit && isOwner(sm2fc),
+                )
+            }
         }
     }
 
@@ -126,5 +143,39 @@ internal class FlashcardDetailsScreenViewModel(
                 frRepository.upsert(fc.afterReview(score).reviewState)
             }
         }
+    }
+
+    fun onDeleteClick() {
+        if (!_state.value.canDelete) return
+        _state.update { it.copy(showDeleteDialog = true) }
+    }
+
+    fun onDeleteDismiss() {
+        _state.update { it.copy(showDeleteDialog = false) }
+    }
+
+    fun onDeleteConfirm() {
+        val sm2 = _state.value.sm2fc ?: return
+        if (!_state.value.canDelete || _state.value.isDeleting) return
+        _state.update { it.copy(showDeleteDialog = false, isDeleting = true) }
+        viewModelScope.launch {
+            fcRepository.delete(sm2.flashcard)
+                .onSuccess {
+                    SnackbarController.sendEvent(SnackbarEvent("Card deleted"))
+                    _state.update { it.copy(isDeleting = false, deleted = true) }
+                }
+                .onFailure { e ->
+                    Log.e("app", "Failed to delete card ${sm2.flashcard.id}", e)
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to delete card: ${e.message}")
+                    )
+                    _state.update { it.copy(isDeleting = false) }
+                }
+        }
+    }
+
+    private fun isOwner(sm2: Sm2Flashcard): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        return sm2.flashcard.ownerId.isNotBlank() && sm2.flashcard.ownerId == uid
     }
 }

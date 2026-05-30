@@ -24,6 +24,10 @@ class FlashcardRepositoryImpl(
     private val frRepository: FlashcardReviewRepository,
 ) : BaseFirebaseRepository(auth, db), FlashcardRepository {
 
+    private companion object {
+        const val FIRESTORE_BATCH_LIMIT = 500
+    }
+
     override var flashcardPageCache: MutableMap<String, FlashcardPage> = ConcurrentHashMap()
 
     private fun flashcardsCollection() = userCollection("flashcards")
@@ -94,6 +98,24 @@ class FlashcardRepositoryImpl(
             .document(flashcard.id)
             .delete()
             .await()
+    }
+
+    override suspend fun deleteAllByPackId(packId: String): Result<Unit> = runCatching {
+        val cardDocs = flashcardsCollection()
+            .whereEqualTo("packId", packId)
+            .get()
+            .await()
+            .documents
+
+        // Firestore caps a single batch at 500 ops, so chunk to stay under
+        // the limit even when a pack contains thousands of cards.
+        cardDocs.chunked(FIRESTORE_BATCH_LIMIT).forEach { chunk ->
+            db.runBatch { batch ->
+                chunk.forEach { batch.delete(it.reference) }
+            }.await()
+        }
+
+        flashcardPageCache.remove(packId)
     }
 
     /*

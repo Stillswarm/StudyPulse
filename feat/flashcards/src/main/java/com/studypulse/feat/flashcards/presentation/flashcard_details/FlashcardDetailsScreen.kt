@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.presentation.flashcard_details
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -9,14 +10,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,10 +37,12 @@ import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardFeedback
 import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
+import com.studypulse.feat.flashcards.presentation.common.DeleteConfirmationDialog
 import com.studypulse.feat.flashcards.presentation.flashcard_entry.FlashcardItem
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
+import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
 import com.studypulse.ui.theme.WarmWhite
 import org.koin.androidx.compose.koinViewModel
@@ -51,6 +61,10 @@ internal fun FlashcardDetailsScreen(
         isCreating -> "New Card"
         state.editing -> "Edit Card"
         else -> "Flashcard"
+    }
+
+    LaunchedEffect(state.deleted) {
+        if (state.deleted) onBack()
     }
 
     Box(
@@ -107,6 +121,8 @@ internal fun FlashcardDetailsScreen(
 
                 else -> ViewMode(
                     fc = state.sm2fc!!,
+                    canDelete = state.canDelete,
+                    onDeleteClick = vm::onDeleteClick,
                     onFeedback = { fb -> vm.submitFeedback(fb.score) },
                     modifier = Modifier
                         .fillMaxSize()
@@ -114,6 +130,16 @@ internal fun FlashcardDetailsScreen(
                         .padding(horizontal = 16.dp, vertical = 20.dp),
                 )
             }
+        }
+
+        if (state.showDeleteDialog && state.sm2fc != null) {
+            DeleteConfirmationDialog(
+                title = "Delete card?",
+                message = "This will permanently remove this flashcard along with its review history. This action cannot be undone.",
+                confirmLabel = "Delete card",
+                onConfirm = vm::onDeleteConfirm,
+                onDismiss = vm::onDeleteDismiss,
+            )
         }
     }
 }
@@ -131,6 +157,8 @@ private fun CenteredMessage(
 @Composable
 private fun ViewMode(
     fc: Sm2Flashcard,
+    canDelete: Boolean,
+    onDeleteClick: () -> Unit,
     onFeedback: (FlashcardFeedback) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -156,6 +184,41 @@ private fun ViewMode(
         }
 
         StatsCard(reviewState = fc.reviewState)
+
+        if (canDelete) {
+            DeleteCardButton(onClick = onDeleteClick)
+        }
+    }
+}
+
+@Composable
+private fun DeleteCardButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, Red.copy(alpha = 0.6f)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Red),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Delete,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(
+                text = "Delete card",
+                style = Typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(vertical = 4.dp),
+            )
+        }
     }
 }
 

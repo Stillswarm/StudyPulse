@@ -21,11 +21,9 @@ class FlashcardPackRepositoryImpl(
 
     companion object {
         private const val FLASHCARD_PACK_COLLECTION_KEY = "flashcardPacks"
-        private const val FLASHCARD_COLLECTION_KEY = "flashcards"
     }
 
     private fun flashcardPacksCollection() = userCollection(FLASHCARD_PACK_COLLECTION_KEY)
-    private fun flashcardsCollection() = userCollection(FLASHCARD_COLLECTION_KEY)
 
     override suspend fun upsert(fcp: FlashcardPack): Result<String> = runCatching {
         val collection = flashcardPacksCollection()
@@ -46,20 +44,15 @@ class FlashcardPackRepositoryImpl(
         docId
     }
 
+    /**
+     * Deletes the pack document only. Callers MUST delete the cards inside
+     * the pack separately (see `DeleteFlashcardPackUseCase`);
+     */
     override suspend fun delete(fcp: FlashcardPack): Result<Unit> = runCatching {
-        val packDocRef = flashcardPacksCollection().document(fcp.id)
-        val cardDocs = flashcardsCollection()
-            .whereEqualTo("packId", fcp.id)
-            .get()
+        flashcardPacksCollection()
+            .document(fcp.id)
+            .delete()
             .await()
-            .documents
-
-        // Note: Firestore batches are limited to 500 operations.
-        // If a single pack ever holds 500+ cards, this needs chunking.
-        db.runBatch { batch ->
-            cardDocs.forEach { batch.delete(it.reference) }
-            batch.delete(packDocRef)
-        }.await()
     }
 
     override suspend fun getById(id: String): Result<FlashcardPack> = runCatching {

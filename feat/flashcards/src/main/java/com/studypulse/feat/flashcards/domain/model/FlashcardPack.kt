@@ -27,6 +27,8 @@ data class FlashcardPack(
         title = title,
         description = description,
         color = color.toArgb(),
+        fcCount = fcCount,
+        starCount = starCount,
         isPublic = isPublic,
         createdAt = createdAt,
         updatedAt = updatedAt,

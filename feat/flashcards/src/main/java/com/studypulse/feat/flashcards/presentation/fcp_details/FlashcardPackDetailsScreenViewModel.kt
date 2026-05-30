@@ -4,9 +4,13 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.studypulse.common.event.SnackbarController
+import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
+import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCase
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +21,8 @@ class FlashcardPackDetailsScreenViewModel(
     private val fcRepository: FlashcardRepository,
     private val userStarsRepository: UserStarsRepository,
     private val getFlashcardPackForPresentation: GetFlashcardPackForPresentation,
+    private val deleteFlashcardPackUseCase: DeleteFlashcardPackUseCase,
+    private val auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -37,7 +43,13 @@ class FlashcardPackDetailsScreenViewModel(
         if (packId == null) return
         viewModelScope.launch {
             getFlashcardPackForPresentation(packId).onSuccess { fcp ->
-                _state.update { it.copy(fcp = fcp) }
+                val currentUid = auth.currentUser?.uid
+                _state.update {
+                    it.copy(
+                        fcp = fcp,
+                        canDelete = currentUid != null && fcp.ownerId == currentUid,
+                    )
+                }
             }.onFailure {
                 Log.d("app", "fcpRepository.getById(id): ${it.message}")
             }
@@ -79,6 +91,35 @@ class FlashcardPackDetailsScreenViewModel(
                     userStarsRepository.starPack(packId)
                 }
             }
+        }
+    }
+
+    fun onDeleteClick() {
+        if (!_state.value.canDelete) return
+        _state.update { it.copy(showDeleteDialog = true) }
+    }
+
+    fun onDeleteDismiss() {
+        _state.update { it.copy(showDeleteDialog = false) }
+    }
+
+    fun onDeleteConfirm() {
+        val pack = _state.value.fcp ?: return
+        if (!_state.value.canDelete || _state.value.isDeleting) return
+        _state.update { it.copy(showDeleteDialog = false, isDeleting = true) }
+        viewModelScope.launch {
+            deleteFlashcardPackUseCase(pack)
+                .onSuccess {
+                    SnackbarController.sendEvent(SnackbarEvent("Pack deleted"))
+                    _state.update { it.copy(isDeleting = false, deleted = true) }
+                }
+                .onFailure { e ->
+                    Log.e("app", "Failed to delete pack ${pack.id}", e)
+                    SnackbarController.sendEvent(
+                        SnackbarEvent("Failed to delete pack: ${e.message}")
+                    )
+                    _state.update { it.copy(isDeleting = false) }
+                }
         }
     }
 }

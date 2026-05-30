@@ -9,6 +9,8 @@ import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardReviewRepository
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
+import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCase
+import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCaseImpl
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentation
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentationImpl
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPacksForPresentation
@@ -27,6 +29,7 @@ val flashcardsModule = module {
     // usecases
     factory<GetFlashcardPackForPresentation> { GetFlashcardPackForPresentationImpl(get(), get()) }
     factory<GetFlashcardPacksForPresentation> { GetFlashcardPacksForPresentationImpl(get()) }
+    factory<DeleteFlashcardPackUseCase> { DeleteFlashcardPackUseCaseImpl(get(), get()) }
 
     // repository
     single<FlashcardReviewRepository> { FlashcardReviewRepositoryImpl(get(), get()) }

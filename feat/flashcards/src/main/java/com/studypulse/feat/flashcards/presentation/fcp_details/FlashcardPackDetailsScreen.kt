@@ -31,6 +31,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ import com.studypulse.common.utils.DateUtils.toFullString
 import com.studypulse.common.utils.DateUtils.toLocalDate
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
+import com.studypulse.feat.flashcards.presentation.common.DeleteConfirmationDialog
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
 import com.studypulse.ui.theme.Cyan
@@ -67,6 +69,10 @@ fun FlashcardPackDetailsScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val pack = state.fcp
     val flashcards = state.flashcardPage.cards
+
+    LaunchedEffect(state.deleted) {
+        if (state.deleted) onBack()
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (pack == null) {
@@ -127,8 +133,8 @@ fun FlashcardPackDetailsScreen(
             titleColor = Color.White,
             navigationIcon = FcR.drawable.ic_arrow_left,
             onNavigationClick = onBack,
-            actionIcon = null,
-            onActionClick = null,
+            actionIcon = if (state.canDelete) FcR.drawable.ic_trash else null,
+            onActionClick = if (state.canDelete) ({ vm.onDeleteClick() }) else null,
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
@@ -149,6 +155,16 @@ fun FlashcardPackDetailsScreen(
                     modifier = Modifier.size(28.dp),
                 )
             }
+        }
+
+        if (state.showDeleteDialog && pack != null) {
+            DeleteConfirmationDialog(
+                title = "Delete pack?",
+                message = "This will permanently delete \"${pack.title}\" and all ${flashcards.size} cards inside it. This action cannot be undone.",
+                confirmLabel = "Delete pack",
+                onConfirm = vm::onDeleteConfirm,
+                onDismiss = vm::onDeleteDismiss,
+            )
         }
     }
 }
