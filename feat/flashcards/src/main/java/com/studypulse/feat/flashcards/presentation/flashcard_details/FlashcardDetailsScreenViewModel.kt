@@ -18,10 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-
-// if there are cards, this is a study session -> we show left/right arrows here
-// if not, this is a plain flashcard details view -> can edit here
 
 internal class FlashcardDetailsScreenViewModel(
     val fcRepository: FlashcardRepository,
@@ -36,11 +32,6 @@ internal class FlashcardDetailsScreenViewModel(
     val id = savedStateHandle.get<String>("id")
     val packId = savedStateHandle.get<String>("packId")
     val isEditing = savedStateHandle.get<Boolean>("isEditing")
-
-    val cardsJson = savedStateHandle.get<String>("sm2cardsJson")
-    val cards = if (cardsJson != null) Json.decodeFromString<List<Sm2Flashcard>>(cardsJson) else null
-    val index = 0
-    val canEdit = cards == null
 
     init {
         if (packId != null) {
@@ -65,15 +56,6 @@ internal class FlashcardDetailsScreenViewModel(
                 }
             } else {
                 loadInitialFc()
-            }
-        } else if (cards != null) {
-            // We're inside a study session. Editing and deleting are
-            // intentionally disabled here so users can't mutate cards mid-flow.
-            _state.update {
-                it.copy(
-                    sm2fc = cards[0],
-                    canDelete = false,
-                )
             }
         }
     }
@@ -100,7 +82,7 @@ internal class FlashcardDetailsScreenViewModel(
                 it.copy(
                     sm2fc = sm2fc,
                     loading = false,
-                    canDelete = canEdit && isOwner(sm2fc),
+                    canDelete = isOwner(sm2fc),
                 )
             }
         }
@@ -133,8 +115,7 @@ internal class FlashcardDetailsScreenViewModel(
     }
 
     fun toggleEditing() {
-        if (!canEdit) _state.update { it.copy(editing = false) }
-        else _state.update { it.copy(editing = !state.value.editing) }
+        _state.update { it.copy(editing = !state.value.editing) }
     }
 
     fun submitFeedback(score: Int) {

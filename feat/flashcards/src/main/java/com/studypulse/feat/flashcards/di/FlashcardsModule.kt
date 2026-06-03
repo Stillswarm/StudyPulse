@@ -19,6 +19,7 @@ import com.studypulse.feat.flashcards.presentation.fcp_details.FlashcardPackDeta
 import com.studypulse.feat.flashcards.presentation.fcp_list.FlashcardPackListScreenViewModel
 import com.studypulse.feat.flashcards.presentation.flashcard_details.FlashcardDetailsScreenViewModel
 import com.studypulse.feat.flashcards.presentation.flashcard_entry.FlashcardEntryScreenViewModel
+import com.studypulse.feat.flashcards.presentation.study_session.StudySessionScreenViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -41,4 +42,5 @@ val flashcardsModule = module {
     viewModelOf(::FlashcardPackListScreenViewModel)
     viewModelOf(::FlashcardPackDetailsScreenViewModel)
     viewModelOf(::FlashcardDetailsScreenViewModel)
+    viewModelOf(::StudySessionScreenViewModel)
 }

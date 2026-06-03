@@ -80,6 +80,7 @@ fun FlashcardEntryScreen(
     onNavigateToFcpScreen: (id: String) -> Unit,
     onNavigateToPackListScreen: (FcpListType) -> Unit,
     onNavigateToFcDetails: (id: String, packId: String) -> Unit,
+    onNavigateToStudySession: () -> Unit,
     modifier: Modifier = Modifier,
     vm: FlashcardEntryScreenViewModel = koinViewModel(),
 ) {
@@ -133,7 +134,7 @@ fun FlashcardEntryScreen(
                         flashcards = state.quickRevisionPage.cards,
                         pagerState = pagerState,
                         onFeedback = vm::onCardFeedback,
-                        onContinueStudying = {},
+                        onContinueStudying = onNavigateToStudySession,
                         onCardDetailsClick = { card ->
                             onNavigateToFcDetails(card.flashcard.id, card.flashcard.packId)
                         },
@@ -522,8 +523,9 @@ fun FlashcardItem(
     onFeedback: (FlashcardFeedback) -> Unit = {},
     modifier: Modifier = Modifier,
     height: Dp = 180.dp,
+    onSideChanged: (isAnswer: Boolean) -> Unit = {},
 ) {
-    var flipped by remember { mutableStateOf(false) }
+    var flipped by remember(fc.id) { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (flipped) 180f else 0f,
         animationSpec = tween(500, easing = FastOutSlowInEasing),
@@ -531,6 +533,9 @@ fun FlashcardItem(
     )
 
     val isShowingAnswer = rotation > 90
+    androidx.compose.runtime.LaunchedEffect(isShowingAnswer) {
+        onSideChanged(isShowingAnswer)
+    }
 
     Box(
         modifier = modifier

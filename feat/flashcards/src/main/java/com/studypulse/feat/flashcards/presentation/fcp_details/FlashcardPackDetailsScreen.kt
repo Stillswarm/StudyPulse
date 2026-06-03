@@ -62,7 +62,7 @@ import com.studypulse.feat.flashcards.R as FcR
 fun FlashcardPackDetailsScreen(
     navigateToFcDetails: (id: String?, packId: String, editing: Boolean) -> Unit,
     onBack: () -> Unit,
-    onStudy: () -> Unit = {},
+    onStudy: (packId: String) -> Unit = {},
     modifier: Modifier = Modifier,
     vm: FlashcardPackDetailsScreenViewModel = koinViewModel(),
 ) {
@@ -97,7 +97,7 @@ fun FlashcardPackDetailsScreen(
                     PackHeroCard(
                         pack = pack,
                         cardCount = flashcards.size,
-                        onStudy = onStudy,
+                        onStudy = { onStudy(pack.id) },
                         onStarIconClick = vm::onStarIconClick,
                     )
                 }

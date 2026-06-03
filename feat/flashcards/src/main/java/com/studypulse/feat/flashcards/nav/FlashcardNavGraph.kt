@@ -7,6 +7,7 @@ import com.studypulse.feat.flashcards.presentation.fcp_details.FlashcardPackDeta
 import com.studypulse.feat.flashcards.presentation.fcp_list.FlashcardPackListScreen
 import com.studypulse.feat.flashcards.presentation.flashcard_details.FlashcardDetailsScreen
 import com.studypulse.feat.flashcards.presentation.flashcard_entry.FlashcardEntryScreen
+import com.studypulse.feat.flashcards.presentation.study_session.StudySessionScreen
 import com.studypulse.nav.routes.Route
 
 fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
@@ -19,13 +20,17 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
             onNavigateToFcDetails = { id, packId ->
                 navController.navigate(Route.FlashcardDetailsRoute(id, packId, false))
             },
+            onNavigateToStudySession = {
+                navController.navigate(Route.StudySessionRoute(packId = null))
+            },
         )
     }
 
     composable<Route.FcpDetailsRoute> {
         FlashcardPackDetailsScreen(
             navigateToFcDetails = { id, packId, editing -> navController.navigate(Route.FlashcardDetailsRoute(id, packId, editing)) },
-            onBack = { navController.navigateUp() }
+            onBack = { navController.navigateUp() },
+            onStudy = { packId -> navController.navigate(Route.StudySessionRoute(packId = packId)) },
         )
     }
 
@@ -42,5 +47,9 @@ fun NavGraphBuilder.flashcardNavGraph(navController: NavController) {
         )
     }
 
-
+    composable<Route.StudySessionRoute> {
+        StudySessionScreen(
+            onBack = { navController.navigateUp() },
+        )
+    }
 }
