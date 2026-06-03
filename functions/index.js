@@ -146,3 +146,34 @@ exports.onFlashcardDeleted = functions
       .doc(packId)
       .update({ fcCount: FieldValue.increment(-1) });
   });
+
+async function adjustPackStarCount(packId, delta) {
+  if (!packId) return;
+  const snapshot = await db
+    .collectionGroup("flashcardPacks")
+    .where("id", "==", packId)
+    .limit(1)
+    .get();
+  const doc = snapshot.docs[0];
+  if (!doc) {
+    console.warn(`adjustPackStarCount: no flashcardPack found with id=${packId}`);
+    return;
+  }
+  await doc.ref.update({ starCount: FieldValue.increment(delta) });
+}
+
+exports.onUserStarCreated = functions
+  .region('asia-south1')
+  .firestore
+  .document("user_stars/{starId}")
+  .onCreate(async (snap) => {
+    await adjustPackStarCount(snap.data()?.packId, 1);
+  });
+
+exports.onUserStarDeleted = functions
+  .region('asia-south1')
+  .firestore
+  .document("user_stars/{starId}")
+  .onDelete(async (snap) => {
+    await adjustPackStarCount(snap.data()?.packId, -1);
+  });

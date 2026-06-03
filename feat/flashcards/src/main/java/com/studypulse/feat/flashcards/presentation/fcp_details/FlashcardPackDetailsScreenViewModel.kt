@@ -82,13 +82,35 @@ class FlashcardPackDetailsScreenViewModel(
     }
 
     fun onStarIconClick() {
-        state.value.fcp?.let { fcp ->
-            if (packId == null) return
-            viewModelScope.launch {
-                if (fcp.isStarredByUser) {
-                    userStarsRepository.unstarPack(packId)
-                } else {
-                    userStarsRepository.starPack(packId)
+        val fcp = state.value.fcp ?: return
+        if (packId == null) return
+
+        val wasStarred = fcp.isStarredByUser
+        _state.update {
+            it.copy(
+                fcp = fcp.copy(
+                    isStarredByUser = !wasStarred,
+                    starCount = (fcp.starCount + if (wasStarred) -1 else 1).coerceAtLeast(0),
+                )
+            )
+        }
+
+        viewModelScope.launch {
+            val result = if (wasStarred) {
+                userStarsRepository.unstarPack(packId)
+            } else {
+                userStarsRepository.starPack(packId)
+            }
+            result.onFailure { e ->
+                Log.e("app", "star toggle failed", e)
+                _state.update { s ->
+                    val current = s.fcp ?: return@update s
+                    s.copy(
+                        fcp = current.copy(
+                            isStarredByUser = wasStarred,
+                            starCount = fcp.starCount,
+                        )
+                    )
                 }
             }
         }

@@ -48,7 +48,7 @@ class UserStarsRepositoryImpl(
 
     override suspend fun getPackIdsStarredByThisUser(limit: Long) = runCatching {
         collection()
-            .whereEqualTo("userId", requireUserId())
+            .whereEqualTo("starredBy", requireUserId())
             .limit(limit)
             .get()
             .await()
@@ -57,7 +57,7 @@ class UserStarsRepositoryImpl(
 
     override suspend fun hasUserStarred(packId: String) = runCatching {
         collection()
-            .whereEqualTo("userId", requireUserId())
+            .whereEqualTo("starredBy", requireUserId())
             .whereEqualTo("packId", packId)
             .limit(1)
             .get()
