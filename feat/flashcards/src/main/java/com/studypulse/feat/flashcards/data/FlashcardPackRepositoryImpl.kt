@@ -63,8 +63,6 @@ class FlashcardPackRepositoryImpl(
                 ?: throw NoSuchElementException("Failed to deserialize pack $id")
         }
 
-        // Collection-group lookup must be constrained to a field the security
-        // rule depends on (isPublic) so the static query-filter check passes.
         db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("id", id)
             .whereEqualTo("isPublic", true)

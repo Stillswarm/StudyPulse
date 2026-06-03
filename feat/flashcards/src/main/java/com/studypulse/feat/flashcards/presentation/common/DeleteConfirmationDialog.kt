@@ -26,11 +26,6 @@ import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.Typography
 
-/**
- * Centered confirmation popup used before destructive actions
- * (e.g. deleting a flashcard or a pack). Mirrors the visual language of
- * other in-app confirmation dialogs.
- */
 @Composable
 fun DeleteConfirmationDialog(
     title: String,
