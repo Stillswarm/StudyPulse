@@ -9,7 +9,6 @@ import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.ReviewCache
 import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
-import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
@@ -106,7 +105,7 @@ class FlashcardEntryScreenViewModel(
     }
 
     fun onNewFcpVisibilityToggle(new: Boolean) {
-        _state.update { it.copy(newFcp = it.newFcp.copy(isPublic = new)) }
+        _state.update { it.copy(newFcp = it.newFcp.copy(public = new)) }
     }
 
     fun resetNewFcpState() {

@@ -65,7 +65,7 @@ class FlashcardPackRepositoryImpl(
 
         db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
             .whereEqualTo("id", id)
-            .whereEqualTo("isPublic", true)
+            .whereEqualTo("public", true)
             .limit(1)
             .get()
             .await()
@@ -167,7 +167,7 @@ class FlashcardPackRepositoryImpl(
 
     override suspend fun getPopularPacks(limit: Long, cursor: DocumentSnapshot?) = runCatching {
         var query = db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
-            .whereEqualTo("isPublic", true)
+            .whereEqualTo("public", true)
             .orderBy("starCount", Query.Direction.DESCENDING)
             .limit(limit)
         cursor?.let { query = query.startAfter(it) }
@@ -189,7 +189,7 @@ class FlashcardPackRepositoryImpl(
 
     override fun getPopularPacksFlow(limit: Long) = runCatching {
         db.collectionGroup(FLASHCARD_PACK_COLLECTION_KEY)
-            .whereEqualTo("isPublic", true)
+            .whereEqualTo("public", true)
             .whereNotEqualTo("ownerId", requireUserId())
             .orderBy("starCount", Query.Direction.DESCENDING)
             .limit(limit)

@@ -301,7 +301,7 @@ fun PackView(
                                 lineHeight = 15.sp,
                             )
                         }
-                        VisibilityBadge(isPublic = fcp.isPublic)
+                        VisibilityBadge(isPublic = fcp.public)
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -428,7 +428,7 @@ fun PackViewPreview(modifier: Modifier = Modifier) {
                 title = "Biology",
                 description = "For college exams",
                 color = Color.Black,
-                isPublic = true,
+                public = true,
                 createdAt = 1747234800,
                 updatedAt = 1747234800,
             )
@@ -444,7 +444,7 @@ fun PackViewPreview(modifier: Modifier = Modifier) {
                 title = "Programming in Java",
                 description = "Common Java Programming constructs and syntax",
                 color = Color.Red,
-                isPublic = true,
+                public = true,
                 createdAt = 1747234800,
                 updatedAt = 1747234800,
             )

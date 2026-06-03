@@ -209,7 +209,7 @@ private fun PackHeroCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(Modifier.width(8.dp))
-                    VisibilityChip(isPublic = pack.isPublic)
+                    VisibilityChip(isPublic = pack.public)
                 }
 
                 pack.description?.takeIf { it.isNotBlank() }?.let {

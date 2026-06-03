@@ -15,7 +15,7 @@ data class FlashcardPack(
     val color: Color = randomDarkColor(),
     val fcCount: Int = 0,
     val starCount: Int = 0,
-    val isPublic: Boolean = true,
+    val public: Boolean = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 
@@ -29,7 +29,7 @@ data class FlashcardPack(
         color = color.toArgb(),
         fcCount = fcCount,
         starCount = starCount,
-        isPublic = isPublic,
+        public = public,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -44,7 +44,7 @@ data class FlashcardPackDto(
     val color: Int? = null,
     val fcCount: Int = 0,
     val starCount: Int = 0,
-    val isPublic: Boolean? = true,
+    val public: Boolean? = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -56,7 +56,7 @@ data class FlashcardPackDto(
         color = Color(color ?: CYAN_ARGB),
         fcCount = fcCount,
         starCount = starCount,
-        isPublic = isPublic ?: false,
+        public = public ?: false,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )

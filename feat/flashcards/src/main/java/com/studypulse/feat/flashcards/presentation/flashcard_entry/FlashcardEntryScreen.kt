@@ -379,7 +379,7 @@ private fun MiniPackTile(
                         .padding(horizontal = 8.dp, vertical = 3.dp),
                 ) {
                     Text(
-                        text = if (pack.isPublic) "PUBLIC" else "PRIVATE",
+                        text = if (pack.public) "PUBLIC" else "PRIVATE",
                         style = Typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = Cyan,

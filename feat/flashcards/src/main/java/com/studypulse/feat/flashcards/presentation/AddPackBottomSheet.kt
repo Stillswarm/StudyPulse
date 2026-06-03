@@ -133,7 +133,7 @@ fun AddPackBottomSheet(
                     )
                 }
                 Switch(
-                    checked = fcp.isPublic,
+                    checked = fcp.public,
                     onCheckedChange = onPublicToggle,
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = Cyan,
