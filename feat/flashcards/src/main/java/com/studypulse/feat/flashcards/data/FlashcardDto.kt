@@ -11,11 +11,6 @@ data class FlashcardDto(
     val description: String? = null,
     val packId: String = "",
     val ownerId: String = "",
-    val read: Boolean = false,
-    val n: Int = 0,
-    val ef: Double = 2.5,
-    val interval: Int = 0,
-    val dueDate: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
@@ -26,7 +21,6 @@ data class FlashcardDto(
         description = description,
         packId = packId,
         ownerId = ownerId,
-        read = read,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -39,7 +33,6 @@ fun Flashcard.toDto() = FlashcardDto(
     description = description,
     packId = packId,
     ownerId = ownerId,
-    read = read,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

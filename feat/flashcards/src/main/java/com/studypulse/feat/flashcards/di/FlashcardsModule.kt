@@ -16,6 +16,10 @@ import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresenta
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentationImpl
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPacksForPresentation
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPacksForPresentationImpl
+import com.studypulse.feat.flashcards.domain.usecase.GetPackCardsUseCase
+import com.studypulse.feat.flashcards.domain.usecase.GetPackCardsUseCaseImpl
+import com.studypulse.feat.flashcards.domain.usecase.GetReviewQueueUseCase
+import com.studypulse.feat.flashcards.domain.usecase.GetReviewQueueUseCaseImpl
 import com.studypulse.feat.flashcards.presentation.fcp_details.FlashcardPackDetailsScreenViewModel
 import com.studypulse.feat.flashcards.presentation.fcp_list.FlashcardPackListScreenViewModel
 import com.studypulse.feat.flashcards.presentation.flashcard_details.FlashcardDetailsScreenViewModel
@@ -33,6 +37,8 @@ val flashcardsModule = module {
     factory<GetFlashcardPackForPresentation> { GetFlashcardPackForPresentationImpl(get(), get()) }
     factory<GetFlashcardPacksForPresentation> { GetFlashcardPacksForPresentationImpl(get()) }
     factory<DeleteFlashcardPackUseCase> { DeleteFlashcardPackUseCaseImpl(get(), get()) }
+    factory<GetReviewQueueUseCase> { GetReviewQueueUseCaseImpl(get(), get()) }
+    factory<GetPackCardsUseCase> { GetPackCardsUseCaseImpl(get(), get()) }
 
     // repository
     single<FlashcardReviewRepository> { FlashcardReviewRepositoryImpl(get(), get(), get()) }

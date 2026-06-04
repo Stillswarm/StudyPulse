@@ -18,6 +18,5 @@ data class FlashcardPage(
 
 data class FlashcardCursors(
     val lastDueNow: DocumentSnapshot? = null,
-    val lastNewCard: DocumentSnapshot? = null,
     val lastDueLater: DocumentSnapshot? = null,
 )

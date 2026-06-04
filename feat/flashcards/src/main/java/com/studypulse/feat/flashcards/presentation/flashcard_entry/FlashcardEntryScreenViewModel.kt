@@ -13,7 +13,7 @@ import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
-import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import com.studypulse.feat.flashcards.domain.usecase.GetReviewQueueUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,17 +21,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 
 class FlashcardEntryScreenViewModel(
-    private val fcRepository: FlashcardRepository,
+    private val getReviewQueue: GetReviewQueueUseCase,
     private val fcpRepository: FlashcardPackRepository,
     private val reviewCache: ReviewCache,
     private val signal: FlashcardDataSignal,
 ) : ViewModel() {
 
     companion object {
-        const val CAROUSEL_CARDS_LIMIT = 20
         const val INITIAL_PACK_LIMIT = 5L
         private val WATCHED_TOPICS = arrayOf(
             FlashcardTopic.PACKS,
@@ -45,9 +43,6 @@ class FlashcardEntryScreenViewModel(
     private val initialState = FlashcardEntryScreenState()
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
-
-    private val mutex = Mutex()
-    private var allFetched = false
 
     /** Lifecycle hook: only reload when packs/cards/reviews changed since last load. */
     fun refreshIfStale() {
@@ -70,44 +65,10 @@ class FlashcardEntryScreenViewModel(
         }
     }
 
-    /** this was the earlier logic to keep fetching cards
-    // as the available cards neared exhaustion
-
-    // eventually it was decided that only a fixed number of cards
-    // will be loaded for entry screen. beyond that, the user can continue
-    // studying by entering a dedicated study session **/
-
-    /*fun getRandomCards() {
-        if (allFetched) return
-        viewModelScope.launch(Dispatchers.IO) {
-            if (!mutex.tryLock()) return@launch
-            try {
-                fcRepository.getNRandomFromAcrossPacks(
-                    CAROUSEL_CARDS_LIMIT.toLong(),
-                    cursors = _state.value.quickRevisionPage.cursors
-                )
-                    .onSuccess { newPage ->
-                        if (newPage.cards.isEmpty()) {
-                            allFetched = true
-                            return@onSuccess
-                        }
-                        _state.update {
-                            it.copy(
-                                quickRevisionPage = FlashcardPage(
-                                    cards = it.quickRevisionPage.cards + newPage.cards,
-                                    cursors = newPage.cursors
-                                )
-                            )
-                        }
-                    }
-            } finally {
-                mutex.unlock()
-            }
-        }
-    }*/
-
+    // The entry screen loads a single fixed-size batch of due cards for quick
+    // revision; deeper study continues in the dedicated study session.
     private suspend fun loadRandomCards() {
-        fcRepository.getNRandomFromAcrossPacks(INITIAL_PACK_LIMIT).onSuccess { page ->
+        getReviewQueue(n = INITIAL_PACK_LIMIT).onSuccess { page ->
             _state.update { it.copy(quickRevisionPage = page) }
         }
     }
@@ -163,9 +124,10 @@ class FlashcardEntryScreenViewModel(
     }
 
     fun onCardFeedback(sm2fc: Sm2Flashcard, q: Int) {
-        val newReviewState = sm2fc.afterReview(q).reviewState.copy(cardId = sm2fc.flashcard.id)
-        Log.d("app", "new review state card id = ${newReviewState.cardId}")
-
+        val newReviewState = sm2fc.afterReview(q).reviewState.copy(
+            cardId = sm2fc.flashcard.id,
+            packId = sm2fc.flashcard.packId,
+        )
         reviewCache.append(newReviewState)
     }
 

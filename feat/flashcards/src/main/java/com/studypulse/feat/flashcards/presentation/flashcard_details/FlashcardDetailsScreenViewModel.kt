@@ -121,7 +121,12 @@ internal class FlashcardDetailsScreenViewModel(
     fun submitFeedback(score: Int) {
         _state.value.sm2fc?.let { fc ->
             viewModelScope.launch {
-                frRepository.upsert(fc.afterReview(score).reviewState)
+                frRepository.upsert(
+                    fc.afterReview(score).reviewState.copy(
+                        cardId = fc.flashcard.id,
+                        packId = fc.flashcard.packId,
+                    )
+                )
             }
         }
     }
@@ -156,7 +161,7 @@ internal class FlashcardDetailsScreenViewModel(
     }
 
     private fun isOwner(sm2: Sm2Flashcard): Boolean {
-        val uid = auth.currentUser?.uid ?: return false
+        val uid = auth.uid ?: return false
         return sm2.flashcard.ownerId.isNotBlank() && sm2.flashcard.ownerId == uid
     }
 }

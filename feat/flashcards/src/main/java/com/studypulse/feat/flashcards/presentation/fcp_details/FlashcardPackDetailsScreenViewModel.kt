@@ -9,17 +9,20 @@ import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
 import com.studypulse.feat.flashcards.domain.FlashcardTopic
-import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
+import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
 import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCase
 import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPackForPresentation
+import com.studypulse.feat.flashcards.domain.usecase.GetPackCardsUseCase
+import com.studypulse.feat.flashcards.domain.usecase.GetReviewQueueUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class FlashcardPackDetailsScreenViewModel(
-    private val fcRepository: FlashcardRepository,
+    private val getReviewQueue: GetReviewQueueUseCase,
+    private val getPackCards: GetPackCardsUseCase,
     private val userStarsRepository: UserStarsRepository,
     private val getFlashcardPackForPresentation: GetFlashcardPackForPresentation,
     private val deleteFlashcardPackUseCase: DeleteFlashcardPackUseCase,
@@ -55,29 +58,46 @@ class FlashcardPackDetailsScreenViewModel(
         val versionAtStart = signal.versionOf(*WATCHED_TOPICS)
         _state.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
+            val currentUid = auth.uid
+            var isOwner = false
             getFlashcardPackForPresentation(packId).onSuccess { fcp ->
-                val currentUid = auth.uid
+                isOwner = currentUid != null && fcp.ownerId == currentUid
                 _state.update {
                     it.copy(
                         fcp = fcp,
-                        canDelete = currentUid != null && fcp.ownerId == currentUid,
+                        canDelete = isOwner,
                     )
                 }
             }.onFailure {
                 Log.d("app", "fcpRepository.getById(id): ${it.message}")
             }
 
-            fcRepository.getNRandomFromSamePack(
-                DEFAULT_FC_FETCH_COUNT,
-                packId = packId,
-            ).onSuccess { fcPage ->
-                _state.update { it.copy(flashcardPage = fcPage) }
-            }.onFailure { e ->
-                Log.e("app", "flashcard pack details: getNRandomFromPack()", e)
-            }
+            loadCards(packId, isOwner)
 
             loadedAtVersion = versionAtStart
             _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
+    /**
+     * Owners see their scheduled study queue (ordered by SM-2 due date). For a
+     * public pack owned by someone else, the cards live under the owner's
+     * subtree, so we read them via a collection-group query and pair each with
+     * the current user's own review state — which may well exist if they've
+     * already reviewed cards from this pack. Only genuinely untouched cards fall
+     * back to a freshly seeded state.
+     */
+    private suspend fun loadCards(packId: String, isOwner: Boolean) {
+        val result = if (isOwner) {
+            getReviewQueue(n = DEFAULT_FC_FETCH_COUNT, packId = packId).map { it.cards }
+        } else {
+            getPackCards(packId)
+        }
+
+        result.onSuccess { cards ->
+            _state.update { it.copy(flashcardPage = FlashcardPage(cards = cards)) }
+        }.onFailure { e ->
+            Log.e("app", "flashcard pack details: loadCards(isOwner=$isOwner)", e)
         }
     }
 

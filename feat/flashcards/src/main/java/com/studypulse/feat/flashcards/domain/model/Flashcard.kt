@@ -3,7 +3,7 @@ package com.studypulse.feat.flashcards.domain.model
 import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import kotlin.math.roundToInt
 
-const val DAY_MS = 86_400_000
+const val DAY_MS = 86_400_000L
 
 data class Flashcard(
     val id: String,
@@ -12,7 +12,6 @@ data class Flashcard(
     val description: String?,
     val packId: String,
     val ownerId: String,
-    val read: Boolean = false,
 
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
@@ -27,7 +26,7 @@ enum class FlashcardFeedback(val score: Int) {
 }
 
 fun Sm2Flashcard.afterReview(q: Int): Sm2Flashcard {
-    val (_, _, _, n, ef, interval, _) = this.reviewState
+    val (_, _, _, _, n, ef, interval, _) = this.reviewState
     val newEf = (ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))).coerceAtLeast(1.3)
     return if (q < 3) {
         copy(reviewState = reviewState.copy(n = 0, ef = newEf, interval = 1,
