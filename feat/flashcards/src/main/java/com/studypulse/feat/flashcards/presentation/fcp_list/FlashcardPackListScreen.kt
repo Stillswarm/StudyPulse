@@ -78,7 +78,9 @@ fun FlashcardPackListScreen(
     val loading by vm.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
 
-    OnLifecycleStartEffect(vm::refresh)
+    // Reload on first composition and on return, but only when packs/stars
+    // actually changed since the last load (otherwise it's a no-op, no reads).
+    OnLifecycleStartEffect(vm::refreshIfStale)
 
     val lazyColumnState = rememberLazyListState()
     val pullRefreshState = rememberPullToRefreshState()

@@ -96,7 +96,9 @@ fun FlashcardEntryScreen(
     var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
     val pullRefreshState = rememberPullToRefreshState()
 
-    OnLifecycleStartEffect(vm::refresh)
+    // Reload on first composition and on return, but only when packs/cards/
+    // reviews changed since the last load (otherwise it's a no-op, no reads).
+    OnLifecycleStartEffect(vm::refreshIfStale)
 
     /*LaunchedEffect(pagerState) {
         snapshotFlow {

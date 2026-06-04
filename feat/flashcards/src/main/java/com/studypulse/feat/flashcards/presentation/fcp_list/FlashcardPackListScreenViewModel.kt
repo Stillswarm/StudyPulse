@@ -5,6 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
+import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
+import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.PackPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
@@ -19,8 +21,12 @@ import kotlinx.coroutines.launch
 class FlashcardPackListScreenViewModel(
     private val fcpRepository: FlashcardPackRepository,
     private val getFlashcardPacksForPresentation: GetFlashcardPacksForPresentation,
+    private val signal: FlashcardDataSignal,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    private val watchedTopics = arrayOf(FlashcardTopic.PACKS, FlashcardTopic.STARS)
+    private var loadedAtVersion = -1L
 
     val type = savedStateHandle.get<FcpListType?>("type")
 
@@ -41,8 +47,15 @@ class FlashcardPackListScreenViewModel(
     private var cursor: DocumentSnapshot? = null
     private var endReached = false
 
+    /** Lifecycle hook: only reload when packs/stars changed since the last load. */
+    fun refreshIfStale() {
+        if (signal.versionOf(*watchedTopics) == loadedAtVersion) return
+        refresh()
+    }
+
     fun refresh() {
         if (_isRefreshing.value) return
+        val versionAtStart = signal.versionOf(*watchedTopics)
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
@@ -59,6 +72,7 @@ class FlashcardPackListScreenViewModel(
                         emptyList()
                     }
                     _list.value = decorated
+                    loadedAtVersion = versionAtStart
                 }
             } finally {
                 _isRefreshing.value = false

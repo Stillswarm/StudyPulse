@@ -77,7 +77,9 @@ fun FlashcardPackDetailsScreen(
     val flashcards = state.flashcardPage.cards
     val pullRefreshState = rememberPullToRefreshState()
 
-    OnLifecycleStartEffect(vm::refresh)
+    // Reload on first composition and on return, but only when this pack's
+    // cards/reviews/meta changed since the last load (otherwise no-op, no reads).
+    OnLifecycleStartEffect(vm::refreshIfStale)
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()

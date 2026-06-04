@@ -7,6 +7,8 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
+import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
+import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.FlashcardPackDto
 import com.studypulse.feat.flashcards.domain.model.PackPage
@@ -17,6 +19,7 @@ import kotlinx.coroutines.tasks.await
 class FlashcardPackRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
+    private val signal: FlashcardDataSignal,
 ) : BaseFirebaseRepository(auth, db), FlashcardPackRepository {
 
     companion object {
@@ -41,6 +44,7 @@ class FlashcardPackRepositoryImpl(
                 ).toDto()
             )
             .await()
+        signal.bump(FlashcardTopic.PACKS)
         docId
     }
 
@@ -53,6 +57,7 @@ class FlashcardPackRepositoryImpl(
             .document(fcp.id)
             .delete()
             .await()
+        signal.bump(FlashcardTopic.PACKS)
     }
 
     override suspend fun getById(id: String): Result<FlashcardPack> = runCatching {

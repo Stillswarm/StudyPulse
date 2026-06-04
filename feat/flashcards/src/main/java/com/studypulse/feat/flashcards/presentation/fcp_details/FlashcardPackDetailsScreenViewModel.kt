@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
+import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
+import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
 import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCase
@@ -22,24 +24,39 @@ class FlashcardPackDetailsScreenViewModel(
     private val getFlashcardPackForPresentation: GetFlashcardPackForPresentation,
     private val deleteFlashcardPackUseCase: DeleteFlashcardPackUseCase,
     private val auth: FirebaseAuth,
+    private val signal: FlashcardDataSignal,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     companion object {
         private const val DEFAULT_FC_FETCH_COUNT = 20L
+        private val WATCHED_TOPICS = arrayOf(
+            FlashcardTopic.PACKS,
+            FlashcardTopic.CARDS,
+            FlashcardTopic.REVIEWS,
+            FlashcardTopic.STARS,
+        )
     }
 
     private val initialData = FlashcardPackDetailsScreenState()
     private val _state = MutableStateFlow(initialData)
     val state = _state.asStateFlow()
     val packId = savedStateHandle.get<String>("id")
+    private var loadedAtVersion = -1L
+
+    /** Lifecycle hook: only reload when this pack's data changed since last load. */
+    fun refreshIfStale() {
+        if (signal.versionOf(*WATCHED_TOPICS) == loadedAtVersion) return
+        refresh()
+    }
 
     fun refresh() {
         if (packId == null || _state.value.isRefreshing) return
+        val versionAtStart = signal.versionOf(*WATCHED_TOPICS)
         _state.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             getFlashcardPackForPresentation(packId).onSuccess { fcp ->
-                val currentUid = auth.currentUser?.uid
+                val currentUid = auth.uid
                 _state.update {
                     it.copy(
                         fcp = fcp,
@@ -59,6 +76,7 @@ class FlashcardPackDetailsScreenViewModel(
                 Log.e("app", "flashcard pack details: getNRandomFromPack()", e)
             }
 
+            loadedAtVersion = versionAtStart
             _state.update { it.copy(isRefreshing = false) }
         }
     }

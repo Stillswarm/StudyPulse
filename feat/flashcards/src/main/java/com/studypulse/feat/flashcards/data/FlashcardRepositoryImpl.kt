@@ -5,6 +5,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
+import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
+import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
@@ -22,6 +24,7 @@ class FlashcardRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
     private val frRepository: FlashcardReviewRepository,
+    private val signal: FlashcardDataSignal,
 ) : BaseFirebaseRepository(auth, db), FlashcardRepository {
 
     private companion object {
@@ -45,6 +48,7 @@ class FlashcardRepositoryImpl(
                 ).toDto()
             )
             .await()
+        signal.bump(FlashcardTopic.CARDS)
     }
 
     override suspend fun getById(id: String): Result<Flashcard> = runCatching {
@@ -98,6 +102,7 @@ class FlashcardRepositoryImpl(
             .document(flashcard.id)
             .delete()
             .await()
+        signal.bump(FlashcardTopic.CARDS)
     }
 
     override suspend fun deleteAllByPackId(packId: String): Result<Unit> = runCatching {
@@ -116,6 +121,7 @@ class FlashcardRepositoryImpl(
         }
 
         flashcardPageCache.remove(packId)
+        signal.bump(FlashcardTopic.CARDS)
     }
 
     /*
