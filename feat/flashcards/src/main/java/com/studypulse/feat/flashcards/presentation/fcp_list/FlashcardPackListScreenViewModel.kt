@@ -31,6 +31,9 @@ class FlashcardPackListScreenViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     private val _list = MutableStateFlow<List<FlashcardPack>>(emptyList())
     val list: StateFlow<List<FlashcardPack>> = _list.asStateFlow()
 
@@ -38,12 +41,33 @@ class FlashcardPackListScreenViewModel(
     private var cursor: DocumentSnapshot? = null
     private var endReached = false
 
-    init {
-        viewModelScope.launch { getNextSet() }
+    fun refresh() {
+        if (_isRefreshing.value) return
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                cursor = null
+                endReached = false
+                fetchPage(PAGE_SIZE, null).onSuccess { page ->
+                    cursor = page.nextCursor
+                    endReached = page.endReached
+                    val decorated = if (page.items.isNotEmpty()) {
+                        getFlashcardPacksForPresentation(page.items)
+                            .onFailure { Log.w(TAG, "Failed to decorate packs with stars", it) }
+                            .getOrDefault(page.items)
+                    } else {
+                        emptyList()
+                    }
+                    _list.value = decorated
+                }
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 
     suspend fun getNextSet() {
-        if (_isLoading.value || endReached) return
+        if (_isLoading.value || _isRefreshing.value || endReached) return
         _isLoading.value = true
         try {
             fetchPage(PAGE_SIZE, cursor).onSuccess { page ->

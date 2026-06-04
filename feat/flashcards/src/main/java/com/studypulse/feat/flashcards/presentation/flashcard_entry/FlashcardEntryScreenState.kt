@@ -8,4 +8,5 @@ data class FlashcardEntryScreenState(
     val userPacks: List<FlashcardPack> = emptyList(),
     val popularPacks: List<FlashcardPack> = emptyList(),
     val newFcp: FlashcardPack = FlashcardPack(title = ""),
+    val isRefreshing: Boolean = false,
 )

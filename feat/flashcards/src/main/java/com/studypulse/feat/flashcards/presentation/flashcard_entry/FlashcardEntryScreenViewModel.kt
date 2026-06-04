@@ -13,6 +13,7 @@ import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,14 +39,17 @@ class FlashcardEntryScreenViewModel(
     private val mutex = Mutex()
     private var allFetched = false
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            getPopularPacks()
+    fun refresh() {
+        if (_state.value.isRefreshing) return
+        _state.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch {
+            joinAll(
+                launch(Dispatchers.IO) { getPopularPacks() },
+                launch(Dispatchers.IO) { getUserPacks() },
+                launch(Dispatchers.IO) { loadRandomCards() },
+            )
+            _state.update { it.copy(isRefreshing = false) }
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            getUserPacks()
-        }
-        getRandomCards()
     }
 
     /** this was the earlier logic to keep fetching cards
@@ -84,11 +88,9 @@ class FlashcardEntryScreenViewModel(
         }
     }*/
 
-    fun getRandomCards() {
-        viewModelScope.launch(Dispatchers.IO) {
-            fcRepository.getNRandomFromAcrossPacks(INITIAL_PACK_LIMIT).onSuccess { page ->
-                _state.update { it.copy(quickRevisionPage = page) }
-            }
+    private suspend fun loadRandomCards() {
+        fcRepository.getNRandomFromAcrossPacks(INITIAL_PACK_LIMIT).onSuccess { page ->
+            _state.update { it.copy(quickRevisionPage = page) }
         }
     }
 

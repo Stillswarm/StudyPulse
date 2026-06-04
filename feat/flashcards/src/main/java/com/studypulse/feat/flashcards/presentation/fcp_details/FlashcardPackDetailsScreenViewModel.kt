@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
-import com.studypulse.feat.flashcards.domain.model.FlashcardPage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
 import com.studypulse.feat.flashcards.domain.usecase.DeleteFlashcardPackUseCase
@@ -35,12 +34,9 @@ class FlashcardPackDetailsScreenViewModel(
     val state = _state.asStateFlow()
     val packId = savedStateHandle.get<String>("id")
 
-    init {
-        fetchInitialData()
-    }
-
-    fun fetchInitialData() {
-        if (packId == null) return
+    fun refresh() {
+        if (packId == null || _state.value.isRefreshing) return
+        _state.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             getFlashcardPackForPresentation(packId).onSuccess { fcp ->
                 val currentUid = auth.currentUser?.uid
@@ -53,31 +49,17 @@ class FlashcardPackDetailsScreenViewModel(
             }.onFailure {
                 Log.d("app", "fcpRepository.getById(id): ${it.message}")
             }
-        }
 
-        fetchCards()
-    }
-
-    fun fetchCards() {
-        if (packId == null) return
-        viewModelScope.launch {
-            val cursors = _state.value.flashcardPage.cursors
             fcRepository.getNRandomFromSamePack(
                 DEFAULT_FC_FETCH_COUNT,
                 packId = packId,
-                cursors = cursors,
             ).onSuccess { fcPage ->
-                _state.update {
-                    it.copy(
-                        flashcardPage = FlashcardPage(
-                            cards = it.flashcardPage.cards + fcPage.cards,
-                            cursors = fcPage.cursors,
-                        )
-                    )
-                }
+                _state.update { it.copy(flashcardPage = fcPage) }
             }.onFailure { e ->
                 Log.e("app", "flashcard pack details: getNRandomFromPack()", e)
             }
+
+            _state.update { it.copy(isRefreshing = false) }
         }
     }
 

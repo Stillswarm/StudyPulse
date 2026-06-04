@@ -29,6 +29,9 @@ import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -54,6 +57,7 @@ import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.modifier.shimmer
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
@@ -72,8 +76,12 @@ fun FlashcardPackListScreen(
     val list by vm.list.collectAsStateWithLifecycle()
     val type = vm.type
     val loading by vm.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
+
+    OnLifecycleStartEffect(vm::refresh)
 
     val lazyColumnState = rememberLazyListState()
+    val pullRefreshState = rememberPullToRefreshState()
 
     // Trigger a fetch when the user scrolls within 5 items of the tail.
     val shouldLoadMore by remember {
@@ -95,44 +103,60 @@ fun FlashcardPackListScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        when {
-            loading && list.isEmpty() -> {
-                PackListShimmer(
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            list.isEmpty() -> {
-                EmptyPackListState(
-                    isUserList = type == FcpListType.USER,
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = vm::refresh,
+            state = pullRefreshState,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = pullRefreshState,
+                    isRefreshing = isRefreshing,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 100.dp),
+                        .align(Alignment.TopCenter)
+                        .padding(top = 108.dp),
                 )
-            }
+            },
+        ) {
+            when {
+                isRefreshing && list.isEmpty() -> {
+                    PackListShimmer(
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    state = lazyColumnState,
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 116.dp,
-                        bottom = 24.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(items = list, key = { it.id }) { pack ->
-                        PackView(
-                            fcp = pack,
-                            onClick = { onPackClick(pack.id) },
-                        )
-                    }
+                list.isEmpty() -> {
+                    EmptyPackListState(
+                        isUserList = type == FcpListType.USER,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 100.dp),
+                    )
+                }
 
-                    if (loading) {
-                        item(key = "loading-shimmer") {
-                            PackShimmerRow(modifier = Modifier.fillMaxWidth())
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        state = lazyColumnState,
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 116.dp,
+                            bottom = 24.dp,
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(items = list, key = { it.id }) { pack ->
+                            PackView(
+                                fcp = pack,
+                                onClick = { onPackClick(pack.id) },
+                            )
+                        }
+
+                        if (loading) {
+                            item(key = "loading-shimmer") {
+                                PackShimmerRow(modifier = Modifier.fillMaxWidth())
+                            }
                         }
                     }
                 }

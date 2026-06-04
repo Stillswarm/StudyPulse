@@ -27,9 +27,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,12 +56,14 @@ import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.presentation.common.DeleteConfirmationDialog
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
 import org.koin.androidx.compose.koinViewModel
 import com.studypulse.feat.flashcards.R as FcR
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardPackDetailsScreen(
     navigateToFcDetails: (id: String?, packId: String, editing: Boolean) -> Unit,
@@ -69,6 +75,9 @@ fun FlashcardPackDetailsScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val pack = state.fcp
     val flashcards = state.flashcardPage.cards
+    val pullRefreshState = rememberPullToRefreshState()
+
+    OnLifecycleStartEffect(vm::refresh)
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()
@@ -83,44 +92,60 @@ fun FlashcardPackDetailsScreen(
                 CircularProgressIndicator(color = Cyan)
             }
         } else {
-            LazyColumn(
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = vm::refresh,
+                state = pullRefreshState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 116.dp,
-                    bottom = 120.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullRefreshState,
+                        isRefreshing = state.isRefreshing,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 108.dp),
+                    )
+                },
             ) {
-                item {
-                    PackHeroCard(
-                        pack = pack,
-                        cardCount = flashcards.size,
-                        onStudy = { onStudy(pack.id) },
-                        onStarIconClick = vm::onStarIconClick,
-                    )
-                }
-
-                item {
-                    Text(
-                        text = "Cards (${flashcards.size})",
-                        style = Typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = DarkGray,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                }
-
-                if (flashcards.isEmpty()) {
-                    item { EmptyCardsState() }
-                } else {
-                    items(items = flashcards, key = { it.flashcard.id }) { sm2 ->
-                        val fc = sm2.flashcard
-                        FlashcardListItem(
-                            flashcard = fc,
-                            onClick = { navigateToFcDetails(fc.id, fc.packId, false) },
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 116.dp,
+                        bottom = 120.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item {
+                        PackHeroCard(
+                            pack = pack,
+                            cardCount = flashcards.size,
+                            onStudy = { onStudy(pack.id) },
+                            onStarIconClick = vm::onStarIconClick,
                         )
+                    }
+
+                    item {
+                        Text(
+                            text = "Cards (${flashcards.size})",
+                            style = Typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = DarkGray,
+                            modifier = Modifier.padding(top = 8.dp),
+                        )
+                    }
+
+                    if (flashcards.isEmpty()) {
+                        item { EmptyCardsState() }
+                    } else {
+                        items(items = flashcards, key = { it.flashcard.id }) { sm2 ->
+                            val fc = sm2.flashcard
+                            FlashcardListItem(
+                                flashcard = fc,
+                                onClick = { navigateToFcDetails(fc.id, fc.packId, false) },
+                            )
+                        }
                     }
                 }
             }

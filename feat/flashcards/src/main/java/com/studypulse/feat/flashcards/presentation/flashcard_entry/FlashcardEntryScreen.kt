@@ -33,6 +33,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +64,7 @@ import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.R
 import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
+import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.GreenDark
@@ -91,6 +94,9 @@ fun FlashcardEntryScreen(
         if (flashcards.isEmpty()) 0 else flashcards.size + 1
     }
     var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
+    val pullRefreshState = rememberPullToRefreshState()
+
+    OnLifecycleStartEffect(vm::refresh)
 
     /*LaunchedEffect(pagerState) {
         snapshotFlow {
@@ -124,45 +130,52 @@ fun FlashcardEntryScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(184.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = vm::refresh,
+                state = pullRefreshState,
+                modifier = Modifier.fillMaxSize(),
             ) {
-                item {
-                    QuickRevisionCarousel(
-                        flashcards = state.quickRevisionPage.cards,
-                        pagerState = pagerState,
-                        onFeedback = vm::onCardFeedback,
-                        onContinueStudying = onNavigateToStudySession,
-                        onCardDetailsClick = { card ->
-                            onNavigateToFcDetails(card.flashcard.id, card.flashcard.packId)
-                        },
-                    )
-                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                ) {
+                    item {
+                        QuickRevisionCarousel(
+                            flashcards = state.quickRevisionPage.cards,
+                            pagerState = pagerState,
+                            onFeedback = vm::onCardFeedback,
+                            onContinueStudying = onNavigateToStudySession,
+                            onCardDetailsClick = { card ->
+                                onNavigateToFcDetails(card.flashcard.id, card.flashcard.packId)
+                            },
+                        )
+                    }
 
-                item {
-                    HorizontalCardListWithTitle(
-                        title = "Your Packs",
-                        items = state.userPacks,
-                        addNew = true,
-                        onAddNewClick = { showAddPackSheet = true },
-                        onSeeAllClick = { onNavigateToPackListScreen(FcpListType.USER) },
-                        onPackClick = { onNavigateToFcpScreen(it.id) },
-                    )
-                }
+                    item {
+                        HorizontalCardListWithTitle(
+                            title = "Your Packs",
+                            items = state.userPacks,
+                            addNew = true,
+                            onAddNewClick = { showAddPackSheet = true },
+                            onSeeAllClick = { onNavigateToPackListScreen(FcpListType.USER) },
+                            onPackClick = { onNavigateToFcpScreen(it.id) },
+                        )
+                    }
 
-                item {
-                    HorizontalCardListWithTitle(
-                        title = "Popular Packs",
-                        items = state.popularPacks,
-                        addNew = false,
-                        onSeeAllClick = { onNavigateToPackListScreen(FcpListType.POPULAR) },
-                        onPackClick = { onNavigateToFcpScreen(it.id) },
-                    )
-                }
+                    item {
+                        HorizontalCardListWithTitle(
+                            title = "Popular Packs",
+                            items = state.popularPacks,
+                            addNew = false,
+                            onSeeAllClick = { onNavigateToPackListScreen(FcpListType.POPULAR) },
+                            onPackClick = { onNavigateToFcpScreen(it.id) },
+                        )
+                    }
 
-                item { Spacer(Modifier.height(24.dp)) }
+                    item { Spacer(Modifier.height(24.dp)) }
+                }
             }
         }
     }
