@@ -57,7 +57,6 @@ import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.modifier.shimmer
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
@@ -77,10 +76,6 @@ fun FlashcardPackListScreen(
     val type = vm.type
     val loading by vm.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
-
-    // Reload on first composition and on return, but only when packs/stars
-    // actually changed since the last load (otherwise it's a no-op, no reads).
-    OnLifecycleStartEffect(vm::refreshIfStale)
 
     val lazyColumnState = rememberLazyListState()
     val pullRefreshState = rememberPullToRefreshState()

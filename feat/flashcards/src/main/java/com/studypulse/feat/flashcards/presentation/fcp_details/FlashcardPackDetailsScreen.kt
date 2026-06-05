@@ -56,7 +56,6 @@ import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.presentation.common.DeleteConfirmationDialog
 import com.studypulse.ui.components.AppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.Typography
@@ -76,10 +75,6 @@ fun FlashcardPackDetailsScreen(
     val pack = state.fcp
     val flashcards = state.flashcardPage.cards
     val pullRefreshState = rememberPullToRefreshState()
-
-    // Reload on first composition and on return, but only when this pack's
-    // cards/reviews/meta changed since the last load (otherwise no-op, no reads).
-    OnLifecycleStartEffect(vm::refreshIfStale)
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()

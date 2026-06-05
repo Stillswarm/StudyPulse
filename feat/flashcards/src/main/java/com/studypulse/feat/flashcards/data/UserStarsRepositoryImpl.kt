@@ -4,8 +4,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
-import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
-import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.UserStars
 import com.studypulse.feat.flashcards.domain.repository.UserStarsRepository
 import kotlinx.coroutines.tasks.await
@@ -13,7 +11,6 @@ import kotlinx.coroutines.tasks.await
 class UserStarsRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
-    private val signal: FlashcardDataSignal,
 ) : BaseFirebaseRepository(auth, db), UserStarsRepository {
 
     companion object {
@@ -30,8 +27,7 @@ class UserStarsRepositoryImpl(
             .document(docId)
             .set(UserStars(id = docId, packId = packId, starredBy = requireUserId()))
             .await()
-
-        signal.bump(FlashcardTopic.STARS)
+        Unit
     }
 
     override suspend fun unstarPack(packId: String) = runCatching {
@@ -46,7 +42,7 @@ class UserStarsRepositoryImpl(
             ?.reference
             ?.delete()
             ?.await()
-        signal.bump(FlashcardTopic.STARS)
+        Unit
     }
 
     override suspend fun getPackIdsStarredByThisUser(limit: Long) = runCatching {

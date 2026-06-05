@@ -8,8 +8,6 @@ import com.studypulse.common.event.SnackbarController
 import com.studypulse.common.event.SnackbarEvent
 import com.studypulse.feat.flashcards.ReviewCache
 import com.studypulse.feat.flashcards.data.Sm2Flashcard
-import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
-import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.FlashcardPack
 import com.studypulse.feat.flashcards.domain.model.afterReview
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
@@ -26,33 +24,22 @@ class FlashcardEntryScreenViewModel(
     private val getReviewQueue: GetReviewQueueUseCase,
     private val fcpRepository: FlashcardPackRepository,
     private val reviewCache: ReviewCache,
-    private val signal: FlashcardDataSignal,
 ) : ViewModel() {
 
     companion object {
         const val INITIAL_PACK_LIMIT = 5L
-        private val WATCHED_TOPICS = arrayOf(
-            FlashcardTopic.PACKS,
-            FlashcardTopic.CARDS,
-            FlashcardTopic.REVIEWS,
-        )
     }
-
-    private var loadedAtVersion = -1L
 
     private val initialState = FlashcardEntryScreenState()
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
 
-    /** Lifecycle hook: only reload when packs/cards/reviews changed since last load. */
-    fun refreshIfStale() {
-        if (signal.versionOf(*WATCHED_TOPICS) == loadedAtVersion) return
+    init {
         refresh()
     }
 
     fun refresh() {
         if (_state.value.isRefreshing) return
-        val versionAtStart = signal.versionOf(*WATCHED_TOPICS)
         _state.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             joinAll(
@@ -60,7 +47,6 @@ class FlashcardEntryScreenViewModel(
                 launch(Dispatchers.IO) { getUserPacks() },
                 launch(Dispatchers.IO) { loadRandomCards() },
             )
-            loadedAtVersion = versionAtStart
             _state.update { it.copy(isRefreshing = false) }
         }
     }

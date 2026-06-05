@@ -64,7 +64,6 @@ import com.studypulse.nav.routes.FcpListType
 import com.studypulse.ui.R
 import com.studypulse.ui.components.LargeAppTopBar
 import com.studypulse.ui.modifier.noRippleClickable
-import com.studypulse.ui.utils.OnLifecycleStartEffect
 import com.studypulse.ui.theme.Cyan
 import com.studypulse.ui.theme.DarkGray
 import com.studypulse.ui.theme.GreenDark
@@ -95,10 +94,6 @@ fun FlashcardEntryScreen(
     }
     var showAddPackSheet by rememberSaveable { mutableStateOf(false) }
     val pullRefreshState = rememberPullToRefreshState()
-
-    // Reload on first composition and on return, but only when packs/cards/
-    // reviews changed since the last load (otherwise it's a no-op, no reads).
-    OnLifecycleStartEffect(vm::refreshIfStale)
 
     /*LaunchedEffect(pagerState) {
         snapshotFlow {

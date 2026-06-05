@@ -6,8 +6,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
-import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
-import com.studypulse.feat.flashcards.domain.FlashcardTopic
 import com.studypulse.feat.flashcards.domain.model.FlashcardReviewState
 import com.studypulse.feat.flashcards.domain.model.FlashcardReviewStateDto
 import com.studypulse.feat.flashcards.domain.model.ReviewStatePage
@@ -21,7 +19,6 @@ import kotlinx.coroutines.tasks.await
 class FlashcardReviewRepositoryImpl(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
-    private val signal: FlashcardDataSignal,
 ) : BaseFirebaseRepository(auth, db), FlashcardReviewRepository {
 
     private companion object {
@@ -43,7 +40,6 @@ class FlashcardReviewRepositoryImpl(
                 ).toDto()
             )
             .await()
-        signal.bump(FlashcardTopic.REVIEWS)
     }
 
     override suspend fun upsertMany(frsList: List<FlashcardReviewState>): Result<Unit> =
@@ -67,14 +63,12 @@ class FlashcardReviewRepositoryImpl(
                         }
                     }.awaitAll()
             }
-            signal.bump(FlashcardTopic.REVIEWS)
         }
 
     override suspend fun delete(frs: FlashcardReviewState): Result<Unit> = runCatching {
         frsCollection().document(frs.id)
             .delete()
             .await()
-        signal.bump(FlashcardTopic.REVIEWS)
     }
 
     override suspend fun get(

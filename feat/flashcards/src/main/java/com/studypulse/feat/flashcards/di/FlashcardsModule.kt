@@ -5,7 +5,6 @@ import com.studypulse.feat.flashcards.data.FlashcardPackRepositoryImpl
 import com.studypulse.feat.flashcards.data.FlashcardRepositoryImpl
 import com.studypulse.feat.flashcards.data.FlashcardReviewRepositoryImpl
 import com.studypulse.feat.flashcards.data.UserStarsRepositoryImpl
-import com.studypulse.feat.flashcards.domain.FlashcardDataSignal
 import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardReviewRepository
@@ -31,7 +30,6 @@ import org.koin.dsl.module
 val flashcardsModule = module {
 
     single<ReviewCache> { ReviewCache() }
-    single { FlashcardDataSignal() }
 
     // usecases
     factory<GetFlashcardPackForPresentation> { GetFlashcardPackForPresentationImpl(get(), get()) }
@@ -41,10 +39,10 @@ val flashcardsModule = module {
     factory<GetPackCardsUseCase> { GetPackCardsUseCaseImpl(get(), get()) }
 
     // repository
-    single<FlashcardReviewRepository> { FlashcardReviewRepositoryImpl(get(), get(), get()) }
-    single<FlashcardRepository> { FlashcardRepositoryImpl(get(), get(), get(), get()) }
-    single<FlashcardPackRepository> { FlashcardPackRepositoryImpl(get(), get(), get()) }
-    single<UserStarsRepository> { UserStarsRepositoryImpl(get(), get(), get()) }
+    single<FlashcardReviewRepository> { FlashcardReviewRepositoryImpl(get(), get(), ) }
+    single<FlashcardRepository> { FlashcardRepositoryImpl(get(), get(), get(), ) }
+    single<FlashcardPackRepository> { FlashcardPackRepositoryImpl(get(), get(), ) }
+    single<UserStarsRepository> { UserStarsRepositoryImpl(get(), get(), ) }
 
     viewModelOf(::FlashcardEntryScreenViewModel)
     viewModelOf(::FlashcardPackListScreenViewModel)
