@@ -13,6 +13,9 @@ data class Flashcard(
     val packId: String,
     val ownerId: String,
 
+    // Mirrors the owning pack's visibility; see FlashcardDto.public.
+    val public: Boolean = false,
+
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )

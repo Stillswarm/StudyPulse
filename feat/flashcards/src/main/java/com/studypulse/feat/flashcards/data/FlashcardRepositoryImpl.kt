@@ -36,11 +36,21 @@ class FlashcardRepositoryImpl(
         val docId = flashcard.id.ifBlank { collection.document().id }
         val userId = requireUserId()
 
+        // The card's `public` flag must mirror its pack so cross-owner reads can
+        // be authorized purely by a query filter. Resolve it from the (always
+        // owner-local) pack document at write time.
+        val packIsPublic = db.collection("users/$userId/flashcardPacks")
+            .document(flashcard.packId)
+            .get()
+            .await()
+            .getBoolean("public") ?: false
+
         collection.document(docId)
             .set(
                 flashcard.copy(
                     id = docId,
                     ownerId = userId,
+                    public = packIsPublic,
                     updatedAt = System.currentTimeMillis()
                 ).toDto()
             )
@@ -72,21 +82,52 @@ class FlashcardRepositoryImpl(
             ?: throw NoSuchElementException("Flashcard not found")
     }
 
+    /**
+     * Resolves cards by id, spanning both the user's own cards and cards from
+     * other owners' public packs (the study queue mixes the two). Firestore
+     * security rules are not filters, so a single collection-group `whereIn`
+     * can't be authorized for this mix. Instead we run two queries per chunk:
+     *
+     *  - the user's own subcollection (owner rule covers it — private or not),
+     *  - a collection-group read constrained to `public == true` (the only
+     *    shape the rules can authorize for cards owned by someone else).
+     *
+     * Results are merged and de-duplicated by id. Cards owned by others that
+     * are NOT public are intentionally unreachable. The public branch is
+     * best-effort: if its collection-group index isn't deployed yet, owned
+     * cards still resolve from the first branch.
+     */
     override suspend fun getByIds(ids: List<String>): Result<Map<String, Flashcard>> =
         runCatching {
             val distinctIds = ids.distinct()
             if (distinctIds.isEmpty()) return@runCatching emptyMap()
 
+            val ownCollection = flashcardsCollection()
+
             coroutineScope {
                 distinctIds.chunked(WHERE_IN_LIMIT)
                     .map { chunk ->
                         async {
-                            db.collectionGroup(FLASHCARDS_COLLECTION)
-                                .whereIn("id", chunk)
-                                .get()
-                                .await()
-                                .toObjects<FlashcardDto>()
-                                .map { it.toDomain() }
+                            val own = async {
+                                ownCollection
+                                    .whereIn("id", chunk)
+                                    .get()
+                                    .await()
+                                    .toObjects<FlashcardDto>()
+                                    .map { it.toDomain() }
+                            }
+                            val public = async {
+                                runCatching {
+                                    db.collectionGroup(FLASHCARDS_COLLECTION)
+                                        .whereIn("id", chunk)
+                                        .whereEqualTo("public", true)
+                                        .get()
+                                        .await()
+                                        .toObjects<FlashcardDto>()
+                                        .map { it.toDomain() }
+                                }.getOrElse { emptyList() }
+                            }
+                            own.await() + public.await()
                         }
                     }
                     .awaitAll()
@@ -131,10 +172,13 @@ class FlashcardRepositoryImpl(
                 }
         }
 
+    // Used to browse a pack the user does not own, so it is scoped to public
+    // cards — the only shape the security rules can authorize across owners.
     override suspend fun getAllByPackIdAcrossOwners(packId: String): Result<List<Flashcard>> =
         runCatching {
             db.collectionGroup(FLASHCARDS_COLLECTION)
                 .whereEqualTo("packId", packId)
+                .whereEqualTo("public", true)
                 .get()
                 .await()
                 .toObjects<FlashcardDto>()

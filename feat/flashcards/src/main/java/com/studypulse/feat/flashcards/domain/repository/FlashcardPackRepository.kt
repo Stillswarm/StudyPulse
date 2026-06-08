@@ -36,4 +36,12 @@ interface FlashcardPackRepository {
      */
     suspend fun getPopularPacks(limit: Long, cursor: DocumentSnapshot? = null): Result<PackPage>
     fun getPopularPacksFlow(limit: Long): Result<Flow<List<FlashcardPack>>>
+
+    /**
+     * One-time, idempotent migration that stamps every card owned by the
+     * current user with its pack's `public` flag, so existing cards become
+     * visible to cross-owner public reads. Guarded by a marker on the user
+     * document, so it is a no-op after the first successful run.
+     */
+    suspend fun backfillPublicFlags(): Result<Unit>
 }

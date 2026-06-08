@@ -11,6 +11,12 @@ data class FlashcardDto(
     val description: String? = null,
     val packId: String = "",
     val ownerId: String = "",
+    // Mirrors the owning pack's visibility. Denormalized onto the card so that
+    // cross-owner collection-group reads can be authorized by a query filter
+    // (`whereEqualTo("public", true)`) — Firestore security rules cannot use
+    // get() to inspect the pack for list queries. Kept in sync on card writes
+    // and whenever the pack's visibility changes.
+    val public: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
@@ -21,6 +27,7 @@ data class FlashcardDto(
         description = description,
         packId = packId,
         ownerId = ownerId,
+        public = public,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -33,6 +40,7 @@ fun Flashcard.toDto() = FlashcardDto(
     description = description,
     packId = packId,
     ownerId = ownerId,
+    public = public,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

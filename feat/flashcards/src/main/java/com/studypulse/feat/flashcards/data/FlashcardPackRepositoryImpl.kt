@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
@@ -21,9 +22,14 @@ class FlashcardPackRepositoryImpl(
 
     companion object {
         private const val FLASHCARD_PACK_COLLECTION_KEY = "flashcardPacks"
+        private const val FLASHCARDS_COLLECTION_KEY = "flashcards"
+        private const val FIRESTORE_BATCH_LIMIT = 500
+        private const val PUBLIC_BACKFILL_MARKER = "flashcardsPublicBackfilledV1"
     }
 
     private fun flashcardPacksCollection() = userCollection(FLASHCARD_PACK_COLLECTION_KEY)
+
+    private fun flashcardsCollection() = userCollection(FLASHCARDS_COLLECTION_KEY)
 
     override suspend fun upsert(fcp: FlashcardPack): Result<String> = runCatching {
         val collection = flashcardPacksCollection()
@@ -41,6 +47,12 @@ class FlashcardPackRepositoryImpl(
                 ).toDto()
             )
             .await()
+
+        // Keep the denormalized `public` flag on this pack's cards in sync with
+        // the pack. No-op for a brand-new pack (no cards yet); on a visibility
+        // edit it propagates the change so cross-owner reads stay correct.
+        if (!isNew) syncCardVisibility(docId, fcp.public)
+
         docId
     }
 
@@ -196,5 +208,35 @@ class FlashcardPackRepositoryImpl(
             .snapshotFlow {
                 it.toObject<FlashcardPackDto>()?.toDomain()
             }
+    }
+
+    override suspend fun backfillPublicFlags(): Result<Unit> = runCatching {
+        val userDoc = userDocument()
+        val alreadyDone = userDoc.get().await().getBoolean(PUBLIC_BACKFILL_MARKER) == true
+        if (alreadyDone) return@runCatching
+
+        flashcardPacksCollection().get().await().documents.forEach { packDoc ->
+            syncCardVisibility(packDoc.id, packDoc.getBoolean("public") ?: false)
+        }
+
+        userDoc.set(mapOf(PUBLIC_BACKFILL_MARKER to true), SetOptions.merge()).await()
+    }
+
+    /**
+     * Stamps every card in [packId] (under the current user's subtree) with
+     * [isPublic]. Batched to respect Firestore's 500-op limit.
+     */
+    private suspend fun syncCardVisibility(packId: String, isPublic: Boolean) {
+        val cardDocs = flashcardsCollection()
+            .whereEqualTo("packId", packId)
+            .get()
+            .await()
+            .documents
+
+        cardDocs.chunked(FIRESTORE_BATCH_LIMIT).forEach { chunk ->
+            db.runBatch { batch ->
+                chunk.forEach { batch.update(it.reference, "public", isPublic) }
+            }.await()
+        }
     }
 }

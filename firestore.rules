@@ -20,8 +20,8 @@ rules_version = '2';
 //   - /{path=**}/attendance/{aid}        filtered by userId == request.auth.uid
 //   - /{path=**}/course_summaries/{id}   filtered by userId == request.auth.uid
 //   - /{path=**}/flashcardPacks/{packId} filtered by public == true
-//   - /{path=**}/flashcards/{cardId}     by packId, or by id (whereIn) -> pack
-//                                        visibility resolved via get()
+//   - /{path=**}/flashcards/{cardId}     filtered by public == true (cards
+//                                        denormalize their pack's visibility)
 // =============================================================================
 
 service cloud.firestore {
@@ -37,13 +37,6 @@ service cloud.firestore {
 
     function isOwner(uid) {
       return isSignedIn() && request.auth.uid == uid;
-    }
-
-    // True when the flashcard pack at the given owner/pack path is public.
-    // Cards from the same pack share one cached get(), so a packId-scoped
-    // query only spends a single document-access call.
-    function packIsPublic(ownerId, packId) {
-      return get(/databases/$(database)/documents/users/$(ownerId)/flashcardPacks/$(packId)).data.public == true;
     }
 
     // -------------------------------------------------------------------------
@@ -95,19 +88,21 @@ service cloud.firestore {
     }
 
     // flashcards: a card is readable by its owner, or by any signed-in user
-    // when the pack it belongs to is public. Cards store only ownerId + packId
-    // (no visibility flag of their own), so the pack's visibility is resolved
-    // with a get() on the owner's pack document.
+    // when it belongs to a public pack. Security rules are NOT filters: for a
+    // query, the rule must be satisfiable from the query's own constraints, and
+    // get() cannot be used for list/collection-group queries. So each card
+    // denormalizes its pack's visibility into a `public` flag, and cross-owner
+    // reads filter on it (whereEqualTo("public", true)).
     //
-    // This supports the app's two cross-owner collection-group reads:
-    //   - getAllByPackIdAcrossOwners: whereEqualTo("packId", X) -> one cached
-    //     get() for the whole query.
-    //   - getByIds: whereIn("id", [...]) chunks of <= 10 ids -> at most one
-    //     get() per distinct pack, within the 10-call-per-query limit.
+    // Query shapes this authorizes:
+    //   - getAllByPackIdAcrossOwners: where packId == X AND public == true
+    //   - getByIds (public branch): where id in [...] AND public == true
+    // Owners read their own cards via their /users/{uid}/... subtree, which the
+    // catch-all owner rule already covers — no `public` filter required there.
     match /{anyPath=**}/flashcards/{cardId} {
       allow read: if isSignedIn() && (
         resource.data.ownerId == request.auth.uid
-        || packIsPublic(resource.data.ownerId, resource.data.packId)
+        || resource.data.public == true
       );
     }
 

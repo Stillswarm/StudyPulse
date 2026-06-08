@@ -36,6 +36,14 @@ class FlashcardEntryScreenViewModel(
 
     init {
         refresh()
+        // One-time, idempotent migration so existing cards carry their pack's
+        // `public` flag (required for cross-owner public reads). No-op after
+        // the first successful run.
+        viewModelScope.launch {
+            fcpRepository.backfillPublicFlags().onFailure {
+                Log.e("app", "flashcard public backfill failed", it)
+            }
+        }
     }
 
     fun refresh() {
