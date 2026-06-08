@@ -11,14 +11,17 @@ rules_version = '2';
 //   /users/{uid}/semesters/{sid}/courses/{cid}            -> course
 //   /users/{uid}/semesters/{sid}/courses/{cid}/course_summaries/{sumId}
 //   /users/{uid}/semesters/{sid}/sem_summaries/{sumId}
-//   /users/{uid}/flashcards/{cardId}                      -> flashcard (carries packId)
+//   /users/{uid}/flashcards/{cardId}                      -> flashcard (carries packId + ownerId)
 //   /users/{uid}/flashcardPacks/{packId}                  -> flashcard pack (public/private)
 //   /feedback/{id}                                        -> user-submitted feedback
+//   /user_stars/{starId}                                  -> a user's star on a pack
 //
 // Collection-group queries used by the app:
 //   - /{path=**}/attendance/{aid}        filtered by userId == request.auth.uid
 //   - /{path=**}/course_summaries/{id}   filtered by userId == request.auth.uid
-//   - /{path=**}/flashcardPacks/{packId} filtered by isPublic == true
+//   - /{path=**}/flashcardPacks/{packId} filtered by public == true
+//   - /{path=**}/flashcards/{cardId}     by packId, or by id (whereIn) -> pack
+//                                        visibility resolved via get()
 // =============================================================================
 
 service cloud.firestore {
@@ -36,6 +39,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    // True when the flashcard pack at the given owner/pack path is public.
+    // Cards from the same pack share one cached get(), so a packId-scoped
+    // query only spends a single document-access call.
+    function packIsPublic(ownerId, packId) {
+      return get(/databases/$(database)/documents/users/$(ownerId)/flashcardPacks/$(packId)).data.public == true;
+    }
+
     // -------------------------------------------------------------------------
     // /users/{uid} and the entire user-private subtree
     //
@@ -43,8 +53,8 @@ service cloud.firestore {
     // course_summaries, sem_summaries, flashcards, and flashcardPacks (when
     // accessed via the direct subcollection path).
     //
-    // Public-pack reads via collection-group queries are additionally permitted
-    // by the rule below; rules combine as a logical OR.
+    // Public reads via collection-group queries are additionally permitted by
+    // the rules below; rules combine as a logical OR.
     // -------------------------------------------------------------------------
 
     match /users/{userId} {
@@ -58,8 +68,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     // Collection-group reads
     //
-    // Each rule below depends on a field that the corresponding query also
-    // filters on, so Firestore's static query-filter check accepts the query.
+    // Each rule below is evaluated against every document a query could return;
+    // the request fails if any matched document is not permitted.
     // -------------------------------------------------------------------------
 
     // attendance: queries always filter by userId == requester
@@ -79,8 +89,25 @@ service cloud.firestore {
     // the ownerId disjunct is kept here for documentation / single-doc GETs.
     match /{anyPath=**}/flashcardPacks/{packId} {
       allow read: if isSignedIn() && (
-        resource.data.isPublic == true
+        resource.data.public == true
         || resource.data.ownerId == request.auth.uid
+      );
+    }
+
+    // flashcards: a card is readable by its owner, or by any signed-in user
+    // when the pack it belongs to is public. Cards store only ownerId + packId
+    // (no visibility flag of their own), so the pack's visibility is resolved
+    // with a get() on the owner's pack document.
+    //
+    // This supports the app's two cross-owner collection-group reads:
+    //   - getAllByPackIdAcrossOwners: whereEqualTo("packId", X) -> one cached
+    //     get() for the whole query.
+    //   - getByIds: whereIn("id", [...]) chunks of <= 10 ids -> at most one
+    //     get() per distinct pack, within the 10-call-per-query limit.
+    match /{anyPath=**}/flashcards/{cardId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid
+        || packIsPublic(resource.data.ownerId, resource.data.packId)
       );
     }
 
@@ -94,6 +121,23 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow create: if isSignedIn();
       allow read, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // /user_stars/{starId}
+    //
+    // A user may create/delete their own star document.
+    // Read is allowed only to the user who starred (starredBy == uid).
+    // -------------------------------------------------------------------------
+
+    match /user_stars/{starId} {
+      allow read: if isSignedIn()
+        && resource.data.starredBy == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.starredBy == request.auth.uid;
+      allow delete: if isSignedIn()
+        && resource.data.starredBy == request.auth.uid;
+      allow update: if false; // stars are immutable; delete + recreate instead
     }
 
     // -------------------------------------------------------------------------

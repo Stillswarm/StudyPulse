@@ -1,7 +1,6 @@
 package com.studypulse.feat.flashcards.data
 
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
 import com.studypulse.core.firebase.BaseFirebaseRepository
@@ -78,13 +77,12 @@ class FlashcardRepositoryImpl(
             val distinctIds = ids.distinct()
             if (distinctIds.isEmpty()) return@runCatching emptyMap()
 
-            val collection = flashcardsCollection()
             coroutineScope {
                 distinctIds.chunked(WHERE_IN_LIMIT)
                     .map { chunk ->
                         async {
-                            collection
-                                .whereIn(FieldPath.documentId(), chunk)
+                            db.collectionGroup(FLASHCARDS_COLLECTION)
+                                .whereIn("id", chunk)
                                 .get()
                                 .await()
                                 .toObjects<FlashcardDto>()
