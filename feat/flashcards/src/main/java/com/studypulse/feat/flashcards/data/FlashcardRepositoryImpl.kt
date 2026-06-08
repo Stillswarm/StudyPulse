@@ -1,5 +1,6 @@
 package com.studypulse.feat.flashcards.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
@@ -73,12 +74,25 @@ class FlashcardRepositoryImpl(
     }
 
     override suspend fun getById(id: String): Result<Flashcard> = runCatching {
+        // Fast path: the user's own card lives under their subtree.
         flashcardsCollection()
             .document(id)
             .get()
             .await()
             .toObject(FlashcardDto::class.java)
             ?.toDomain()
+        // Fallback: a card from someone else's public pack lives under that
+        // owner's subtree, so it can only be reached via a collection-group
+        // read constrained to public == true (the shape the rules authorize).
+            ?: db.collectionGroup(FLASHCARDS_COLLECTION)
+                .whereEqualTo("id", id)
+                .whereEqualTo("public", true)
+                .limit(1)
+                .get()
+                .await()
+                .toObjects<FlashcardDto>()
+                .firstOrNull()
+                ?.toDomain()
             ?: throw NoSuchElementException("Flashcard not found")
     }
 
@@ -125,7 +139,13 @@ class FlashcardRepositoryImpl(
                                         .await()
                                         .toObjects<FlashcardDto>()
                                         .map { it.toDomain() }
-                                }.getOrElse { emptyList() }
+                                }.getOrElse {
+                                    // Best-effort: owned cards still resolve from
+                                    // the first branch. A missing collection-group
+                                    // index surfaces here (with a console link).
+                                    Log.w("app", "getByIds public branch failed", it)
+                                    emptyList()
+                                }
                             }
                             own.await() + public.await()
                         }
