@@ -41,6 +41,7 @@ internal class FlashcardDetailsScreenViewModel(
                     it.copy(
                         loading = false,
                         editing = true,
+                        canEdit = true,
                         sm2fc = Sm2Flashcard(
                             flashcard = Flashcard(
                                 id = "",
@@ -78,11 +79,13 @@ internal class FlashcardDetailsScreenViewModel(
                     .getOrElse { FlashcardReviewState() }
             )
 
+            val owns = isOwner(sm2fc)
             _state.update {
                 it.copy(
                     sm2fc = sm2fc,
                     loading = false,
-                    canDelete = isOwner(sm2fc),
+                    canEdit = owns,
+                    canDelete = owns,
                 )
             }
         }
@@ -107,6 +110,7 @@ internal class FlashcardDetailsScreenViewModel(
     }
 
     fun submitEdit() {
+        if (!_state.value.canEdit) return
         viewModelScope.launch {
             state.value.sm2fc?.let { fc ->
                 fcRepository.upsert(fc.flashcard)

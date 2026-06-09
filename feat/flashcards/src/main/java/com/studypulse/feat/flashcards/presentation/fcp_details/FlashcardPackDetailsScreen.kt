@@ -134,7 +134,7 @@ fun FlashcardPackDetailsScreen(
                     }
 
                     if (flashcards.isEmpty()) {
-                        item { EmptyCardsState() }
+                        item { EmptyCardsState(isOwner = state.isOwner) }
                     } else {
                         items(items = flashcards, key = { it.flashcard.id }) { sm2 ->
                             val fc = sm2.flashcard
@@ -160,7 +160,7 @@ fun FlashcardPackDetailsScreen(
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
-        if (pack != null) {
+        if (pack != null && state.isOwner) {
             FloatingActionButton(
                 onClick = { navigateToFcDetails(null, pack.id, true) },
                 modifier = Modifier
@@ -414,7 +414,10 @@ private fun FlashcardListItem(
 //}
 
 @Composable
-private fun EmptyCardsState(modifier: Modifier = Modifier) {
+private fun EmptyCardsState(
+    isOwner: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -443,7 +446,11 @@ private fun EmptyCardsState(modifier: Modifier = Modifier) {
             color = DarkGray,
         )
         Text(
-            text = "Tap + to create your first flashcard",
+            text = if (isOwner) {
+                "Tap + to create your first flashcard"
+            } else {
+                "This pack doesn't have any cards yet"
+            },
             style = Typography.bodyMedium,
             color = DarkGray.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,

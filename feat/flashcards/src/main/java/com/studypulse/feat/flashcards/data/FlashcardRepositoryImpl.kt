@@ -210,6 +210,9 @@ class FlashcardRepositoryImpl(
             .document(flashcard.id)
             .delete()
             .await()
+
+        // Remove the user's own review states for this card so they don't dangle.
+        frRepository.deleteByCardId(flashcard.id).getOrThrow()
     }
 
     override suspend fun deleteAllByPackId(packId: String): Result<Unit> = runCatching {
@@ -227,5 +230,7 @@ class FlashcardRepositoryImpl(
             }.await()
         }
 
+        // Remove the user's own review states for the whole pack so none dangle.
+        frRepository.deleteByPackId(packId).getOrThrow()
     }
 }

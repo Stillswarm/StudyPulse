@@ -71,6 +71,32 @@ class FlashcardReviewRepositoryImpl(
             .await()
     }
 
+    override suspend fun deleteByCardId(cardId: String): Result<Unit> = runCatching {
+        deleteMatching { whereEqualTo("cardId", cardId) }
+    }
+
+    override suspend fun deleteByPackId(packId: String): Result<Unit> = runCatching {
+        deleteMatching { whereEqualTo("packId", packId) }
+    }
+
+    /**
+     * Deletes every review state in the (user-scoped) collection matching the
+     * given filter, batched to respect Firestore's 500-op limit.
+     */
+    private suspend fun deleteMatching(filter: Query.() -> Query) {
+        val docs = frsCollection()
+            .filter()
+            .get()
+            .await()
+            .documents
+
+        docs.chunked(FIRESTORE_BATCH_LIMIT).forEach { chunk ->
+            db.runBatch { batch ->
+                chunk.forEach { batch.delete(it.reference) }
+            }.await()
+        }
+    }
+
     override suspend fun get(
         cardId: String
     ) = runCatching {

@@ -52,6 +52,7 @@ class FlashcardPackDetailsScreenViewModel(
                 _state.update {
                     it.copy(
                         fcp = fcp,
+                        isOwner = isOwner,
                         canDelete = isOwner,
                     )
                 }

@@ -10,6 +10,21 @@ interface FlashcardReviewRepository {
     suspend fun upsertMany(frsList: List<FlashcardReviewState>): Result<Unit>
     suspend fun delete(frs: FlashcardReviewState): Result<Unit>
 
+    /**
+     * Deletes the current user's review states for a single card. Used to clean
+     * up after a card is removed so its review states don't dangle. Only the
+     * caller's own states are affected; other users who studied the same
+     * (public) card keep their independent states.
+     */
+    suspend fun deleteByCardId(cardId: String): Result<Unit>
+
+    /**
+     * Deletes the current user's review states for an entire pack. Used when a
+     * pack is removed. As with [deleteByCardId], only the caller's own states
+     * are affected.
+     */
+    suspend fun deleteByPackId(packId: String): Result<Unit>
+
     suspend fun get(cardId: String): Result<FlashcardReviewState>
 
     /**

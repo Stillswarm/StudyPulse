@@ -1,8 +1,10 @@
 package com.studypulse.feat.flashcards.domain.usecase
 
+import com.google.firebase.firestore.DocumentSnapshot
 import com.studypulse.feat.flashcards.data.Sm2Flashcard
 import com.studypulse.feat.flashcards.domain.model.FlashcardCursors
 import com.studypulse.feat.flashcards.domain.model.FlashcardPage
+import com.studypulse.feat.flashcards.domain.model.ReviewStatePage
 import com.studypulse.feat.flashcards.domain.repository.FlashcardRepository
 import com.studypulse.feat.flashcards.domain.repository.FlashcardReviewRepository
 
@@ -36,50 +38,86 @@ class GetReviewQueueUseCaseImpl(
     private val frRepository: FlashcardReviewRepository,
 ) : GetReviewQueueUseCase {
 
+    private companion object {
+        // Safety bound on how many extra pages we'll scan past orphaned review
+        // states before giving up, so a backlog of dangling states can't turn a
+        // single queue fetch into an unbounded read loop.
+        const val MAX_PAGES_PER_STAGE = 10
+    }
+
     override suspend fun invoke(
         n: Long,
         packId: String?,
         cursors: FlashcardCursors,
     ): Result<FlashcardPage> = runCatching {
         // Stage 1: due/overdue (and, by virtue of dueDate == createdAt, new cards)
-        val duePage = frRepository
-            .getDueReviewStates(n, packId, cursors.lastDueNow)
-            .getOrThrow()
+        val (dueCards, lastDueNow) = collectResolvable(
+            target = n,
+            startCursor = cursors.lastDueNow,
+        ) { cursor -> frRepository.getDueReviewStates(n, packId, cursor) }
 
-        val orderedStates = duePage.states.toMutableList()
-        var lastDueNow = duePage.lastDoc ?: cursors.lastDueNow
+        val resolved = dueCards.toMutableList()
         var lastDueLater = cursors.lastDueLater
 
         // Stage 2: top up with upcoming cards if the due bucket didn't fill the page
-        if (orderedStates.size < n) {
-            val remaining = n - orderedStates.size
-            val laterPage = frRepository
-                .getUpcomingReviewStates(remaining, packId, cursors.lastDueLater)
-                .getOrThrow()
-            orderedStates += laterPage.states
-            lastDueLater = laterPage.lastDoc ?: cursors.lastDueLater
+        if (resolved.size < n) {
+            val remaining = n - resolved.size
+            val (laterCards, laterCursor) = collectResolvable(
+                target = remaining,
+                startCursor = cursors.lastDueLater,
+            ) { cursor -> frRepository.getUpcomingReviewStates(remaining, packId, cursor) }
+            resolved += laterCards
+            lastDueLater = laterCursor
         }
 
-        val nextCursors = FlashcardCursors(
-            lastDueNow = lastDueNow,
-            lastDueLater = lastDueLater,
+        FlashcardPage(
+            cards = resolved,
+            cursors = FlashcardCursors(lastDueNow = lastDueNow, lastDueLater = lastDueLater),
         )
+    }
 
-        if (orderedStates.isEmpty()) {
-            return@runCatching FlashcardPage(cards = emptyList(), cursors = nextCursors)
-        }
+    /**
+     * Pulls review-state pages starting at [startCursor] and pairs each with its
+     * flashcard, until [target] cards are resolved or the source is exhausted.
+     *
+     * Review states can dangle: deleting a card or pack does not remove the
+     * per-user review states that referenced it, and some legacy states carry a
+     * blank cardId. Such states are skipped (never shown, never counted) and we
+     * page past them so they don't starve the queue. The returned cursor points
+     * at the last state actually consumed, so pagination continues correctly.
+     */
+    private suspend fun collectResolvable(
+        target: Long,
+        startCursor: DocumentSnapshot?,
+        fetchPage: suspend (DocumentSnapshot?) -> Result<ReviewStatePage>,
+    ): Pair<List<Sm2Flashcard>, DocumentSnapshot?> {
+        val resolved = mutableListOf<Sm2Flashcard>()
+        var cursor = startCursor
+        var pages = 0
 
-        // Stage 3: resolve cards, then re-pair in scheduled order (whereIn is unordered)
-        val cardsById = fcRepository
-            .getByIds(orderedStates.map { it.cardId })
-            .getOrThrow()
+        while (resolved.size < target && pages < MAX_PAGES_PER_STAGE) {
+            pages++
+            val page = fetchPage(cursor).getOrThrow()
+            if (page.states.isEmpty()) break
+            cursor = page.lastDoc ?: cursor
 
-        val cards = orderedStates.mapNotNull { state ->
-            cardsById[state.cardId]?.let { card ->
-                Sm2Flashcard(flashcard = card, reviewState = state)
+            val validStates = page.states.filter { it.cardId.isNotBlank() }
+            if (validStates.isNotEmpty()) {
+                val cardsById = fcRepository
+                    .getByIds(validStates.map { it.cardId })
+                    .getOrThrow()
+                // Preserve the scheduled order (whereIn returns cards unordered).
+                validStates.forEach { state ->
+                    cardsById[state.cardId]?.let { card ->
+                        resolved += Sm2Flashcard(flashcard = card, reviewState = state)
+                    }
+                }
             }
+
+            // A short page means the source is exhausted; stop paging.
+            if (page.states.size < target) break
         }
 
-        FlashcardPage(cards = cards, cursors = nextCursors)
+        return resolved to cursor
     }
 }

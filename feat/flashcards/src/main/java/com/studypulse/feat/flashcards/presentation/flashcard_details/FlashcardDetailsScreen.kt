@@ -92,15 +92,21 @@ internal fun FlashcardDetailsScreen(
                 title = title,
                 navigationIcon = FcR.drawable.ic_arrow_left,
                 onNavigationClick = onBack,
-                actionIcon = if (state.editing) FcR.drawable.ic_check else FcR.drawable.ic_edit,
-                onActionClick = {
-                    if (state.editing) {
-                        vm.submitEdit()
-                        vm.toggleEditing()
-                    } else {
-                        vm.toggleEditing()
-                    }
+                actionIcon = when {
+                    !state.canEdit -> null
+                    state.editing -> FcR.drawable.ic_check
+                    else -> FcR.drawable.ic_edit
                 },
+                onActionClick = if (state.canEdit) {
+                    {
+                        if (state.editing) {
+                            vm.submitEdit()
+                            vm.toggleEditing()
+                        } else {
+                            vm.toggleEditing()
+                        }
+                    }
+                } else null,
                 titleColor = Color.White,
             )
 
