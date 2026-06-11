@@ -64,6 +64,19 @@ object Route {
     @Serializable
     data object FlashcardEntryRoute : NavigableRoute
 
+    @Serializable
+    data class FcpDetailsRoute(val id: String) : NavigableRoute
+
+    @Serializable
+    data class FlashcardDetailsRoute(val id: String?, val packId: String, val isEditing: Boolean) : NavigableRoute
+
+    @Serializable
+    data class StudySessionRoute(val packId: String? = null) : NavigableRoute
+
+    @Serializable
+    data class FcpListRoute(val type: FcpListType) : NavigableRoute
+
+
 }
 
 fun NavBackStackEntry.isRoute(routeClass: KClass<out NavigableRoute>): Boolean {
@@ -74,4 +87,9 @@ enum class OverviewType {
     ALL,
     LOW,
     FULL
+}
+
+enum class FcpListType {
+    USER,
+    POPULAR,
 }

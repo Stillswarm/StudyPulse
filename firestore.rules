@@ -1,0 +1,146 @@
+rules_version = '2';
+
+// =============================================================================
+// StudyPulse Firestore Security Rules
+//
+// Data model:
+//   /users/{uid}                                          -> user profile
+//   /users/{uid}/attendance/{aid}                         -> attendance record
+//   /users/{uid}/semesters/{sid}                          -> semester
+//   /users/{uid}/semesters/{sid}/periods/{pid}            -> period
+//   /users/{uid}/semesters/{sid}/courses/{cid}            -> course
+//   /users/{uid}/semesters/{sid}/courses/{cid}/course_summaries/{sumId}
+//   /users/{uid}/semesters/{sid}/sem_summaries/{sumId}
+//   /users/{uid}/flashcards/{cardId}                      -> flashcard (carries packId + ownerId)
+//   /users/{uid}/flashcardPacks/{packId}                  -> flashcard pack (public/private)
+//   /feedback/{id}                                        -> user-submitted feedback
+//   /user_stars/{starId}                                  -> a user's star on a pack
+//
+// Collection-group queries used by the app:
+//   - /{path=**}/attendance/{aid}        filtered by userId == request.auth.uid
+//   - /{path=**}/course_summaries/{id}   filtered by userId == request.auth.uid
+//   - /{path=**}/flashcardPacks/{packId} filtered by public == true
+//   - /{path=**}/flashcards/{cardId}     filtered by public == true (cards
+//                                        denormalize their pack's visibility)
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // /users/{uid} and the entire user-private subtree
+    //
+    // Catch-all owner-only rule. Covers attendance, semesters, periods, courses,
+    // course_summaries, sem_summaries, flashcards, and flashcardPacks (when
+    // accessed via the direct subcollection path).
+    //
+    // Public reads via collection-group queries are additionally permitted by
+    // the rules below; rules combine as a logical OR.
+    // -------------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection-group reads
+    //
+    // Each rule below is evaluated against every document a query could return;
+    // the request fails if any matched document is not permitted.
+    // -------------------------------------------------------------------------
+
+    // attendance: queries always filter by userId == requester
+    match /{anyPath=**}/attendance/{attendanceId} {
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // course_summaries: queries always filter by userId == requester
+    match /{anyPath=**}/course_summaries/{summaryId} {
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // flashcardPacks: any signed-in user may READ a pack marked public.
+    // Owner read/write is already granted by /users/{uid}/{document=**} above;
+    // the ownerId disjunct is kept here for documentation / single-doc GETs.
+    match /{anyPath=**}/flashcardPacks/{packId} {
+      allow read: if isSignedIn() && (
+        resource.data.public == true
+        || resource.data.ownerId == request.auth.uid
+      );
+    }
+
+    // flashcards: a card is readable by its owner, or by any signed-in user
+    // when it belongs to a public pack. Security rules are NOT filters: for a
+    // query, the rule must be satisfiable from the query's own constraints, and
+    // get() cannot be used for list/collection-group queries. So each card
+    // denormalizes its pack's visibility into a `public` flag, and cross-owner
+    // reads filter on it (whereEqualTo("public", true)).
+    //
+    // Query shapes this authorizes:
+    //   - getAllByPackIdAcrossOwners: where packId == X AND public == true
+    //   - getByIds (public branch): where id in [...] AND public == true
+    // Owners read their own cards via their /users/{uid}/... subtree, which the
+    // catch-all owner rule already covers — no `public` filter required there.
+    match /{anyPath=**}/flashcards/{cardId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid
+        || resource.data.public == true
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // /feedback/{id}
+    //
+    // Anyone signed in may submit feedback. Reads / mutations happen only via
+    // admin tooling, so client access is denied.
+    // -------------------------------------------------------------------------
+
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // /user_stars/{starId}
+    //
+    // A user may create/delete their own star document.
+    // Read is allowed only to the user who starred (starredBy == uid).
+    // -------------------------------------------------------------------------
+
+    match /user_stars/{starId} {
+      allow read: if isSignedIn()
+        && resource.data.starredBy == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.starredBy == request.auth.uid;
+      allow delete: if isSignedIn()
+        && resource.data.starredBy == request.auth.uid;
+      allow update: if false; // stars are immutable; delete + recreate instead
+    }
+
+    // -------------------------------------------------------------------------
+    // Default deny
+    // -------------------------------------------------------------------------
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

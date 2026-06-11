@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   test:
     name: Unit Test & Build AAB
@@ -24,28 +28,25 @@ jobs:
           java-version: 21
           cache: 'gradle'
 
-      - name: Install prerequisites
-        run: sudo apt-get update && sudo apt-get install -y wget unzip
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Install Android commandline tools & SDK
-        run: |
-          export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
-          mkdir -p "$ANDROID_SDK_ROOT"
-          cd /tmp
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline.zip
-          unzip cmdline.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
-          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-33" "build-tools;33.0.0"
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Create local.properties
-        run: echo "sdk.dir=$HOME/Android/Sdk" > local.properties
+        run: |
+          {
+            echo "sdk.dir=$ANDROID_SDK_ROOT"
+            echo "algolia.appId=${{ secrets.ALGOLIA_APP_ID }}"
+            echo "algolia.searchKey=${{ secrets.ALGOLIA_SEARCH_KEY }}"
+          } > local.properties
 
       - name: Grant execute permissions for gradlew
         run: chmod +x ./gradlew
 
       - name: Run unit tests
-        run: ./gradlew clean testDebug
+        run: ./gradlew clean testDebugUnitTest
 
       - name: Setup Keystore
         run: |
@@ -109,3 +110,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-bundle
+          path: artifact
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          generate_release_notes: true
+          files: artifact/*.aab

@@ -11,8 +11,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllSemestersBottomSheet(
-    sheetState: SheetState,
+    visible: Boolean,
     semesterList: List<Semester>,
     onSemesterClick: (Semester) -> Unit,
     onDismiss: () -> Unit,
@@ -39,9 +39,11 @@ fun AllSemestersBottomSheet(
     selectedSemesterId: String,
     buttonColor: Color,
 ) {
-    if (sheetState.isVisible) {
+    if (visible) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
-            onDismissRequest = { onDismiss() },
+            onDismissRequest = onDismiss,
+            sheetState = sheetState,
             dragHandle = {},
             shape = RectangleShape,
             containerColor = WhiteSecondary

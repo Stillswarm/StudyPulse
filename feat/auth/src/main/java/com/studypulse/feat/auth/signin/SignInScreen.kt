@@ -28,7 +28,10 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +60,6 @@ import com.studypulse.ui.theme.LightGray
 import com.studypulse.ui.theme.Red
 import com.studypulse.ui.theme.WhiteSecondary
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,9 +70,7 @@ fun SignInScreen(
     vm: SignInScreenViewModel = koinViewModel()
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
-    val forgotPasswordBottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true,
-    )
+    var showForgotPasswordSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val activity = LocalActivity.current
 
@@ -160,7 +160,7 @@ fun SignInScreen(
                 .fillMaxWidth()
                 .noRippleClickable {
                     vm.updateBottomSheetEmail(state.email)
-                    scope.launch { forgotPasswordBottomSheetState.show() }
+                    showForgotPasswordSheet = true
                 }
         )
 
@@ -249,9 +249,12 @@ fun SignInScreen(
         )
     }
 
-    if (forgotPasswordBottomSheetState.isVisible) {
+    if (showForgotPasswordSheet) {
+        val forgotPasswordBottomSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+        )
         ModalBottomSheet(
-            onDismissRequest = { scope.launch { forgotPasswordBottomSheetState.hide() } },
+            onDismissRequest = { showForgotPasswordSheet = false },
             sheetState = forgotPasswordBottomSheetState,
             shape = RectangleShape,
             containerColor = WhiteSecondary,

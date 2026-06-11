@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,15 +55,6 @@ fun AttendanceCalendarScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    val dayCoursesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    LaunchedEffect(state.showBottomSheet) {
-        if (state.showBottomSheet) dayCoursesBottomSheetState.show()
-        else {
-            viewModel.clearSelectedDate()
-            dayCoursesBottomSheetState.hide()
-        }
-    }
-
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar(
             backgroundColor = Gold,
@@ -78,56 +68,45 @@ fun AttendanceCalendarScreen(
 
         Spacer(Modifier.height(8.dp))
 
-//        val scope = rememberCoroutineScope()
-//        val hideSheetAndClearDate = remember {
-//            {
-//                scope.launch {
-//                    viewModel.clearSelectedDate()
-////                    dayCoursesBottomSheetState.hide()
-//                    viewModel.updateShowBottomSheet(false)
-//                }
-//            }
-//        }
-
         DisposableEffect(Unit) {
             onDispose {
-//                scope.launch {
                 viewModel.updateShowBottomSheet(false)
-//                    dayCoursesBottomSheetState.hide()
             }
-//            }
         }
 
-        state.selectedDate?.let {
-            if (state.showBottomSheet && dayCoursesBottomSheetState.isVisible) {
-                ModalBottomSheet(
-                    onDismissRequest = { viewModel.updateShowBottomSheet(false) },
-                    sheetState = dayCoursesBottomSheetState,
-                    shape = RectangleShape,
-                    dragHandle = {}
-                ) {
-                    DayCoursesBottomSheetContent(
-                        periodList = state.periodsList,
-                        localDate = state.selectedDate!!,
-                        buttonEnabled = state.periodsList.isNotEmpty(),
-                        onClose = {
-                            viewModel.updateShowBottomSheet(false)
-                        },
-                        onPresent = {
-                            viewModel.markAttendance(it, AttendanceStatus.PRESENT)
-                        },
-                        onAbsent = {
-                            viewModel.markAttendance(it, AttendanceStatus.ABSENT)
-                        },
-                        onCancelled = {
-                            viewModel.markAttendance(it, AttendanceStatus.CANCELLED)
-                        },
-                        onCancelDay = {
-                            viewModel.onDayCancelled()
-                            viewModel.updateShowBottomSheet(false)
-                        }
-                    )
-                }
+        val selectedDate = state.selectedDate
+        if (state.showBottomSheet && selectedDate != null) {
+            val dayCoursesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+            ModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.updateShowBottomSheet(false)
+                    viewModel.clearSelectedDate()
+                },
+                sheetState = dayCoursesBottomSheetState,
+                shape = RectangleShape,
+                dragHandle = {}
+            ) {
+                DayCoursesBottomSheetContent(
+                    periodList = state.periodsList,
+                    localDate = selectedDate,
+                    buttonEnabled = state.periodsList.isNotEmpty(),
+                    onClose = {
+                        viewModel.updateShowBottomSheet(false)
+                    },
+                    onPresent = {
+                        viewModel.markAttendance(it, AttendanceStatus.PRESENT)
+                    },
+                    onAbsent = {
+                        viewModel.markAttendance(it, AttendanceStatus.ABSENT)
+                    },
+                    onCancelled = {
+                        viewModel.markAttendance(it, AttendanceStatus.CANCELLED)
+                    },
+                    onCancelDay = {
+                        viewModel.onDayCancelled()
+                        viewModel.updateShowBottomSheet(false)
+                    }
+                )
             }
         }
 
@@ -138,7 +117,6 @@ fun AttendanceCalendarScreen(
             onDateSelected = {
                 viewModel.onDateSelected(it)
                 viewModel.updateShowBottomSheet(true)
-//                scope.launch { dayCoursesBottomSheetState.show() }
             },
             onMonthChanged = { viewModel.onMonthChanged(it) },
             unmarkedPeriods = state.unmarkedDates

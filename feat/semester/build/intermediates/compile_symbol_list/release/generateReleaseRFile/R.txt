@@ -1,2 +1,0 @@
-int drawable ic_arrow_left 0x0
-int drawable ic_calendar 0x0

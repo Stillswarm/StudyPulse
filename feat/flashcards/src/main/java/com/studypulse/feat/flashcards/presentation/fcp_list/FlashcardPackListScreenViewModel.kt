@@ -1,0 +1,98 @@
+package com.studypulse.feat.flashcards.presentation.fcp_list
+
+import android.util.Log
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.DocumentSnapshot
+import com.studypulse.feat.flashcards.domain.model.FlashcardPack
+import com.studypulse.feat.flashcards.domain.model.PackPage
+import com.studypulse.feat.flashcards.domain.repository.FlashcardPackRepository
+import com.studypulse.feat.flashcards.domain.usecase.GetFlashcardPacksForPresentation
+import com.studypulse.nav.routes.FcpListType
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class FlashcardPackListScreenViewModel(
+    private val fcpRepository: FlashcardPackRepository,
+    private val getFlashcardPacksForPresentation: GetFlashcardPacksForPresentation,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+
+    val type = savedStateHandle.get<FcpListType?>("type")
+
+    private val fetchPage: suspend (Long, DocumentSnapshot?) -> Result<PackPage> =
+        if (type == FcpListType.POPULAR) fcpRepository::getPopularPacks
+        else fcpRepository::getNForThisUser
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
+    private val _list = MutableStateFlow<List<FlashcardPack>>(emptyList())
+    val list: StateFlow<List<FlashcardPack>> = _list.asStateFlow()
+
+    // Pagination state lives on the VM so it is scoped to this screen's lifetime
+    private var cursor: DocumentSnapshot? = null
+    private var endReached = false
+
+    init {
+        refresh()
+    }
+
+    fun refresh() {
+        if (_isRefreshing.value) return
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                cursor = null
+                endReached = false
+                fetchPage(PAGE_SIZE, null).onSuccess { page ->
+                    cursor = page.nextCursor
+                    endReached = page.endReached
+                    val decorated = if (page.items.isNotEmpty()) {
+                        getFlashcardPacksForPresentation(page.items)
+                            .onFailure { Log.w(TAG, "Failed to decorate packs with stars", it) }
+                            .getOrDefault(page.items)
+                    } else {
+                        emptyList()
+                    }
+                    _list.value = decorated
+                }
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
+    suspend fun getNextSet() {
+        if (_isLoading.value || _isRefreshing.value || endReached) return
+        _isLoading.value = true
+        try {
+            fetchPage(PAGE_SIZE, cursor).onSuccess { page ->
+                cursor = page.nextCursor ?: cursor
+                endReached = page.endReached
+                if (page.items.isNotEmpty()) {
+                    // Stars are non-critical decoration; on failure fall back
+                    // to the raw items rather than hiding the page entirely.
+                    val decorated = getFlashcardPacksForPresentation(page.items)
+                        .onFailure { Log.w(TAG, "Failed to decorate packs with stars", it) }
+                        .getOrDefault(page.items)
+                    _list.update { it + decorated }
+                }
+            }
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 5L
+        private const val TAG = "FcpListVM"
+    }
+}
