@@ -16,7 +16,7 @@ secrets.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "com.studypulse.app"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.studypulse.app"

@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.studypulse.feat.flashcards"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
