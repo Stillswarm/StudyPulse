@@ -1,0 +1,183 @@
+package com.studypulse.app.xyz
+
+/*
+name: Run test
+
+on:
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Create local.properties
+        run: |
+          {
+            echo "sdk.dir=$ANDROID_SDK_ROOT"
+            echo "algolia.appId=${{ secrets.ALGOLIA_APP_ID }}"
+            echo "algolia.searchKey=${{ secrets.ALGOLIA_SEARCH_KEY }}"
+          } > local.properties
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew clean testDebugUnitTest
+
+ */
+
+/*
+name: Deploy to Google Play
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Unit Test & Build AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Create local.properties
+        run: |
+          {
+            echo "sdk.dir=$ANDROID_SDK_ROOT"
+            echo "algolia.appId=${{ secrets.ALGOLIA_APP_ID }}"
+            echo "algolia.searchKey=${{ secrets.ALGOLIA_SEARCH_KEY }}"
+          } > local.properties
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Run unit tests
+        run: ./gradlew clean testDebugUnitTest
+
+      - name: Setup Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > keystore.jks
+
+      - name: Version Bump
+        uses: chkfung/android-version-actions@v1.2.3
+        with:
+          gradlePath: app/build.gradle.kts
+          versionCode: ${{ github.run_number }}
+
+      - name: Assemble Release Bundle
+        run: ./gradlew bundleRelease
+        env:
+          SIGNING_KEY_ALIAS: ${{ secrets.STUDY_PULSE_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.STUDY_PULSE_ALIAS_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: app/build/outputs/bundle/release/*.aab
+
+  distribute:
+    name: Distribute to Google Play
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download built AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: artifact
+
+      - name: Deploy bundle to Google Play
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_AUTH_JSON }}
+          packageName: com.studypulse.app
+          releaseFiles: artifact/*.aab
+          track: alpha
+          status: 'completed'
+          whatsNewDirectory: whatsNew/
+
+  release:
+    name: Create GitHub Release & upload AAB
+    needs: distribute
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: artifact
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          generate_release_notes: true
+          files: artifact/*.aab
+
+
+Flashcards
+
+- create and categorize your flashcards
+- study you flashcards using highly reputed SM-2 spaced repetition algorithm
+- browse public flashcards from other users
+ */
+ */
+
+ */
+ */
