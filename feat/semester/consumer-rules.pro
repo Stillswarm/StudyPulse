@@ -1,0 +1,1 @@
+# Add module-specific consumer ProGuard rules here.
