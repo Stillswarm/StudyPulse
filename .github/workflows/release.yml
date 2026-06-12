@@ -64,6 +64,7 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.STUDY_PULSE_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.STUDY_PULSE_ALIAS_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_PATH: ${{ github.workspace }}/keystore.jks
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
