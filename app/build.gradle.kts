@@ -23,14 +23,15 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 2
-        versionName = "2.0.0"
+        versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file("../keystore.jks")
+            storeFile = file(System.getenv("KEYSTORE_PATH")
+                ?: "C:\\Users\\abhi5\\Desktop\\StudyPulse\\study-pulse-keystore")
             storePassword = System.getenv("SIGNING_STORE_PASSWORD")
             keyAlias = System.getenv("SIGNING_KEY_ALIAS")
             keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
