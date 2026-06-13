@@ -51,8 +51,20 @@
 -keep class com.google.gson.** { *; }
 
 # Room Database
--keep class * extends androidx.room.RoomDatabase
+# Room/WorkManager instantiate their generated *_Impl databases reflectively
+# via Class.getDeclaredConstructor(); R8 must keep the no-arg constructor or
+# startup crashes with NoSuchMethodException: WorkDatabase_Impl.<init> [].
+-keep class * extends androidx.room.RoomDatabase {
+    <init>();
+}
+-keep @androidx.room.Database class * { *; }
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+    <init>();
+}
 -dontwarn androidx.room.paging.**
+
+# WorkManager generated Room database
+-keep class androidx.work.impl.WorkDatabase_Impl { <init>(); }
 
 # Compose
 -keep class androidx.compose.** { *; }
