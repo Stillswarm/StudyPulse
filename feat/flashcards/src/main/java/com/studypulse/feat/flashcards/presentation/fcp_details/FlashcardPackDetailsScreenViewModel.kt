@@ -37,10 +37,6 @@ class FlashcardPackDetailsScreenViewModel(
     val state = _state.asStateFlow()
     val packId = savedStateHandle.get<String>("id")
 
-    init {
-        refresh()
-    }
-
     fun refresh() {
         if (packId == null || _state.value.isRefreshing) return
         _state.update { it.copy(isRefreshing = true) }
