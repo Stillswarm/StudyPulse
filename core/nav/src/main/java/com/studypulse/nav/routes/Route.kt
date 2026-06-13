@@ -1,5 +1,6 @@
 package com.studypulse.nav.routes
 
+import androidx.annotation.Keep
 import androidx.navigation.NavBackStackEntry
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -89,6 +90,7 @@ enum class OverviewType {
     FULL
 }
 
+@Keep
 enum class FcpListType {
     USER,
     POPULAR,
