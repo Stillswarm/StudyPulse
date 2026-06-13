@@ -41,10 +41,6 @@ class FlashcardPackListScreenViewModel(
     private var cursor: DocumentSnapshot? = null
     private var endReached = false
 
-    init {
-        refresh()
-    }
-
     fun refresh() {
         if (_isRefreshing.value) return
         viewModelScope.launch {

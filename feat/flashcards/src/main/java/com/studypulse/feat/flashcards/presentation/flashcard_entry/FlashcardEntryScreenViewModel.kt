@@ -35,7 +35,6 @@ class FlashcardEntryScreenViewModel(
     val state: StateFlow<FlashcardEntryScreenState> = _state.asStateFlow()
 
     init {
-        refresh()
         // One-time, idempotent migration so existing cards carry their pack's
         // `public` flag (required for cross-owner public reads). No-op after
         // the first successful run.

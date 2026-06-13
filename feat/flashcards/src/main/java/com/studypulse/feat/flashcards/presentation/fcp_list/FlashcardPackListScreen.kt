@@ -49,6 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studypulse.common.R
 import com.studypulse.common.utils.DateUtils.toFullString
@@ -79,6 +81,10 @@ fun FlashcardPackListScreen(
 
     val lazyColumnState = rememberLazyListState()
     val pullRefreshState = rememberPullToRefreshState()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        vm.refresh()
+    }
 
     // Trigger a fetch when the user scrolls within 5 items of the tail.
     val shouldLoadMore by remember {
