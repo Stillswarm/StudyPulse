@@ -1,8 +1,10 @@
 package com.studypulse.feat.flashcards.data
 
+import androidx.annotation.Keep
 import com.studypulse.feat.flashcards.domain.model.Flashcard
 import kotlinx.serialization.Serializable
 
+@Keep
 @Serializable
 data class FlashcardDto(
     val id: String = "",

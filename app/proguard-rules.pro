@@ -20,9 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Keep data classes (replace with your actual package name)
--keep class com.yourpackage.model.** { *; }
--keep class com.yourpackage.data.** { *; }
+# Keep data/model classes for Firestore reflective serialization/deserialization
+-keep class com.studypulse.**.model.** { *; }
+-keep class com.studypulse.**.data.**Dto { *; }
 
 # Keep Parcelable classes
 -keep class * implements android.os.Parcelable {
@@ -52,19 +52,22 @@
 
 # Room Database
 # Room/WorkManager instantiate their generated *_Impl databases reflectively
-# via Class.getDeclaredConstructor(); R8 must keep the no-arg constructor or
-# startup crashes with NoSuchMethodException: WorkDatabase_Impl.<init> [].
+# via Class.getDeclaredConstructor(); R8 full mode must keep the no-arg
+# constructor or startup crashes with NoSuchMethodException: WorkDatabase_Impl.<init> [].
 -keep class * extends androidx.room.RoomDatabase {
-    <init>();
+    void <init>();
 }
 -keep @androidx.room.Database class * { *; }
 -keepclassmembers class * extends androidx.room.RoomDatabase {
-    <init>();
+    void <init>();
 }
 -dontwarn androidx.room.paging.**
 
-# WorkManager generated Room database
--keep class androidx.work.impl.WorkDatabase_Impl { <init>(); }
+# WorkManager generated Room database & AndroidX Startup
+-keep class androidx.work.impl.WorkDatabase_Impl {
+    public <init>();
+}
+-keep class androidx.startup.StartupException { *; }
 
 # Compose
 -keep class androidx.compose.** { *; }
@@ -99,11 +102,13 @@
 -keep class com.google.firebase.crashlytics.** { *; }
 -keepattributes SourceFile,LineNumberTable
 
-# Keep your model classes for Firebase (replace with your actual package)
-# These are crucial for Firebase serialization/deserialization
+# Keep your model classes for Firebase
+# These are crucial for Firebase serialization/deserialization (including Kotlin property getters)
 -keep class **.model.** {
-    <fields>;
-    <init>();
+    *;
+}
+-keep class **.*Dto {
+    *;
 }
 
 # Keep classes that use @Keep annotation
