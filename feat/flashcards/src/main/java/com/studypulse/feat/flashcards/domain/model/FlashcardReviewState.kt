@@ -1,7 +1,9 @@
 package com.studypulse.feat.flashcards.domain.model
 
+import androidx.annotation.Keep
 import kotlinx.serialization.Serializable
 
+@Keep
 data class FlashcardReviewState(
     val id: String = "",
     val userId: String = "",
@@ -26,6 +28,7 @@ data class FlashcardReviewState(
         )
 }
 
+@Keep
 @Serializable
 data class FlashcardReviewStateDto(
     val id: String = "",
